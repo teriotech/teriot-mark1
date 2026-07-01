@@ -2,7 +2,24 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+1. Copy the environment template:
+
+```bash
+cp .env.local.example .env.local
+```
+
+2. Fill in your Supabase project URL and keys in .env.local.
+
+3. Make sure your Supabase project has a public table named users with at least these columns:
+
+- id (bigint or uuid, primary key)
+- name (text)
+- email (text)
+- phone (text, optional)
+- created_at (timestamp with time zone)
+- updated_at (timestamp with time zone)
+
+4. Run the development server:
 
 ```bash
 npm run dev
