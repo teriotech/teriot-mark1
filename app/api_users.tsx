@@ -1,150 +1,150 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { NextRequest, NextResponse } from "next/server";
+// import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+// import { NextRequest, NextResponse } from "next/server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-const createClient = () => {
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Supabase URL and key are not configured");
-  }
+// const createClient = () => {
+//   if (!supabaseUrl || !supabaseKey) {
+//     throw new Error("Supabase URL and key are not configured");
+//   }
 
-  return createSupabaseClient(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  });
-};
+//   return createSupabaseClient(supabaseUrl, supabaseKey, {
+//     auth: {
+//       persistSession: false,
+//       autoRefreshToken: false,
+//       detectSessionInUrl: false,
+//     },
+//   });
+// };
 
-const sanitizeUserPayload = (body: Record<string, unknown>) => {
-  const name = typeof body.name === "string" ? body.name.trim() : "";
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  const phone = typeof body.phone === "string" ? body.phone.trim() : null;
+// const sanitizeUserPayload = (body: Record<string, unknown>) => {
+//   const name = typeof body.name === "string" ? body.name.trim() : "";
+//   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+//   const phone = typeof body.phone === "string" ? body.phone.trim() : null;
 
-  return {
-    name,
-    email,
-    phone,
-  };
-};
+//   return {
+//     name,
+//     email,
+//     phone,
+//   };
+// };
 
-export async function GET(request: NextRequest) {
-  try {
-    const supabase = createClient();
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+// export async function GET(request: NextRequest) {
+//   try {
+//     const supabase = createClient();
+//     const { searchParams } = new URL(request.url);
+//     const id = searchParams.get("id");
 
-    let query = supabase.from("users").select("*").order("created_at", { ascending: false });
+//     let query = supabase.from("users").select("*").order("created_at", { ascending: false });
 
-    if (id) {
-      query = query.eq("id", id).limit(1);
-    }
+//     if (id) {
+//       query = query.eq("id", id).limit(1);
+//     }
 
-    const { data, error } = await query; 
+//     const { data, error } = await query; 
 
-    if (error) throw error;
+//     if (error) throw error;
 
-    return NextResponse.json(id ? data?.[0] ?? null : data);
-  } catch (error) {
-    console.error("GET Error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch users" },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json(id ? data?.[0] ?? null : data);
+//   } catch (error) {
+//     console.error("GET Error:", error);
+//     return NextResponse.json(
+//       { error: "Failed to fetch users" },
+//       { status: 500 }
+//     );
+//   }
+// }
 
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = createClient();
-    const body = await request.json();
-    const payload = sanitizeUserPayload(body);
+// export async function POST(request: NextRequest) {
+//   try {
+//     const supabase = createClient();
+//     const body = await request.json();
+//     const payload = sanitizeUserPayload(body);
 
-    if (!payload.name || !payload.email) {
-      return NextResponse.json(
-        { error: "Name and email are required" },
-        { status: 400 }
-      );
-    }
+//     if (!payload.name || !payload.email) {
+//       return NextResponse.json(
+//         { error: "Name and email are required" },
+//         { status: 400 }
+//       );
+//     }
 
-    const { data, error } = await supabase
-      .from("users")
-      .insert([payload])
-      .select();
+//     const { data, error } = await supabase
+//       .from("users")
+//       .insert([payload])
+//       .select();
 
-    if (error) throw error;
+//     if (error) throw error;
 
-    return NextResponse.json(data, { status: 201 });
-  } catch (error) {
-    console.error("POST Error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create user" },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json(data, { status: 201 });
+//   } catch (error) {
+//     console.error("POST Error:", error);
+//     return NextResponse.json(
+//       { error: error instanceof Error ? error.message : "Failed to create user" },
+//       { status: 500 }
+//     );
+//   }
+// }
 
-export async function PUT(request: NextRequest) {
-  try {
-    const supabase = createClient();
-    const body = await request.json();
-    const { id, ...rest } = body;
+// export async function PUT(request: NextRequest) {
+//   try {
+//     const supabase = createClient();
+//     const body = await request.json();
+//     const { id, ...rest } = body;
 
-    if (!id) {
-      return NextResponse.json(
-        { error: "ID is required" },
-        { status: 400 }
-      );
-    }
+//     if (!id) {
+//       return NextResponse.json(
+//         { error: "ID is required" },
+//         { status: 400 }
+//       );
+//     }
 
-    const updateData = {
-      ...sanitizeUserPayload(rest),
-      updated_at: new Date().toISOString(),
-    };
+//     const updateData = {
+//       ...sanitizeUserPayload(rest),
+//       updated_at: new Date().toISOString(),
+//     };
 
-    const { data, error } = await supabase
-      .from("users")
-      .update(updateData)
-      .eq("id", id)
-      .select();
+//     const { data, error } = await supabase
+//       .from("users")
+//       .update(updateData)
+//       .eq("id", id)
+//       .select();
 
-    if (error) throw error;
+//     if (error) throw error;
 
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("PUT Error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update user" },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json(data);
+//   } catch (error) {
+//     console.error("PUT Error:", error);
+//     return NextResponse.json(
+//       { error: error instanceof Error ? error.message : "Failed to update user" },
+//       { status: 500 }
+//     );
+//   }
+// }
 
-export async function DELETE(request: NextRequest) {
-  try {
-    const supabase = createClient();
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+// export async function DELETE(request: NextRequest) {
+//   try {
+//     const supabase = createClient();
+//     const { searchParams } = new URL(request.url);
+//     const id = searchParams.get("id");
 
-    if (!id) {
-      return NextResponse.json(
-        { error: "ID is required" },
-        { status: 400 }
-      );
-    }
+//     if (!id) {
+//       return NextResponse.json(
+//         { error: "ID is required" },
+//         { status: 400 }
+//       );
+//     }
 
-    const { error } = await supabase.from("users").delete().eq("id", id);
+//     const { error } = await supabase.from("users").delete().eq("id", id);
 
-    if (error) throw error;
+//     if (error) throw error;
 
-    return NextResponse.json({ message: "User deleted" });
-  } catch (error) {
-    console.error("DELETE Error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to delete user" },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json({ message: "User deleted" });
+//   } catch (error) {
+//     console.error("DELETE Error:", error);
+//     return NextResponse.json(
+//       { error: error instanceof Error ? error.message : "Failed to delete user" },
+//       { status: 500 }
+//     );
+//   }
+// }
