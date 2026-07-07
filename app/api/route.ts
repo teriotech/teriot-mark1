@@ -1,22 +1,5 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-const createClient = () => {
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Supabase URL and key are not configured");
-  }
-
-  return createSupabaseClient(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  });
-};
+import { createServerSupabaseClient } from "../lib/supabase";
 
 const sanitizeUserPayload = (body: Record<string, unknown>) => {
   const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -32,7 +15,7 @@ const sanitizeUserPayload = (body: Record<string, unknown>) => {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = createServerSupabaseClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -58,7 +41,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = createServerSupabaseClient();
     const body = await request.json();
     const payload = sanitizeUserPayload(body);
 
@@ -88,7 +71,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = createServerSupabaseClient();
     const body = await request.json();
     const { id, ...rest } = body;
 
@@ -124,7 +107,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = createServerSupabaseClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

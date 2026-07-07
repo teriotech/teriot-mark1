@@ -49,23 +49,16 @@ export default function Home() {
     let isMounted = true;
 
     const fetchUsers = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
         const response = await fetch("/api/users");
         const data = await response.json();
-
-        if (isMounted) {
-          setUsers(Array.isArray(data) ? data : []);
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error(error);
-          setMessage("Gagal mengambil data dari API");
-        }
+        if (isMounted) setUsers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        if (isMounted) setMessage("Gagal mengambil data dari API");
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -90,17 +83,13 @@ export default function Home() {
     try {
       const response = await fetch("/api/users", {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || "Gagal menyimpan data");
-      }
+      if (!response.ok) throw new Error(result.error || "Gagal menyimpan data");
 
       setMessage(editingId ? "Data berhasil diperbarui" : "Data berhasil ditambahkan");
       setForm(emptyForm);
@@ -142,112 +131,49 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 font-sans dark:bg-black text-zinc-900 dark:text-zinc-50">
-      <header className="w-full border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black py-4 px-6 sm:px-12 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-2">
-          <Image
-            className="dark:invert"
-            src="/next.svg"
-            alt="Next.js logo"
-            width={100}
-            height={20}
-            priority
-          />
-        </div>
-        <nav className="hidden sm:flex gap-6 font-medium text-sm">
-          <a href="#" className="hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Beranda</a>
-          <a href="#" className="hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Tentang Kami</a>
-          <a href="#" className="hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Kontak</a>
-        </nav>
-      </header>
-
-      <main className="flex-1 w-full max-w-6xl mx-auto py-12 px-6 flex flex-col gap-8">
+    <div className="flex flex-col w-full">
+      <main className="flex-1 w-full max-w-6xl mx-auto py-8 px-4 lg:py-12 lg:px-6 flex flex-col gap-8">
         <div className="flex flex-col gap-2 text-center sm:text-left">
           <h1 className="text-3xl font-semibold tracking-tight">CRUD Pengguna</h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Tambah, ubah, dan hapus data pengguna melalui API Supabase.
-          </p>
+          <p className="text-gray-600">Tambah, ubah, dan hapus data pengguna melalui API Supabase.</p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <form
-            onSubmit={handleSubmit}
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111] p-6 shadow-sm flex flex-col gap-4"
-          >
+          <form onSubmit={handleSubmit} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col gap-4">
             <div>
-              <h2 className="text-xl font-semibold">
-                {editingId ? "Edit Pengguna" : "Tambah Pengguna"}
-              </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Isi data sesuai kolom table users.
-              </p>
+              <h2 className="text-xl font-semibold">{editingId ? "Edit Pengguna" : "Tambah Pengguna"}</h2>
+              <p className="text-sm text-gray-600">Input operator or system user details used by MES processes.</p>
             </div>
 
             <label className="flex flex-col gap-2 text-sm">
               <span className="font-medium">Nama</span>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-                className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-2"
-                placeholder="Contoh: Budi Santoso"
-              />
+              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-gray-300 bg-white px-3 py-2" placeholder="Contoh: Budi Santoso" />
             </label>
 
             <label className="flex flex-col gap-2 text-sm">
               <span className="font-medium">Email</span>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(event) => setForm({ ...form, email: event.target.value })}
-                className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-2"
-                placeholder="contoh@email.com"
-              />
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg border border-gray-300 bg-white px-3 py-2" placeholder="contoh@email.com" />
             </label>
 
             <label className="flex flex-col gap-2 text-sm">
               <span className="font-medium">Phone</span>
-              <input
-                type="text"
-                value={form.phone}
-                onChange={(event) => setForm({ ...form, phone: event.target.value })}
-                className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-2"
-                placeholder="0812xxxxxxxx"
-              />
+              <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="rounded-lg border border-gray-300 bg-white px-3 py-2" placeholder="0812xxxxxxxx" />
             </label>
 
             <div className="flex gap-3">
-              <button
-                type="submit"
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-              >
-                {editingId ? "Simpan Perubahan" : "Tambah Data"}
-              </button>
+              <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{editingId ? "Simpan Perubahan" : "Tambah Data"}</button>
               {editingId ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingId(null);
-                    setForm(emptyForm);
-                  }}
-                  className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                >
-                  Batal
-                </button>
+                <button type="button" onClick={() => { setEditingId(null); setForm(emptyForm); }} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50">Batal</button>
               ) : null}
             </div>
           </form>
 
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111] shadow-sm overflow-hidden">
-            {message ? (
-              <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-6 py-3 text-sm text-zinc-700 dark:text-zinc-300">
-                {message}
-              </div>
-            ) : null}
+          <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            {message ? <div className="border-b border-gray-200 bg-blue-50 px-6 py-3 text-sm text-blue-800">{message}</div> : null}
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+                <thead className="bg-blue-600 text-white">
                   <tr>
                     <th className="px-6 py-4 font-semibold">No</th>
                     <th className="px-6 py-4 font-semibold">Nama</th>
@@ -256,42 +182,26 @@ export default function Home() {
                     <th className="px-6 py-4 font-semibold">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody className="divide-y divide-gray-100">
                   {loading ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
-                        Memuat data...
-                      </td>
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Memuat data...</td>
                     </tr>
                   ) : users.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
-                        Belum ada data pengguna.
-                      </td>
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Belum ada data pengguna.</td>
                     </tr>
                   ) : (
                     users.map((user, index) => (
-                      <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                      <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4">{index + 1}</td>
                         <td className="px-6 py-4 font-medium">{user.name}</td>
-                        <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{user.email}</td>
-                        <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{user.phone || "-"}</td>
+                        <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                        <td className="px-6 py-4 text-gray-600">{user.phone || "-"}</td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleEdit(user)}
-                              className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(user.id)}
-                              className="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-                            >
-                              Delete
-                            </button>
+                            <button type="button" onClick={() => handleEdit(user)} className="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium hover:bg-gray-100">Edit</button>
+                            <button type="button" onClick={() => handleDelete(user.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50">Delete</button>
                           </div>
                         </td>
                       </tr>
@@ -304,11 +214,11 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="w-full border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black py-8 px-6 sm:px-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+      <footer className="w-full border-t border-gray-200 bg-white py-8 px-6 sm:px-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
         <p>© {new Date().getFullYear()} Perusahaan Anda. Hak cipta dilindungi undang-undang.</p>
         <div className="flex items-center gap-6">
-          <a href="#" className="hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors">Kebijakan Privasi</a>
-          <a href="#" className="hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors">Syarat & Ketentuan</a>
+          <a href="#" className="hover:text-gray-900 transition-colors">Kebijakan Privasi</a>
+          <a href="#" className="hover:text-gray-900 transition-colors">Syarat & Ketentuan</a>
         </div>
       </footer>
     </div>
