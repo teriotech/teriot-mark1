@@ -3,7 +3,7 @@
 // ADD THIS LINE to load Tailwind CSS
 import "./globals.css"; 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -20,7 +20,7 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Quality", href: "/production/dashboard/quality" },
     { label: "Management", href: "/production/dashboard/management" },
   ],
-  Monitoring: [
+  Machine: [
     { label: "Machine Pres", href: "/production/dummy" },
     { label: "Machine Injection", href: "/production/dummy" },
     { label: "Machine Role", href: "/production/dummy" },
@@ -32,8 +32,10 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Reject Sample", href: "/production/dummy" },
   ],
   Stockpile: [
-    { label: "Pallet A", href: "/production/dummy" },
-    { label: "Pallet B", href: "/production/dummy" },
+    { label: "Store", href: "/production/dummy" },
+    { label: "Warehouse", href: "/production/dummy" },
+    { label: "Truckscale", href: "/production/dummy" },
+    { label: "Purchasing", href: "/production/dummy" },
   ],
   Maintenance: [
     { label: "My Task Today", href: "/production/dummy" },
@@ -87,9 +89,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
-  const isLoading = false;
-  const usersLoading = false;
-  const totalUsers = 128;
+  // ==========================================
+  // UBAH: State untuk Total Users
+  // ==========================================
+  const isLoading = false; // Untuk loading profile
+  const [usersLoading, setUsersLoading] = useState<boolean>(false);
+  const [totalUsers, setTotalUsers] = useState<number>(0);
+
+  // Fetch total users ketika berhasil login
+  useEffect(() => {
+    if (isLoggedIn) {
+      const fetchTotalUsers = async () => {
+        setUsersLoading(true);
+        try {
+          const response = await fetch("/api/users");
+          if (response.ok) {
+            const users = await response.json();
+            // Set total users berdasarkan panjang array data dari API
+            setTotalUsers(users.length || 0);
+          }
+        } catch (error) {
+          console.error("Gagal mengambil data user:", error);
+        } finally {
+          setUsersLoading(false);
+        }
+      };
+
+      fetchTotalUsers();
+    }
+  }, [isLoggedIn]);
 
   const activeUser = currentUser ? {
     NickName: currentUser.name ? currentUser.name.split(" ")[0] : "User",
@@ -127,6 +155,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       if (foundUser) {
         setIsLoggedIn(true);
         setCurrentUser(foundUser);
+        // Opsional: Set total users langsung dari response login agar lebih cepat
+        setTotalUsers(users.length); 
         router.push("/production/dashboard/production_monitoring");
       } else {
         setLoginError("Email atau kata sandi yang Anda masukkan salah.");
