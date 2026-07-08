@@ -25,6 +25,7 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Machine Injection", href: "/production/iot/injection" },
     { label: "Machine Role", href: "/production/iot/role" },
     { label: "Machine Mold", href: "/production/iot/mold" },
+    { label: "HMI", href: "/production/iot/hmi" },
   ],
   Machine: [
     { label: "Machine Pres", href: "/production/machine/press" },
@@ -95,9 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
-  // ==========================================
-  // UBAH: State untuk Total Users
-  // ==========================================
+  // State untuk Total Users
   const isLoading = false; // Untuk loading profile
   const [usersLoading, setUsersLoading] = useState<boolean>(false);
   const [totalUsers, setTotalUsers] = useState<number>(0);
@@ -111,7 +110,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           const response = await fetch("/api/users");
           if (response.ok) {
             const users = await response.json();
-            // Set total users berdasarkan panjang array data dari API
             setTotalUsers(users.length || 0);
           }
         } catch (error) {
@@ -161,7 +159,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       if (foundUser) {
         setIsLoggedIn(true);
         setCurrentUser(foundUser);
-        // Opsional: Set total users langsung dari response login agar lebih cepat
         setTotalUsers(users.length); 
         router.push("/production/dashboard/production_monitoring");
       } else {
@@ -172,6 +169,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     } finally {
       setLoginLoading(false);
     }
+  };
+
+  // ==========================================
+  // FITUR BARU: Fungsi Handle Bypass Login (Development Only)
+  // ==========================================
+  const handleBypassLogin = () => {
+    const mockDevAdmin = {
+      id: "999-DEV",
+      name: "Developer Admin",
+      email: "dev.admin@teriothq.local",
+      authority: "Admin", // Supaya menu HSE terbuka otomatis saat dev
+      phone: "0812-DEV-MODE",
+    };
+
+    setIsLoggedIn(true);
+    setCurrentUser(mockDevAdmin);
+    setTotalUsers(1); // Placeholder default agar visual tidak error
+    router.push("/production/dashboard/production_monitoring");
   };
 
   // Fungsi Handle Logout
@@ -311,6 +326,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     )}
                   </button>
 
+                  {/* ========================================== */}
+                  {/* TOMBOL BYPASS DEV LOGIN (HANYA MUNCUL DI LOCAL/DEV ENVIRONMENT) */}
+                  {/* ========================================== */}
+                  {process.env.NODE_ENV === "development" && (
+                    <button
+                      type="button"
+                      onClick={handleBypassLogin}
+                      className="w-full rounded-lg bg-purple-600/20 border border-purple-500/40 px-4 py-2 text-xs font-bold text-purple-400 hover:bg-purple-600/30 hover:text-purple-300 transition-all flex justify-center items-center uppercase tracking-wider"
+                    >
+                      ⚡ Bypass Dev Login (Admin)
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => setIsRegisterModalOpen(true)}
@@ -322,15 +350,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </form>
             </div>
 
-            {/* ========================================== */}
             {/* MODAL REGISTER (POP UP) */}
-            {/* ========================================== */}
             {isRegisterModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                {/* Container Modal dengan Scroll Internal untuk Mobile */}
                 <div className="w-full max-w-md relative max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] rounded-2xl bg-[#09090b] border border-white/[0.08] shadow-2xl">
                   
-                  {/* Tombol Close (X) */}
                   <button 
                     onClick={closeRegisterModal}
                     className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white transition-colors rounded-full hover:bg-white/[0.1] z-10"
@@ -341,7 +365,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </button>
 
                   {registerSuccess ? (
-                    /* Success UI */
                     <div className="p-6 sm:p-8 text-center flex flex-col items-center gap-6 animate-in zoom-in-95 duration-300">
                       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 border border-green-500/30 mt-4">
                         <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -362,7 +385,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       </button>
                     </div>
                   ) : (
-                    /* Registration Form UI */
                     <div className="p-6 sm:p-8 flex flex-col gap-6 animate-in zoom-in-95 duration-300">
                       <div className="flex flex-col gap-2 text-center mt-2">
                         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Buat Akun Baru</h1>
@@ -602,7 +624,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <h2 className="text-[#00F0FF] text-xs font-extrabold uppercase tracking-widest">
                     {activeMenu} Menu
                   </h2>
-                  {/* Close Sidebar Button (Mobile Only) */}
                   <button 
                     className="md:hidden text-zinc-400 hover:text-white p-1"
                     onClick={() => setIsSidebarOpen(false)}
@@ -612,23 +633,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </svg>
                   </button>
                 </div>
-                
-                <nav className="flex flex-col gap-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {(menuData[activeMenu] ?? []).map((submenu) => (
+
+                <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+                  {menuData[activeMenu]?.map((item, index) => (
                     <Link
-                      key={`${activeMenu}-${submenu.label}`}
-                      href={submenu.href}
-                      onClick={() => setIsSidebarOpen(false)} // Tutup sidebar saat menu diklik di mobile
-                      className="text-sm text-zinc-400 font-medium px-3 py-2.5 rounded-lg hover:bg-white/[0.05] hover:text-white transition-all duration-200"
+                      key={index}
+                      href={item.href}
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] text-zinc-400 hover:text-white transition-all duration-200 text-xs font-medium"
                     >
-                      {submenu.label}
+                      <span>{item.label}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#00F0FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </Link>
                   ))}
-                </nav>
+                </div>
               </aside>
 
               {/* MAIN CONTENT */}
-              <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-[#050505]">
+              <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#050505]">
                 {children}
               </main>
             </div>
