@@ -171,7 +171,7 @@ export default function MachinePressPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-white">
-            Machine Press <span className="bg-gradient-to-r from-[#00F0FF] to-[#0066FF] bg-clip-text text-transparent">Monitoring</span>
+            Machine Press <span className="bg-gradient-to-r from-[#00F0FF] to-[#0066FF] bg-clip-text text-transparent">Logger</span>
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400">
             Log aktivitas mesin press secara real-time.

@@ -1,360 +1,373 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import * as XLSX from "xlsx";
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
+  BarChart, Bar, Cell
+} from "recharts";
 
-type MachinePressRecord = {
+// Tipe data sesuai dengan response API
+interface MachineData {
   id: number;
   machine_no: string;
   count_no: number;
   product_name: string;
   user: string;
-  created_at?: string; 
-  timestamp?: string;  
-};
+  timestamp?: string; // PERBAIKAN: Menggunakan timestamp sesuai database
+}
 
-const DUMMY_PRODUCTS = ["Casing Cover A1", "Mainboard Bracket", "Power Button", "Cooling Fan Blade", "Metal Frame B2"];
-const DUMMY_MACHINES = ["PRESS-M01", "PRESS-M02", "PRESS-M03"];
+export default function DashboardPage() {
+  const [rawData, setRawData] = useState<MachineData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default function MachinePressPage() {
-  const [records, setRecords] = useState<MachinePressRecord[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  // Filter States
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]); // Default Today
+  const [selectedMachine, setSelectedMachine] = useState<string>("All");
+  const [timeFilter, setTimeFilter] = useState<string>("daily"); // Untuk chart bawah
 
-  // State untuk Filter & Search
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-
-  const loggedInUser = "Admin LGE"; 
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  const fetchRecords = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/machine_press");
-      if (!response.ok) throw new Error("Gagal mengambil data dari server");
-      const data = await response.json();
-      setRecords(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Fetch Data dari API
   useEffect(() => {
-    fetchRecords();
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/machine_press");
+        if (res.ok) {
+          const data = await res.json();
+          // PERBAIKAN: Gunakan timestamp untuk sorting
+          const sortedData = data.sort((a: MachineData, b: MachineData) => 
+            new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
+          );
+          setRawData(sortedData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const handleSimulateTrigger = async () => {
-    setIsSimulating(true);
-    setError(null);
+  // Dapatkan daftar mesin unik untuk Dropdown
+  const machineList = useMemo(() => {
+    const machines = Array.from(new Set(rawData.map((d) => d.machine_no).filter(Boolean)));
+    return ["All", ...machines];
+  }, [rawData]);
 
-    try {
-      const randomMachine = DUMMY_MACHINES[Math.floor(Math.random() * DUMMY_MACHINES.length)];
-      const randomProduct = DUMMY_PRODUCTS[Math.floor(Math.random() * DUMMY_PRODUCTS.length)];
+  // Proses Data berdasarkan Filter (Date & Machine)
+  const processedData = useMemo(() => {
+    // 1. Filter Data
+    const filtered = rawData.filter((d) => {
+      // PERBAIKAN: Cek apakah d.timestamp ada sebelum memanggil startsWith
+      const dateMatch = d.timestamp ? d.timestamp.startsWith(selectedDate) : false;
+      const machineMatch = selectedMachine === "All" || d.machine_no === selectedMachine;
+      return dateMatch && machineMatch;
+    });
+
+    // 2. Hitung Cycle Time & Kategori
+    let totalDowntimeCount = 0;
+    const chartData: any[] = [];
+    const alerts: any[] = [];
+
+    for (let i = 0; i < filtered.length; i++) {
+      let cycleTime = 0;
+      if (i > 0) {
+        const current = new Date(filtered[i].timestamp || 0).getTime();
+        const prev = new Date(filtered[i - 1].timestamp || 0).getTime();
+        cycleTime = (current - prev) / 1000; // dalam detik
+      }
+
+      let status = "Good";
+      let color = "#00FF66"; // Hijau (< 10s)
       
-      const machineRecords = records.filter((r) => r.machine_no === randomMachine);
-      const nextCount = machineRecords.length > 0 
-        ? Math.max(...machineRecords.map((r) => r.count_no)) + 1 
-        : 1;
+      if (cycleTime > 60) {
+        status = "Downtime";
+        color = "#f43f5e"; // Merah (> 60s)
+        totalDowntimeCount++;
+        alerts.push({
+          time: filtered[i].timestamp ? new Date(filtered[i].timestamp!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-",
+          msg: `Downtime detected (${Math.round(cycleTime)}s)`,
+          product: filtered[i].product_name || "Unknown",
+          user: filtered[i].user || "Unknown",
+          type: "error"
+        });
+      } else if (cycleTime >= 10 && cycleTime <= 60) {
+        status = "Slow Speed";
+        color = "#eab308"; // Kuning (10 - 60s)
+        alerts.push({
+          time: filtered[i].timestamp ? new Date(filtered[i].timestamp!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-",
+          msg: `Slow speed (${Math.round(cycleTime)}s)`,
+          product: filtered[i].product_name || "Unknown",
+          user: filtered[i].user || "Unknown",
+          type: "warning"
+        });
+      }
 
-      const payload = {
-        machine_no: randomMachine,
-        count_no: nextCount,
-        product_name: randomProduct,
-        user: loggedInUser,
-      };
-
-      const response = await fetch("/api/machine_press", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      chartData.push({
+        time: filtered[i].timestamp ? new Date(filtered[i].timestamp!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-",
+        cycleTime: Math.round(cycleTime),
+        status,
+        color
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Gagal menyimpan data simulasi");
-      }
-
-      await fetchRecords();
-    } catch (err: any) {
-      setError(err.message); 
-    } finally {
-      setIsSimulating(false);
     }
-  };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleString("id-ID", { 
-      timeZone: "Asia/Jakarta",
-      day: "2-digit", 
-      month: "short", 
-      year: "numeric", 
-      hour: "2-digit", 
-      minute: "2-digit", 
-      second: "2-digit",
-      timeZoneName: "short" 
-    });
-  };
+    // 3. Hitung Metrics
+    const totalOutput = filtered.length;
+    const activeUsers = Array.from(new Set(filtered.map(d => d.user).filter(Boolean)));
+    const downtimeRate = totalOutput > 0 ? ((totalDowntimeCount / totalOutput) * 100).toFixed(1) : "0.0";
 
-  // 1. Logika Filter & Search
-  const filteredRecords = useMemo(() => {
-    return records.filter((record) => {
-      // Filter Search (General)
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch = 
-        record.machine_no.toLowerCase().includes(searchLower) ||
-        record.product_name.toLowerCase().includes(searchLower) ||
-        record.user.toLowerCase().includes(searchLower) ||
-        String(record.id).includes(searchLower);
+    // 4. Hitung Electricity Cost (Asumsi 500k / jam dari data pertama ke terakhir di hari itu)
+    let electricityCost = 0;
+    if (filtered.length > 1 && filtered[0].timestamp && filtered[filtered.length - 1].timestamp) {
+      const firstTime = new Date(filtered[0].timestamp!).getTime();
+      const lastTime = new Date(filtered[filtered.length - 1].timestamp!).getTime();
+      const hoursDiff = (lastTime - firstTime) / (1000 * 60 * 60);
+      electricityCost = Math.max(0, hoursDiff * 500000); // Pastikan tidak minus
+    }
 
-      // Filter Tanggal
-      let matchesDate = true;
-      const recordDateStr = record.timestamp || record.created_at;
-      
-      if (recordDateStr) {
-        const recordDate = new Date(recordDateStr);
-        if (startDate) {
-          const start = new Date(startDate);
-          start.setHours(0, 0, 0, 0);
-          matchesDate = matchesDate && recordDate >= start;
+    return {
+      filtered,
+      chartData,
+      alerts: alerts.reverse(), // Terbaru di atas
+      totalOutput,
+      activeUsers,
+      downtimeRate,
+      electricityCost
+    };
+  }, [rawData, selectedDate, selectedMachine]);
+
+  // Proses Data untuk Bottom Bar Chart (Date vs Qty)
+  const bottomChartData = useMemo(() => {
+    const grouped: Record<string, number> = {};
+    
+    // Filter hanya berdasarkan mesin (abaikan selectedDate agar bisa melihat weekly/monthly)
+    const machineFiltered = rawData.filter(d => selectedMachine === "All" || d.machine_no === selectedMachine);
+
+    machineFiltered.forEach(d => {
+      if (!d.timestamp) return; // PERBAIKAN: Lewati jika tidak ada timestamp
+
+      const dateObj = new Date(d.timestamp);
+      let key = "";
+
+      if (timeFilter === "daily") {
+        // Group by Hour untuk hari ini
+        if (d.timestamp.startsWith(selectedDate)) {
+          key = `${dateObj.getHours().toString().padStart(2, '0')}:00`;
         }
-        if (endDate) {
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59, 999);
-          matchesDate = matchesDate && recordDate <= end;
-        }
+      } else if (timeFilter === "weekly") {
+        // Group by Day
+        key = dateObj.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
+      } else if (timeFilter === "monthly") {
+        // Group by Date
+        key = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+      } else if (timeFilter === "yearly") {
+        // Group by Month
+        key = dateObj.toLocaleDateString('id-ID', { month: 'short' });
       }
 
-      return matchesSearch && matchesDate;
+      if (key) {
+        grouped[key] = (grouped[key] || 0) + 1;
+      }
     });
-  }, [records, searchQuery, startDate, endDate]);
 
-  // 2. Setup Virtualizer
-  const rowVirtualizer = useVirtualizer({
-    count: filteredRecords.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 56, // Estimasi tinggi baris (px)
-    overscan: 5, // Render 5 baris ekstra di luar layar agar scroll mulus
-  });
-
-  // 3. Fungsi Export Excel
-  const handleExportExcel = () => {
-    const dataToExport = filteredRecords.map((r) => ({
-      "ID": r.id,
-      "No. Mesin": r.machine_no,
-      "Count": r.count_no,
-      "Nama Produk": r.product_name,
-      "Operator": r.user,
-      "Waktu (WIB)": formatDate(r.timestamp || r.created_at)
+    return Object.keys(grouped).map(key => ({
+      label: key,
+      qty: grouped[key]
     }));
+  }, [rawData, selectedMachine, selectedDate, timeFilter]);
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Log");
-    
-    // Generate file dan download
-    XLSX.writeFile(workbook, `Machine_Press_Log_${new Date().getTime()}.xlsx`);
+  // Custom Dot untuk Line Chart (Warna berdasarkan kriteria)
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload } = props;
+    return (
+      <circle cx={cx} cy={cy} r={4} fill={payload.color} stroke="#09090b" strokeWidth={2} />
+    );
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64 text-[#00F0FF] animate-pulse font-bold tracking-widest uppercase text-sm">Loading Dashboard...</div>;
+  }
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
-      {/* HEADER & ACTION SECTION */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-white">
-            Machine Press <span className="bg-gradient-to-r from-[#00F0FF] to-[#0066FF] bg-clip-text text-transparent">Monitoring</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-400">
-            Log aktivitas mesin press secara real-time.
-          </p>
-        </div>
-
-        <button
-          onClick={handleSimulateTrigger}
-          disabled={isSimulating || isLoading}
-          className="flex items-center gap-2 bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 border border-[#00F0FF]/30 text-[#00F0FF] px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,240,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-        >
-          {isSimulating ? (
-            <>
-              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Memproses...
-            </>
-          ) : (
-            <>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-              </svg>
-              Simulasi Trigger Mesin
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* FILTER & SEARCH SECTION */}
-      <div className="flex flex-col lg:flex-row gap-4 bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] p-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
-        <div className="flex-1">
-          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 block">Pencarian</label>
-          <input 
-            type="text" 
-            placeholder="Cari ID, Mesin, Produk, Operator..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/[0.02] border border-white/[0.1] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-          />
-        </div>
-        <div className="flex gap-4 flex-1">
-          <div className="flex-1">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 block">Dari Tanggal</label>
-            <input 
-              type="date" 
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-white/[0.02] border border-white/[0.1] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors [color-scheme:dark]"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 block">Sampai Tanggal</label>
-            <input 
-              type="date" 
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-white/[0.02] border border-white/[0.1] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors [color-scheme:dark]"
-            />
-          </div>
-        </div>
-        <div className="flex items-end">
-          <button
-            onClick={handleExportExcel}
-            disabled={filteredRecords.length === 0}
-            className="w-full lg:w-auto flex items-center justify-center gap-2 bg-[#00FF66]/10 hover:bg-[#00FF66]/20 border border-[#00FF66]/30 text-[#00FF66] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
-            Export Excel
-          </button>
-        </div>
-      </div>
-
-      {/* ERROR ALERT */}
-      {error && (
-        <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-lg text-xs text-rose-400 flex items-center gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          <span className="font-mono">{error}</span>
-        </div>
-      )}
-
-      {/* TABLE SECTION */}
-      <div className="bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-white/[0.05] flex justify-between items-center bg-white/[0.01]">
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse shadow-[0_0_5px_#00FF66]"></span>
-            Live Data Log
-          </h2>
-          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-            Menampilkan: {filteredRecords.length} / {records.length} Records
-          </span>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Header & Filters */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Production Monitoring</h2>
+          <p className="text-sm text-zinc-400 mt-1">Real-time metrics based on Machine Press API.</p>
         </div>
         
-        {/* Container untuk Virtualizer (Harus memiliki height dan overflow-auto) */}
-        <div 
-          ref={tableContainerRef} 
-          className="overflow-auto h-[500px] relative custom-scrollbar"
-        >
-          <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 z-10 bg-[#09090b] shadow-md">
-              <tr className="bg-white/[0.02] text-[10px] uppercase tracking-widest text-zinc-500 border-b border-white/[0.05]">
-                <th className="p-4 font-medium">ID</th>
-                <th className="p-4 font-medium">No. Mesin</th>
-                <th className="p-4 font-medium">Count</th>
-                <th className="p-4 font-medium">Nama Produk</th>
-                <th className="p-4 font-medium">Operator (User)</th>
-                <th className="p-4 font-medium">Waktu (Timestamp)</th>
-              </tr>
-            </thead>
-            <tbody className="text-xs text-zinc-300">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-500">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <svg className="animate-spin h-6 w-6 text-[#00F0FF]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Memuat data...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredRecords.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-500">
-                    Tidak ada data yang ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                <>
-                  {/* Padding Atas untuk Virtualizer */}
-                  {rowVirtualizer.getVirtualItems().length > 0 && (
-                    <tr style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px` }}></tr>
-                  )}
-                  
-                  {/* Render Baris yang Terlihat Saja */}
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const item = filteredRecords[virtualRow.index];
-                    return (
-                      <tr 
-                        key={item.id} 
-                        ref={rowVirtualizer.measureElement}
-                        data-index={virtualRow.index}
-                        className="border-b border-white/[0.02] hover:bg-white/[0.04] transition-colors"
-                      >
-                        <td className="p-4 font-mono text-zinc-500">#{item.id}</td>
-                        <td className="p-4 font-bold text-[#00F0FF]">{item.machine_no}</td>
-                        <td className="p-4">
-                          <span className="bg-white/[0.05] border border-white/[0.1] px-2 py-1 rounded text-[10px] font-mono">
-                            {String(item.count_no).padStart(4, '0')}
-                          </span>
-                        </td>
-                        <td className="p-4 font-medium text-white">{item.product_name}</td>
-                        <td className="p-4 flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#00F0FF] to-[#7000FF] flex items-center justify-center text-[8px] font-bold text-white uppercase shrink-0">
-                            {item.user.charAt(0)}
-                          </div>
-                          {item.user}
-                        </td>
-                        <td className="p-4 text-zinc-500 font-mono text-[10px]">
-                          {formatDate(item.timestamp || item.created_at)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-
-                  {/* Padding Bawah untuk Virtualizer */}
-                  {rowVirtualizer.getVirtualItems().length > 0 && (
-                    <tr style={{ 
-                      height: `${rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end}px` 
-                    }}></tr>
-                  )}
-                </>
-              )}
-            </tbody>
-          </table>
+        <div className="flex items-center gap-3">
+          {/* Filter 1: Date */}
+          <input 
+            type="date" 
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="bg-[#09090b] border border-white/[0.1] text-sm text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#00F0FF]/50"
+          />
+          {/* Filter 2: Machine Dropdown */}
+          <select 
+            value={selectedMachine}
+            onChange={(e) => setSelectedMachine(e.target.value)}
+            className="bg-[#09090b] border border-white/[0.1] text-sm text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#00F0FF]/50"
+          >
+            {machineList.map(mc => (
+              <option key={mc} value={mc}>{mc === "All" ? "All Machines" : mc}</option>
+            ))}
+          </select>
         </div>
       </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Output */}
+        <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-[#00F0FF]/30 transition-colors">
+          <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Output</h3>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-white">{processedData.totalOutput}</span>
+            <span className="text-xs text-zinc-500 font-medium">pcs</span>
+          </div>
+        </div>
+        
+        {/* Card 2: Active Users */}
+        <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-[#00F0FF]/30 transition-colors">
+          <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Users</h3>
+          <div className="mt-2 flex flex-col gap-1">
+            <span className="text-2xl font-extrabold text-white">{processedData.activeUsers.length} <span className="text-sm text-zinc-500 font-normal">Users</span></span>
+            <span className="text-[10px] text-zinc-400 truncate">
+              {processedData.activeUsers.length > 0 ? processedData.activeUsers.join(", ") : "No active users"}
+            </span>
+          </div>
+        </div>
+        
+        {/* Card 3: Downtime Rate */}
+        <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-rose-500/30 transition-colors">
+          <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Downtime Rate</h3>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className={`text-3xl font-extrabold ${Number(processedData.downtimeRate) > 10 ? 'text-rose-500' : 'text-[#00F0FF]'}`}>
+              {processedData.downtimeRate}%
+            </span>
+            <span className="text-[10px] text-zinc-500 font-medium">(&gt;60s cycle)</span>
+          </div>
+        </div>
+        
+        {/* Card 4: Electricity Cost */}
+        <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-amber-500/30 transition-colors">
+          <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Electricity Cost</h3>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl font-extrabold text-amber-400">
+              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(processedData.electricityCost)}
+            </span>
+          </div>
+          <p className="text-[9px] text-zinc-500 mt-1">Est. 500k/hour based on runtime</p>
+        </div>
+      </div>
+
+      {/* Charts & Activity Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Main Chart: Production Output (Cycle Time) */}
+        <div className="lg:col-span-2 bg-[#09090b] border border-white/[0.05] p-5 rounded-xl min-h-[350px] flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-white">Cycle Time Analysis</h3>
+              <p className="text-[10px] text-zinc-400">
+                <span className="text-[#00FF66]">● &lt;10s (Good)</span> | <span className="text-amber-400">● 10-60s (Slow)</span> | <span className="text-rose-500">● &gt;60s (Downtime)</span>
+              </p>
+            </div>
+          </div>
+          <div className="flex-1 w-full h-full min-h-[250px]">
+            {processedData.chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={processedData.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                  <XAxis dataKey="time" stroke="#71717a" fontSize={10} tickMargin={10} />
+                  <YAxis stroke="#71717a" fontSize={10} tickFormatter={(val) => `${val}s`} />
+                  <RechartsTooltip 
+                    contentStyle={{ backgroundColor: '#09090b', borderColor: '#ffffff20', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="cycleTime" 
+                    stroke="#00F0FF" 
+                    strokeWidth={2} 
+                    dot={<CustomDot />}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-zinc-600 text-sm">No data available for selected date.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Alerts: Cycle Time Alerts */}
+        <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl flex flex-col h-[350px]">
+          <h3 className="text-sm font-bold text-white mb-4">Cycle Time Alerts</h3>
+          <div className="space-y-3 flex-1 overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden">
+            {processedData.alerts.length > 0 ? (
+              processedData.alerts.map((alert, i) => (
+                <div key={i} className="flex gap-3 items-start p-3 rounded-lg bg-white/[0.02] border border-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                  <div className={`w-2 h-2 mt-1.5 rounded-full shrink-0 shadow-[0_0_8px_currentColor] ${
+                    alert.type === 'error' ? 'bg-rose-500 text-rose-500' : 'bg-amber-400 text-amber-400'
+                  }`} />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-zinc-200 leading-snug">{alert.msg}</p>
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-[10px] text-zinc-400">{alert.product} • {alert.user}</p>
+                      <p className="text-[9px] text-zinc-500">{alert.time}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="h-full flex items-center justify-center text-zinc-600 text-xs">No alerts for today.</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Chart: Date vs Qty */}
+      <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl min-h-[300px] flex flex-col">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-sm font-bold text-white">Production Quantity Trend</h3>
+          <select 
+            value={timeFilter}
+            onChange={(e) => setTimeFilter(e.target.value)}
+            className="bg-white/[0.05] border border-white/[0.1] text-xs text-zinc-300 rounded-lg px-3 py-1.5 outline-none focus:border-[#00F0FF]/50"
+          >
+            <option value="daily">Daily (Hours)</option>
+            <option value="weekly">Weekly (Days)</option>
+            <option value="monthly">Monthly (Dates)</option>
+            <option value="yearly">Yearly (Months)</option>
+          </select>
+        </div>
+        
+        <div className="flex-1 w-full h-[250px]">
+          {bottomChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={bottomChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                <XAxis dataKey="label" stroke="#71717a" fontSize={10} tickMargin={10} />
+                <YAxis stroke="#71717a" fontSize={10} />
+                <RechartsTooltip 
+                  cursor={{ fill: '#ffffff05' }}
+                  contentStyle={{ backgroundColor: '#09090b', borderColor: '#ffffff20', borderRadius: '8px', fontSize: '12px' }}
+                />
+                <Bar dataKey="qty" radius={[4, 4, 0, 0]}>
+                  {bottomChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill="#0066FF" />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full flex items-center justify-center text-zinc-600 text-sm">No data available for selected filter.</div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }
