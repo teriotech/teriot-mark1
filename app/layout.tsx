@@ -44,7 +44,7 @@ const menuData: Record<string, MenuItem[]> = {
   ],
   IOT: [
     { 
-      label: "Machine Press", 
+      label: "Machine Press",
       subItems: [
         { label: "Overview", href: "/iot/machine_press/overview", status: "fullstack" },
         { label: "Logger", href: "/iot/machine_press/logger", status: "fullstack" },
@@ -74,8 +74,8 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Operator Data", href: "/iot/machine_mold/operator_data" },
       ]
     },
-    { label: "HMI", href: "/iot/hmi" },
-    { label: "Power Monitoring", href: "/iot/power_monitoring" },
+    { label: "HMI", href: "/iot/hmi", status: "fullstack" },
+    { label: "Power Monitoring", href: "/iot/power_monitoring", status: "frontend" },
   ],
   OQC: [
     { label: "Pressure", href: "/production/dummy" },

@@ -28,8 +28,22 @@ export default function MachinePressPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
+  // State & Ref untuk Auto Trigger
+  const [isAutoMode, setIsAutoMode] = useState<boolean>(false);
+  const recordsRef = useRef<MachinePressRecord[]>([]);
+  const isAutoModeRef = useRef<boolean>(false);
+
   const loggedInUser = "Admin LGE"; 
   const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Update Ref setiap kali state berubah untuk menghindari stale closure di setTimeout
+  useEffect(() => {
+    recordsRef.current = records;
+  }, [records]);
+
+  useEffect(() => {
+    isAutoModeRef.current = isAutoMode;
+  }, [isAutoMode]);
 
   const fetchRecords = async () => {
     setIsLoading(true);
@@ -58,7 +72,8 @@ export default function MachinePressPage() {
       const randomMachine = DUMMY_MACHINES[Math.floor(Math.random() * DUMMY_MACHINES.length)];
       const randomProduct = DUMMY_PRODUCTS[Math.floor(Math.random() * DUMMY_PRODUCTS.length)];
       
-      const machineRecords = records.filter((r) => r.machine_no === randomMachine);
+      // Gunakan recordsRef.current agar selalu mendapatkan data terbaru saat dipanggil otomatis
+      const machineRecords = recordsRef.current.filter((r) => r.machine_no === randomMachine);
       const nextCount = machineRecords.length > 0 
         ? Math.max(...machineRecords.map((r) => r.count_no)) + 1 
         : 1;
@@ -88,6 +103,34 @@ export default function MachinePressPage() {
       setIsSimulating(false);
     }
   };
+
+  // Effect khusus untuk menjalankan Auto Trigger
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const scheduleNext = () => {
+      if (!isAutoModeRef.current) return;
+      
+      // Random waktu antara 1000ms (1s) hingga 90000ms (90s)
+      const delay = Math.floor(Math.random() * (70000 - 1000 + 1)) + 1000;
+      
+      timeoutId = setTimeout(async () => {
+        if (isAutoModeRef.current) {
+          await handleSimulateTrigger();
+          scheduleNext(); // Jadwalkan trigger berikutnya setelah proses saat ini selesai
+        }
+      }, delay);
+    };
+
+    if (isAutoMode) {
+      scheduleNext();
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAutoMode]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
@@ -178,28 +221,55 @@ export default function MachinePressPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleSimulateTrigger}
-          disabled={isSimulating || isLoading}
-          className="flex items-center gap-2 bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 border border-[#00F0FF]/30 text-[#00F0FF] px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,240,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-        >
-          {isSimulating ? (
-            <>
-              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Memproses...
-            </>
-          ) : (
-            <>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-              </svg>
-              Simulasi Trigger Mesin
-            </>
-          )}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Tombol Auto Trigger */}
+          <button
+            onClick={() => setIsAutoMode(!isAutoMode)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all shrink-0 ${
+              isAutoMode 
+                ? "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.15)]" 
+                : "bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+            }`}
+          >
+            {isAutoMode ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                Stop Auto Trigger
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                Start Auto Trigger
+              </>
+            )}
+          </button>
+
+          {/* Tombol Manual Trigger */}
+          <button
+            onClick={handleSimulateTrigger}
+            disabled={isSimulating || isLoading || isAutoMode}
+            className="flex items-center gap-2 bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 border border-[#00F0FF]/30 text-[#00F0FF] px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,240,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          >
+            {isSimulating ? (
+              <>
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Memproses...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                </svg>
+                Manual Trigger
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* FILTER & SEARCH SECTION */}
@@ -287,7 +357,7 @@ export default function MachinePressPage() {
               </tr>
             </thead>
             <tbody className="text-xs text-zinc-300">
-              {isLoading ? (
+              {isLoading && records.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-zinc-500">
                     <div className="flex flex-col items-center justify-center gap-2">
