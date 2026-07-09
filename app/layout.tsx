@@ -9,29 +9,53 @@ import { useRouter } from "next/navigation";
 
 type MenuItem = {
   label: string;
-  href: string;
+  href?: string; 
+  subItems?: { label: string; href: string }[];
 };
 
 // Struktur data untuk menu dan sub-menu
 const menuData: Record<string, MenuItem[]> = {
   Dashboard: [
-    { label: "Production Monitoring", href: "/production/dashboard/production_monitoring" },
-    { label: "Equipment Monitoring", href: "/production/dashboard/equipment_monitoring" },
-    { label: "Quality", href: "/production/dashboard/quality" },
-    { label: "Management", href: "/production/dashboard/management" },
+    { label: "Production Monitoring", href: "/dashboard/production_monitoring" },
+    { label: "Equipment Monitoring", href: "/dashboard/equipment_monitoring" },
+    { label: "Quality", href: "/dashboard/quality" },
+    { label: "Management", href: "/dashboard/management" },
   ],
   IoT: [
-    { label: "Machine Pres", href: "/production/iot/press" },
-    { label: "Machine Injection", href: "/production/iot/injection" },
-    { label: "Machine Role", href: "/production/iot/role" },
-    { label: "Machine Mold", href: "/production/iot/mold" },
-    { label: "HMI", href: "/production/iot/hmi" },
-  ],
-  Machine: [
-    { label: "Machine Pres", href: "/production/machine/press" },
-    { label: "Machine Injection", href: "/production/machine/injection" },
-    { label: "Machine Role", href: "/production/dummy" },
-    { label: "Machine Mold", href: "/production/dummy" },
+    { 
+      label: "Machine Press", 
+      subItems: [
+        { label: "Overview", href: "/iot/machine_press/overview" },
+        { label: "Logger", href: "/iot/machine_press/logger" },
+        { label: "Operator Data", href: "/iot/machine_press/operator_data" },
+      ]
+    },
+    { 
+      label: "Machine Injection", 
+      subItems: [
+        { label: "Overview", href: "/iot/machine_injection/overview" },
+        { label: "Logger", href: "/iot/machine_injection/logger" },
+        { label: "Operator Data", href: "/iot/machine_injection/operator_data" },
+      ]
+    },
+    { 
+      label: "Machine Role", 
+      subItems: [
+        { label: "Overview", href: "/iot/machine_role/overview" },
+        { label: "Logger", href: "/iot/machine_role/logger" },
+        { label: "Operator Data", href: "/iot/machine_role/operator_data" },
+      ]
+    },
+    { 
+      label: "Machine Mold", 
+      subItems: [
+        { label: "Overview", href: "/iot/machine_mold/overview" },
+        { label: "Logger", href: "/iot/machine_mold/logger" },
+        { label: "Operator Data", href: "/iot/machine_mold/operator_data" },
+      ]
+    },
+    { label: "HMI", href: "/iot/hmi" },
+    { label: "Power Monitoring", href: "/iot/power_monitoring" },
   ],
   OQC: [
     { label: "Pressure", href: "/production/dummy" },
@@ -55,23 +79,38 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Sparepart", href: "/production/dummy" },
     { label: "Maintenance Cost", href: "/production/dummy" },
     { label: "Lifetime Monitoring", href: "/production/dummy" },
+    { 
+      label: "Machine", 
+      subItems: [
+        { label: "Machine Press", href: "/production/iot/mold/overview" },
+        { label: "Machine Injection", href: "/production/iot/mold/logger" },
+        { label: "Machine Role", href: "/production/iot/mold/operator-data" },
+        { label: "Machine Mold", href: "/production/iot/mold/operator-data" },
+      ]
+    },
   ],
   HSE: [
     { label: "Create Permit", href: "/production/dummy" },
     { label: "Permit History", href: "/production/dummy" },
     { label: "Genba", href: "/production/dummy" },
     { label: "Visitor Form", href: "/production/register_user" },
-    { label: "User Register", href: "/production/user/register" },
-    { label: "User Management", href: "/production/user/user_management" },
+  ],
+  USER: [
+    { label: "User Register", href: "/user/register" },
+    { label: "User Management", href: "/user/user_management" },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
+  // State untuk mencegah Hydration Mismatch di Next.js
+  const [isMounted, setIsMounted] = useState(false);
+
   // State untuk Layout & Menu
   const [activeMenu, setActiveMenu] = useState<string>("Dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false); // State untuk Mobile Sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   // State untuk Autentikasi & Data User
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -86,20 +125,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // State untuk Modal Register
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [registerForm, setRegisterForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
+    name: "", email: "", phone: "", password: "", confirmPassword: "",
   });
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
   // State untuk Total Users
-  const isLoading = false; // Untuk loading profile
   const [usersLoading, setUsersLoading] = useState<boolean>(false);
   const [totalUsers, setTotalUsers] = useState<number>(0);
+
+  // PERBAIKAN: Cek LocalStorage saat komponen pertama kali dimuat
+  useEffect(() => {
+    setIsMounted(true);
+    const storedLoginStatus = localStorage.getItem("isLoggedIn");
+    const storedUserData = localStorage.getItem("currentUser");
+
+    if (storedLoginStatus === "true" && storedUserData) {
+      setIsLoggedIn(true);
+      setCurrentUser(JSON.parse(storedUserData));
+    }
+  }, []);
 
   // Fetch total users ketika berhasil login
   useEffect(() => {
@@ -118,10 +164,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           setUsersLoading(false);
         }
       };
-
       fetchTotalUsers();
     }
   }, [isLoggedIn]);
+
+  // Reset expanded menu ketika pindah tab utama
+  useEffect(() => {
+    setExpandedMenu(null);
+  }, [activeMenu]);
 
   const activeUser = currentUser ? {
     NickName: currentUser.name ? currentUser.name.split(" ")[0] : "User",
@@ -157,10 +207,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       );
 
       if (foundUser) {
+        // PERBAIKAN: Simpan sesi ke LocalStorage
         setIsLoggedIn(true);
         setCurrentUser(foundUser);
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("currentUser", JSON.stringify(foundUser));
         setTotalUsers(users.length); 
-        router.push("/production/dashboard/production_monitoring");
+        
+        // PERBAIKAN: Sesuaikan path dengan menuData
+        router.push("/dashboard/production_monitoring");
       } else {
         setLoginError("Email atau kata sandi yang Anda masukkan salah.");
       }
@@ -171,28 +226,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }
   };
 
-  // ==========================================
-  // FITUR BARU: Fungsi Handle Bypass Login (Development Only)
-  // ==========================================
+  // Fungsi Handle Bypass Login (Development Only)
   const handleBypassLogin = () => {
     const mockDevAdmin = {
       id: "999-DEV",
       name: "Developer Admin",
       email: "dev.admin@teriothq.local",
-      authority: "Admin", // Supaya menu HSE terbuka otomatis saat dev
+      authority: "Admin", 
       phone: "0812-DEV-MODE",
     };
 
+    // PERBAIKAN: Simpan sesi ke LocalStorage
     setIsLoggedIn(true);
     setCurrentUser(mockDevAdmin);
-    setTotalUsers(1); // Placeholder default agar visual tidak error
-    router.push("/production/dashboard/production_monitoring");
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("currentUser", JSON.stringify(mockDevAdmin));
+    setTotalUsers(1); 
+    
+    // PERBAIKAN: Sesuaikan path dengan menuData
+    router.push("/dashboard/production_monitoring");
   };
 
   // Fungsi Handle Logout
   const handleLogout = () => {
+    // PERBAIKAN: Hapus sesi dari LocalStorage
     setIsLoggedIn(false);
     setCurrentUser(null);
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("currentUser");
+    
     setEmail("");
     setPassword("");
     setActiveMenu("Dashboard");
@@ -252,6 +314,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }
   };
 
+  // Fungsi Toggle Submenu
+  const toggleSubMenu = (label: string) => {
+    if (expandedMenu === label) {
+      setExpandedMenu(null);
+    } else {
+      setExpandedMenu(label);
+    }
+  };
+
   return (
     <html lang="en">
       <head>
@@ -261,7 +332,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        {!isLoggedIn ? (
+        {/* PERBAIKAN: Tampilkan loading screen singkat saat mengecek LocalStorage */}
+        {!isMounted ? (
+          <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+            <span className="text-[#00F0FF] animate-pulse text-sm font-bold tracking-widest uppercase">Memuat Sistem...</span>
+          </div>
+        ) : !isLoggedIn ? (
           <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-4 sm:p-6 font-sans relative overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-[#00F0FF]/10 blur-[100px] sm:blur-[120px] rounded-full pointer-events-none"></div>
             
@@ -326,9 +402,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     )}
                   </button>
 
-                  {/* ========================================== */}
-                  {/* TOMBOL BYPASS DEV LOGIN (HANYA MUNCUL DI LOCAL/DEV ENVIRONMENT) */}
-                  {/* ========================================== */}
                   {process.env.NODE_ENV === "development" && (
                     <button
                       type="button"
@@ -350,7 +423,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </form>
             </div>
 
-            {/* MODAL REGISTER (POP UP) */}
+            {/* MODAL REGISTER */}
             {isRegisterModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
                 <div className="w-full max-w-md relative max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] rounded-2xl bg-[#09090b] border border-white/[0.08] shadow-2xl">
@@ -516,8 +589,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <nav className="flex-1 flex items-center gap-4 md:gap-6 lg:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-widest overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-2">
                   {Object.keys(menuData)
                     .filter((menu) => {
-                      if (menu === "HSE" && currentUser?.authority !== "Admin") {
-                        return false;
+                      if (menu === "HSE" || menu === "USER") {
+                        return currentUser?.authority === "Admin";
                       }
                       return true;
                     })
@@ -539,9 +612,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {/* User Profile Dropdown */}
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="relative group">
-                    {isLoading ? (
+                    {!activeUser ? (
                       <span className="text-zinc-600 animate-pulse text-xs">Loading...</span>
-                    ) : activeUser ? (
+                    ) : (
                       <div className="relative">
                         {/* Profile Button */}
                         <div className="flex items-center gap-2 md:gap-3 bg-white/[0.02] backdrop-blur-md border border-white/[0.05] hover:border-[#00F0FF]/50 hover:bg-white/[0.04] hover:shadow-[0_0_15px_rgba(0,240,255,0.15)] transition-all duration-300 ease-in-out px-2 md:px-3 py-1.5 rounded-full cursor-pointer">
@@ -591,8 +664,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      <span className="text-zinc-600 text-xs">Not logged in</span>
                     )}
                   </div>
 
@@ -636,17 +707,52 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                 <div className="flex-1 overflow-y-auto space-y-1 pr-1">
                   {menuData[activeMenu]?.map((item, index) => (
-                    <Link
-                      key={index}
-                      href={item.href}
-                      onClick={() => setIsSidebarOpen(false)}
-                      className="group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] text-zinc-400 hover:text-white transition-all duration-200 text-xs font-medium"
-                    >
-                      <span>{item.label}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#00F0FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
+                    <div key={index}>
+                      {item.subItems ? (
+                        <>
+                          <button
+                            onClick={() => toggleSubMenu(item.label)}
+                            className="w-full group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] text-zinc-400 hover:text-white transition-all duration-200 text-xs font-medium"
+                          >
+                            <span>{item.label}</span>
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className={`h-3.5 w-3.5 transition-transform duration-200 ${expandedMenu === item.label ? "rotate-90 text-[#00F0FF]" : ""}`} 
+                              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                          
+                          {/* Render Submenu Items */}
+                          {expandedMenu === item.label && (
+                            <div className="ml-4 mt-1 space-y-1 border-l border-white/[0.05] pl-2 animate-in slide-in-from-top-2 duration-200">
+                              {item.subItems.map((sub, subIdx) => (
+                                <Link
+                                  key={subIdx}
+                                  href={sub.href}
+                                  onClick={() => setIsSidebarOpen(false)}
+                                  className="block px-3 py-2 rounded-lg text-zinc-500 hover:text-[#00F0FF] hover:bg-white/[0.02] transition-all duration-200 text-[11px] font-medium"
+                                >
+                                  {sub.label}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <Link
+                          href={item.href!}
+                          onClick={() => setIsSidebarOpen(false)}
+                          className="group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] text-zinc-400 hover:text-white transition-all duration-200 text-xs font-medium"
+                        >
+                          <span>{item.label}</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#00F0FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                      )}
+                    </div>
                   ))}
                 </div>
               </aside>
