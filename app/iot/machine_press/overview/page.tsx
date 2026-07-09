@@ -13,8 +13,22 @@ interface MachineData {
   count_no: number;
   product_name: string;
   user: string;
-  timestamp?: string; // PERBAIKAN: Menggunakan timestamp sesuai database
+  timestamp?: string; 
 }
+
+// Fungsi untuk mengubah detik menjadi format Jam, Menit, Detik
+const formatDuration = (totalSeconds: number) => {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+  
+  const parts = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}m`);
+  if (s > 0 || parts.length === 0) parts.push(`${s}s`);
+  
+  return parts.join(" ");
+};
 
 export default function DashboardPage() {
   const [rawData, setRawData] = useState<MachineData[]>([]);
@@ -32,7 +46,6 @@ export default function DashboardPage() {
         const res = await fetch("/api/machine_press");
         if (res.ok) {
           const data = await res.json();
-          // PERBAIKAN: Gunakan timestamp untuk sorting
           const sortedData = data.sort((a: MachineData, b: MachineData) => 
             new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
           );
@@ -53,17 +66,14 @@ export default function DashboardPage() {
     return ["All", ...machines];
   }, [rawData]);
 
-  // Proses Data berdasarkan Filter (Date & Machine)
+  // Proses Data berdasarkan Filter (Date & Machine) untuk Top Cards & Line Chart
   const processedData = useMemo(() => {
-    // 1. Filter Data
     const filtered = rawData.filter((d) => {
-      // PERBAIKAN: Cek apakah d.timestamp ada sebelum memanggil startsWith
       const dateMatch = d.timestamp ? d.timestamp.startsWith(selectedDate) : false;
       const machineMatch = selectedMachine === "All" || d.machine_no === selectedMachine;
       return dateMatch && machineMatch;
     });
 
-    // 2. Hitung Cycle Time & Kategori
     let totalDowntimeCount = 0;
     const chartData: any[] = [];
     const alerts: any[] = [];
@@ -73,26 +83,26 @@ export default function DashboardPage() {
       if (i > 0) {
         const current = new Date(filtered[i].timestamp || 0).getTime();
         const prev = new Date(filtered[i - 1].timestamp || 0).getTime();
-        cycleTime = (current - prev) / 1000; // dalam detik
+        cycleTime = (current - prev) / 1000; 
       }
 
       let status = "Good";
-      let color = "#00FF66"; // Hijau (< 10s)
+      let color = "#00FF66"; 
       
       if (cycleTime > 60) {
         status = "Downtime";
-        color = "#f43f5e"; // Merah (> 60s)
+        color = "#f43f5e"; 
         totalDowntimeCount++;
         alerts.push({
           time: filtered[i].timestamp ? new Date(filtered[i].timestamp!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-",
-          msg: `Downtime detected (${Math.round(cycleTime)}s)`,
+          msg: `Downtime detected (${formatDuration(cycleTime)})`,
           product: filtered[i].product_name || "Unknown",
           user: filtered[i].user || "Unknown",
           type: "error"
         });
       } else if (cycleTime >= 10 && cycleTime <= 60) {
         status = "Slow Speed";
-        color = "#eab308"; // Kuning (10 - 60s)
+        color = "#eab308"; 
         alerts.push({
           time: filtered[i].timestamp ? new Date(filtered[i].timestamp!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "-",
           msg: `Slow speed (${Math.round(cycleTime)}s)`,
@@ -110,24 +120,22 @@ export default function DashboardPage() {
       });
     }
 
-    // 3. Hitung Metrics
     const totalOutput = filtered.length;
     const activeUsers = Array.from(new Set(filtered.map(d => d.user).filter(Boolean)));
     const downtimeRate = totalOutput > 0 ? ((totalDowntimeCount / totalOutput) * 100).toFixed(1) : "0.0";
 
-    // 4. Hitung Electricity Cost (Asumsi 500k / jam dari data pertama ke terakhir di hari itu)
     let electricityCost = 0;
     if (filtered.length > 1 && filtered[0].timestamp && filtered[filtered.length - 1].timestamp) {
       const firstTime = new Date(filtered[0].timestamp!).getTime();
       const lastTime = new Date(filtered[filtered.length - 1].timestamp!).getTime();
       const hoursDiff = (lastTime - firstTime) / (1000 * 60 * 60);
-      electricityCost = Math.max(0, hoursDiff * 500000); // Pastikan tidak minus
+      electricityCost = Math.max(0, hoursDiff * 500000); 
     }
 
     return {
       filtered,
       chartData,
-      alerts: alerts.reverse(), // Terbaru di atas
+      alerts: alerts.reverse(), 
       totalOutput,
       activeUsers,
       downtimeRate,
@@ -135,47 +143,97 @@ export default function DashboardPage() {
     };
   }, [rawData, selectedDate, selectedMachine]);
 
-  // Proses Data untuk Bottom Bar Chart (Date vs Qty)
+  // ==========================================
+  // DATA REAL-TIME UNTUK BOTTOM CHART
+  // ==========================================
   const bottomChartData = useMemo(() => {
-    const grouped: Record<string, number> = {};
-    
-    // Filter hanya berdasarkan mesin (abaikan selectedDate agar bisa melihat weekly/monthly)
     const machineFiltered = rawData.filter(d => selectedMachine === "All" || d.machine_no === selectedMachine);
+    
+    const targetDate = new Date(selectedDate);
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth();
+    
+    let result: { label: string; qty: number }[] = [];
 
-    machineFiltered.forEach(d => {
-      if (!d.timestamp) return; // PERBAIKAN: Lewati jika tidak ada timestamp
+    if (timeFilter === "daily") {
+      // 1. DAILY: 24 Jam di hari yang dipilih
+      result = Array.from({ length: 24 }, (_, i) => ({
+        label: `${i.toString().padStart(2, '0')}:00`,
+        qty: 0
+      }));
 
-      const dateObj = new Date(d.timestamp);
-      let key = "";
-
-      if (timeFilter === "daily") {
-        // Group by Hour untuk hari ini
+      machineFiltered.forEach(d => {
+        if (!d.timestamp) return;
         if (d.timestamp.startsWith(selectedDate)) {
-          key = `${dateObj.getHours().toString().padStart(2, '0')}:00`;
+          const hour = new Date(d.timestamp).getHours();
+          result[hour].qty += 1;
         }
-      } else if (timeFilter === "weekly") {
-        // Group by Day
-        key = dateObj.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
-      } else if (timeFilter === "monthly") {
-        // Group by Date
-        key = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-      } else if (timeFilter === "yearly") {
-        // Group by Month
-        key = dateObj.toLocaleDateString('id-ID', { month: 'short' });
-      }
+      });
 
-      if (key) {
-        grouped[key] = (grouped[key] || 0) + 1;
-      }
-    });
+    } else if (timeFilter === "weekly") {
+      // 2. WEEKLY: Senin - Minggu di minggu yang dipilih
+      const days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+      result = days.map(day => ({ label: day, qty: 0 }));
 
-    return Object.keys(grouped).map(key => ({
-      label: key,
-      qty: grouped[key]
-    }));
-  }, [rawData, selectedMachine, selectedDate, timeFilter]);
+      // Cari hari Senin di minggu tersebut
+      const dayOfWeek = targetDate.getDay(); // 0 (Minggu) - 6 (Sabtu)
+      const diffToMonday = targetDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      
+      const startOfWeek = new Date(targetDate);
+      startOfWeek.setDate(diffToMonday);
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
 
-  // Custom Dot untuk Line Chart (Warna berdasarkan kriteria)
+      machineFiltered.forEach(d => {
+        if (!d.timestamp) return;
+        const dDate = new Date(d.timestamp);
+        if (dDate >= startOfWeek && dDate <= endOfWeek) {
+          let dayIdx = dDate.getDay() - 1; // 0 = Senin
+          if (dayIdx === -1) dayIdx = 6; // Minggu jadi index 6
+          result[dayIdx].qty += 1;
+        }
+      });
+
+    } else if (timeFilter === "monthly") {
+      // 3. MONTHLY: Tanggal 1 sampai akhir bulan di bulan yang dipilih
+      const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+      result = Array.from({ length: daysInMonth }, (_, i) => ({
+        label: `${i + 1}`,
+        qty: 0
+      }));
+
+      machineFiltered.forEach(d => {
+        if (!d.timestamp) return;
+        const dDate = new Date(d.timestamp);
+        if (dDate.getFullYear() === targetYear && dDate.getMonth() === targetMonth) {
+          const day = dDate.getDate();
+          result[day - 1].qty += 1;
+        }
+      });
+
+    } else if (timeFilter === "yearly") {
+      // 4. YEARLY: Jan - Des di tahun yang dipilih
+      const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+      result = months.map(m => ({ label: m, qty: 0 }));
+
+      machineFiltered.forEach(d => {
+        if (!d.timestamp) return;
+        const dDate = new Date(d.timestamp);
+        if (dDate.getFullYear() === targetYear) {
+          const month = dDate.getMonth();
+          result[month].qty += 1;
+        }
+      });
+    }
+
+    return result;
+  }, [rawData, selectedMachine, selectedDate, timeFilter]); // Mengembalikan dependensi rawData
+
+  const hasBottomChartData = bottomChartData.some(d => d.qty > 0);
+
   const CustomDot = (props: any) => {
     const { cx, cy, payload } = props;
     return (
@@ -192,19 +250,19 @@ export default function DashboardPage() {
       {/* Header & Filters */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Production Monitoring</h2>
-          <p className="text-sm text-zinc-400 mt-1">Real-time metrics based on Machine Press API.</p>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Overview Monitoring Production</h2>
+          <p className="text-sm text-zinc-400 mt-1">
+            Real-time Machine Press : <span className="text-[#00F0FF] font-semibold">{selectedMachine === "All" ? "All Machines" : selectedMachine}</span>
+          </p>
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Filter 1: Date */}
           <input 
             type="date" 
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="bg-[#09090b] border border-white/[0.1] text-sm text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#00F0FF]/50"
+            className="bg-[#09090b] border border-white/[0.1] text-sm text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#00F0FF]/50 [color-scheme:dark]"
           />
-          {/* Filter 2: Machine Dropdown */}
           <select 
             value={selectedMachine}
             onChange={(e) => setSelectedMachine(e.target.value)}
@@ -219,7 +277,6 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Output */}
         <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-[#00F0FF]/30 transition-colors">
           <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Output</h3>
           <div className="mt-2 flex items-baseline gap-2">
@@ -228,7 +285,6 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        {/* Card 2: Active Users */}
         <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-[#00F0FF]/30 transition-colors">
           <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Active Users</h3>
           <div className="mt-2 flex flex-col gap-1">
@@ -239,7 +295,6 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        {/* Card 3: Downtime Rate */}
         <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-rose-500/30 transition-colors">
           <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Downtime Rate</h3>
           <div className="mt-2 flex items-baseline gap-2">
@@ -250,7 +305,6 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        {/* Card 4: Electricity Cost */}
         <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl shadow-sm hover:border-amber-500/30 transition-colors">
           <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Electricity Cost</h3>
           <div className="mt-2 flex items-baseline gap-2">
@@ -329,9 +383,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Chart: Date vs Qty */}
-      <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl min-h-[300px] flex flex-col">
+      <div className="bg-[#09090b] border border-white/[0.05] p-5 rounded-xl flex flex-col">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-sm font-bold text-white">Production Quantity Trend</h3>
+          <h3 className="text-sm font-bold text-white">
+            Production Quantity Trend
+          </h3>
           <select 
             value={timeFilter}
             onChange={(e) => setTimeFilter(e.target.value)}
@@ -344,26 +400,39 @@ export default function DashboardPage() {
           </select>
         </div>
         
-        <div className="flex-1 w-full h-[250px]">
-          {bottomChartData.length > 0 ? (
+        <div className="w-full h-[300px]">
+          {hasBottomChartData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bottomChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <BarChart data={bottomChartData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                <XAxis dataKey="label" stroke="#71717a" fontSize={10} tickMargin={10} />
-                <YAxis stroke="#71717a" fontSize={10} />
+                
+                <XAxis 
+                  dataKey="label" 
+                  stroke="#71717a" 
+                  fontSize={10} 
+                  tickMargin={10} 
+                  angle={timeFilter === 'monthly' ? -45 : 0}
+                  textAnchor={timeFilter === 'monthly' ? 'end' : 'middle'}
+                />
+                
+                <YAxis stroke="#71717a" fontSize={10} allowDecimals={false} />
                 <RechartsTooltip 
                   cursor={{ fill: '#ffffff05' }}
                   contentStyle={{ backgroundColor: '#09090b', borderColor: '#ffffff20', borderRadius: '8px', fontSize: '12px' }}
+                  itemStyle={{ color: '#fff' }}
                 />
-                <Bar dataKey="qty" radius={[4, 4, 0, 0]}>
+                
+                <Bar dataKey="qty" radius={[4, 4, 0, 0]} maxBarSize={50}>
                   {bottomChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill="#0066FF" />
+                    <Cell key={`cell-${index}`} fill={entry.qty > 0 ? "#00F0FF" : "#ffffff10"} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-zinc-600 text-sm">No data available for selected filter.</div>
+            <div className="h-full flex items-center justify-center text-zinc-600 text-sm">
+              Tidak ada data produksi untuk filter waktu ini.
+            </div>
           )}
         </div>
       </div>

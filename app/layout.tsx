@@ -7,27 +7,47 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+type DevStatus = "fullstack" | "frontend" | "dummy";
+
 type MenuItem = {
   label: string;
   href?: string; 
-  subItems?: { label: string; href: string }[];
+  // PERBAIKAN: Menambahkan status opsional pada subItems agar tidak error
+  subItems?: { label: string; href: string; status?: DevStatus }[];
+  status?: DevStatus; 
+};
+
+// PERBAIKAN: Fungsi untuk warna teks menu (ditambah font-bold dan parameter isSubMenu)
+const getMenuTextColor = (status?: DevStatus, isSubMenu: boolean = false) => {
+  switch (status) {
+    case "fullstack":
+      return "text-[#00FF66] hover:text-[#00FF66]/80 font-bold"; // Hijau Neon & Bold
+    case "frontend":
+      return "text-amber-400 hover:text-amber-300 font-bold"; // Kuning & Bold
+    case "dummy":
+      return "text-zinc-600 hover:text-zinc-500 font-medium"; // Abu-abu gelap
+    default:
+      // Warna default dibedakan antara menu utama dan submenu
+      return isSubMenu 
+        ? "text-zinc-500 hover:text-[#00F0FF] font-medium" 
+        : "text-zinc-400 hover:text-white font-medium"; 
+  }
 };
 
 // Struktur data untuk menu dan sub-menu
 const menuData: Record<string, MenuItem[]> = {
   Dashboard: [
-    { label: "Production Monitoring", href: "/dashboard/production_monitoring" },
-    { label: "Equipment Monitoring", href: "/dashboard/equipment_monitoring" },
-    { label: "Quality", href: "/dashboard/quality" },
-    { label: "Management", href: "/dashboard/management" },
+    { label: "Production Monitoring", href: "/dashboard/production_monitoring", status: "frontend" },
+    { label: "Equipment Monitoring", href: "/dashboard/equipment_monitoring", status: "frontend" },
+    { label: "Quality", href: "/dashboard/quality", status: "frontend" },
+    { label: "Management", href: "/dashboard/management", status: "frontend" },
   ],
-  IoT: [
+  IOT: [
     { 
       label: "Machine Press", 
       subItems: [
-        { label: "Overview", href: "/iot/machine_press/overview" },
-        { label: "Logger", href: "/iot/machine_press/logger" },
-        { label: "Operator Data", href: "/iot/machine_press/operator_data" },
+        { label: "Overview", href: "/iot/machine_press/overview", status: "fullstack" },
+        { label: "Logger", href: "/iot/machine_press/logger", status: "fullstack" },
       ]
     },
     { 
@@ -63,6 +83,7 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Reject Sample", href: "/production/dummy" },
   ],
   Stockpile: [
+    { label: "Production Plan", href: "/stockpile/production_plan", status: "fullstack" },
     { label: "Store", href: "/production/dummy" },
     { label: "Warehouse", href: "/production/dummy" },
     { label: "Truckscale", href: "/production/dummy" },
@@ -135,7 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [usersLoading, setUsersLoading] = useState<boolean>(false);
   const [totalUsers, setTotalUsers] = useState<number>(0);
 
-  // PERBAIKAN: Cek LocalStorage saat komponen pertama kali dimuat
+  // Cek LocalStorage saat komponen pertama kali dimuat
   useEffect(() => {
     setIsMounted(true);
     const storedLoginStatus = localStorage.getItem("isLoggedIn");
@@ -207,14 +228,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       );
 
       if (foundUser) {
-        // PERBAIKAN: Simpan sesi ke LocalStorage
         setIsLoggedIn(true);
         setCurrentUser(foundUser);
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", JSON.stringify(foundUser));
         setTotalUsers(users.length); 
         
-        // PERBAIKAN: Sesuaikan path dengan menuData
         router.push("/dashboard/production_monitoring");
       } else {
         setLoginError("Email atau kata sandi yang Anda masukkan salah.");
@@ -236,20 +255,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       phone: "0812-DEV-MODE",
     };
 
-    // PERBAIKAN: Simpan sesi ke LocalStorage
     setIsLoggedIn(true);
     setCurrentUser(mockDevAdmin);
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("currentUser", JSON.stringify(mockDevAdmin));
     setTotalUsers(1); 
     
-    // PERBAIKAN: Sesuaikan path dengan menuData
     router.push("/dashboard/production_monitoring");
   };
 
   // Fungsi Handle Logout
   const handleLogout = () => {
-    // PERBAIKAN: Hapus sesi dari LocalStorage
     setIsLoggedIn(false);
     setCurrentUser(null);
     localStorage.removeItem("isLoggedIn");
@@ -332,7 +348,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        {/* PERBAIKAN: Tampilkan loading screen singkat saat mengecek LocalStorage */}
         {!isMounted ? (
           <div className="min-h-screen bg-[#050505] flex items-center justify-center">
             <span className="text-[#00F0FF] animate-pulse text-sm font-bold tracking-widest uppercase">Memuat Sistem...</span>
@@ -712,9 +727,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         <>
                           <button
                             onClick={() => toggleSubMenu(item.label)}
-                            className="w-full group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] text-zinc-400 hover:text-white transition-all duration-200 text-xs font-medium"
+                            className={`w-full group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] transition-all duration-200 text-xs ${getMenuTextColor(item.status, false)}`}
                           >
-                            <span>{item.label}</span>
+                            <div className="flex items-center gap-2">
+                              <span>{item.label}</span>
+                              {/* PERBAIKAN: Badge dihapus */}
+                            </div>
                             <svg 
                               xmlns="http://www.w3.org/2000/svg" 
                               className={`h-3.5 w-3.5 transition-transform duration-200 ${expandedMenu === item.label ? "rotate-90 text-[#00F0FF]" : ""}`} 
@@ -732,7 +750,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                   key={subIdx}
                                   href={sub.href}
                                   onClick={() => setIsSidebarOpen(false)}
-                                  className="block px-3 py-2 rounded-lg text-zinc-500 hover:text-[#00F0FF] hover:bg-white/[0.02] transition-all duration-200 text-[11px] font-medium"
+                                  className={`block px-3 py-2 rounded-lg hover:bg-white/[0.02] transition-all duration-200 text-[11px] ${getMenuTextColor(sub.status, true)}`}
                                 >
                                   {sub.label}
                                 </Link>
@@ -744,9 +762,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         <Link
                           href={item.href!}
                           onClick={() => setIsSidebarOpen(false)}
-                          className="group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] text-zinc-400 hover:text-white transition-all duration-200 text-xs font-medium"
+                          className={`group flex items-center justify-between px-3 py-2.5 rounded-xl border border-transparent hover:border-white/[0.03] hover:bg-white/[0.02] transition-all duration-200 text-xs ${getMenuTextColor(item.status, false)}`}
                         >
-                          <span>{item.label}</span>
+                          <div className="flex items-center gap-2">
+                            <span>{item.label}</span>
+                            {/* PERBAIKAN: Badge dihapus */}
+                          </div>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#00F0FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>

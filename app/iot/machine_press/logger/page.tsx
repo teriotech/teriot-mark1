@@ -14,8 +14,8 @@ type MachinePressRecord = {
   timestamp?: string;  
 };
 
-const DUMMY_PRODUCTS = ["Casing Cover A1", "Mainboard Bracket", "Power Button", "Cooling Fan Blade", "Metal Frame B2"];
-const DUMMY_MACHINES = ["PRESS-M01", "PRESS-M02", "PRESS-M03"];
+const DUMMY_PRODUCTS = ["Cover Front A", "Panel Back B", "Bracket C", "Housing D", "Base Plate E"];
+const DUMMY_MACHINES = ["Press-01", "Press-02", "Press-03", "Press-04", "Press-05"];
 
 export default function MachinePressPage() {
   const [records, setRecords] = useState<MachinePressRecord[]>([]);
