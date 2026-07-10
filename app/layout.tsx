@@ -50,30 +50,30 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Logger", href: "/iot/machine_press/logger", status: "fullstack" },
       ]
     },
-    { 
-      label: "Machine Injection", 
-      subItems: [
-        { label: "Overview", href: "/iot/machine_injection/overview" },
-        { label: "Logger", href: "/iot/machine_injection/logger" },
-        { label: "Operator Data", href: "/iot/machine_injection/operator_data" },
-      ]
-    },
-    { 
-      label: "Machine Role", 
-      subItems: [
-        { label: "Overview", href: "/iot/machine_role/overview" },
-        { label: "Logger", href: "/iot/machine_role/logger" },
-        { label: "Operator Data", href: "/iot/machine_role/operator_data" },
-      ]
-    },
-    { 
-      label: "Machine Mold", 
-      subItems: [
-        { label: "Overview", href: "/iot/machine_mold/overview" },
-        { label: "Logger", href: "/iot/machine_mold/logger" },
-        { label: "Operator Data", href: "/iot/machine_mold/operator_data" },
-      ]
-    },
+    // { 
+    //   label: "Machine Injection", 
+    //   subItems: [
+    //     { label: "Overview", href: "/iot/machine_injection/overview" },
+    //     { label: "Logger", href: "/iot/machine_injection/logger" },
+    //     { label: "Operator Data", href: "/iot/machine_injection/operator_data" },
+    //   ]
+    // },
+    // { 
+    //   label: "Machine Role", 
+    //   subItems: [
+    //     { label: "Overview", href: "/iot/machine_role/overview" },
+    //     { label: "Logger", href: "/iot/machine_role/logger" },
+    //     { label: "Operator Data", href: "/iot/machine_role/operator_data" },
+    //   ]
+    // },
+    // { 
+    //   label: "Machine Mold", 
+    //   subItems: [
+    //     { label: "Overview", href: "/iot/machine_mold/overview" },
+    //     { label: "Logger", href: "/iot/machine_mold/logger" },
+    //     { label: "Operator Data", href: "/iot/machine_mold/operator_data" },
+    //   ]
+    // },
     { label: "HMI", href: "/iot/hmi", status: "fullstack" },
     { label: "Power Monitoring", href: "/iot/power_monitoring", status: "frontend" },
   ],
@@ -94,7 +94,7 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "My Task Today", href: "/maintenance/myjob_today", status: "frontend" },
     { label: "Predictive Maintenance", href: "/maintenance/predictive_maintenance", status: "frontend" },
     { label: "Corrective Maintenance", href: "/maintenance/corrective_maintenance", status: "frontend" },
-    { label: "Time Based Maintenance", href: "/production/dummy" },
+    { label: "Time Based Maintenance", href: "/maintenance/timebased_maintenance", status: "frontend" },
     { label: "RTU Device", href: "/production/dummy" },
     { label: "Sparepart", href: "/production/dummy" },
     { label: "Maintenance Cost", href: "/production/dummy" },
@@ -130,6 +130,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // State untuk Layout & Menu
   const [activeMenu, setActiveMenu] = useState<string>("Dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   // State untuk Autentikasi & Data User
@@ -584,15 +585,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <header className="sticky top-0 z-30 w-full border-b border-white/[0.05] bg-[#050505]/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
               <div className="w-full px-4 md:px-8 h-16 flex items-center justify-between gap-3 md:gap-6">
                 
-                {/* Hamburger Menu (Mobile Only) */}
-                <button 
-                  className="md:hidden text-zinc-400 hover:text-white transition-colors p-1"
-                  onClick={() => setIsSidebarOpen(true)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Hamburger Menu (Mobile Only) */}
+                  <button 
+                    className="md:hidden text-zinc-400 hover:text-white transition-colors p-1"
+                    onClick={() => setIsSidebarOpen(true)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                  </button>
+
+                  {/* Sidebar toggle (Desktop) */}
+                  <button
+                    className="hidden md:inline-flex text-zinc-400 hover:text-white transition-colors p-1"
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    title={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+                  >
+                    {isSidebarCollapsed ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
 
                 {/* Logo / Title */}
                 <h1 className="text-sm md:text-lg lg:text-xl font-extrabold tracking-tighter bg-gradient-to-r from-[#00F0FF] to-[#0066FF] bg-clip-text text-transparent whitespace-nowrap shrink-0 drop-shadow-sm">
@@ -600,7 +620,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </h1>
 
                 {/* Navigation (Scrollable on Mobile) */}
-                <nav className="flex-1 flex items-center gap-4 md:gap-6 lg:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-widest overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-2">
+                <nav className="flex-1 min-w-0 flex items-center gap-4 md:gap-6 lg:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-widest overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-2">
                   {Object.keys(menuData)
                     .filter((menu) => {
                       if (menu === "HSE" || menu === "USER") {
@@ -704,7 +724,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               )}
 
               {/* SIDEBAR */}
-              <aside className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-[#09090b]/95 md:bg-[#09090b]/80 backdrop-blur-xl border-r border-white/[0.05] flex flex-col p-4 transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+              <aside className={`fixed md:static inset-y-0 left-0 z-50 ${isSidebarCollapsed ? "md:w-0 md:min-w-0 md:max-w-0 md:border-0 md:p-0 md:overflow-hidden" : "w-64 md:w-64"} bg-[#09090b]/95 md:bg-[#09090b]/80 backdrop-blur-xl border-r border-white/[0.05] flex flex-col transition-all duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
                 <div className="flex items-center justify-between mb-6 px-2">
                   <h2 className="text-[#00F0FF] text-xs font-extrabold uppercase tracking-widest">
                     {activeMenu} Menu
@@ -778,7 +798,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </aside>
 
               {/* MAIN CONTENT */}
-              <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#050505]">
+              <main className="flex-1 min-w-0 overflow-y-auto p-4 md:p-8 bg-[#050505]">
                 {children}
               </main>
             </div>
