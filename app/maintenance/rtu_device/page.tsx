@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { format } from "date-fns";
+// Replaced date-fns with a small native formatter to avoid build/runtime issues
+const formatDate = (d: Date) => {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const min = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+};
 
 type Row = {
   id: number;
@@ -81,7 +91,7 @@ export default function Page() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={`log-entry-${i}`} className="flex items-center gap-3 bg-white/[0.02] rounded-lg p-2">
                   <div className="w-8 h-8 rounded-full bg-white/[0.02] flex items-center justify-center text-xs text-zinc-300">{i + 1}</div>
-                  <div className="flex-1 text-[0.68rem] text-zinc-300 leading-tight">Sample log message showing RTU status update — {format(new Date(), "yyyy-MM-dd HH:mm:ss")}</div>
+                  <div className="flex-1 text-[0.68rem] text-zinc-300 leading-tight">Sample log message showing RTU status update — {formatDate(new Date())}</div>
                 </div>
               ))}
             </div>
