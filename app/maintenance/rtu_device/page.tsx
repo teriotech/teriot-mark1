@@ -67,31 +67,31 @@ export default function Page() {
   };
 
   return (
-    <div className="text-[0.72rem] max-w-[1880px] mx-auto p-2 md:p-4">
-      <div className="bg-[#09090b] border border-white/[0.04] rounded-xl p-4 mb-4">
-        <div className="flex items-start gap-6">
+    <div className="bg-slate-950 text-slate-100 text-[0.72rem] max-w-[1880px] mx-auto p-2 md:p-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 mb-4 shadow-lg">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
           <div className="flex flex-col items-center gap-6 w-40">
             <div className="flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full border-2 border-green-400 flex items-center justify-center text-green-400 font-bold">17</div>
-              <div className="text-xs text-zinc-400 mt-2 uppercase">RTU</div>
+              <div className="w-14 h-14 rounded-full border-2 border-teal-500 flex items-center justify-center text-teal-400 font-bold">17</div>
+              <div className="text-xs text-slate-400 mt-2 uppercase">RTU</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full border-2 border-sky-400 flex items-center justify-center text-sky-400 font-bold">392</div>
-              <div className="text-xs text-zinc-400 mt-2 uppercase">USED</div>
+              <div className="w-14 h-14 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-100 font-bold">392</div>
+              <div className="text-xs text-slate-400 mt-2 uppercase">USED</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full border-2 border-amber-400 flex items-center justify-center text-amber-400 font-bold">27</div>
-              <div className="text-xs text-zinc-400 mt-2 uppercase">REPAIR</div>
+              <div className="w-14 h-14 rounded-full border-2 border-amber-500 flex items-center justify-center text-amber-400 font-bold">27</div>
+              <div className="text-xs text-slate-400 mt-2 uppercase">REPAIR</div>
             </div>
           </div>
 
           <div className="flex-1">
-            <h2 className="text-base font-bold text-zinc-200 mb-2">RTU Status Log</h2>
+            <h2 className="text-base font-bold text-slate-100 mb-2">RTU Status Log</h2>
             <div className="space-y-2 max-h-36 overflow-y-auto pr-2">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={`log-entry-${i}`} className="flex items-center gap-3 bg-white/[0.02] rounded-lg p-2">
-                  <div className="w-8 h-8 rounded-full bg-white/[0.02] flex items-center justify-center text-xs text-zinc-300">{i + 1}</div>
-                  <div className="flex-1 text-[0.68rem] text-zinc-300 leading-tight">Sample log message showing RTU status update — {formatDate(new Date())}</div>
+                <div key={`log-entry-${i}`} className="flex items-center gap-3 bg-slate-950/40 rounded-xl p-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-950/70 flex items-center justify-center text-xs text-slate-300">{i + 1}</div>
+                  <div className="flex-1 text-[0.68rem] text-slate-300 leading-tight">Sample log message showing RTU status update — {formatDate(new Date())}</div>
                 </div>
               ))}
             </div>
@@ -99,27 +99,27 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="bg-[#09090b] border border-white/[0.04] rounded-xl p-3">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-lg">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-3">
           <div className="flex items-center gap-2 w-full md:w-1/3">
-            <label className="text-zinc-400 text-xs">Filter by Status</label>
-            <select className="ml-2 bg-black/40 rounded px-2 py-1 text-xs" value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <label className="text-slate-400 text-xs">Filter by Status</label>
+            <select className="ml-2 bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-slate-100" value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="">Please Select</option>
               {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <button onClick={() => setFilter("")} className="ml-2 px-2 py-1 text-xs bg-white/5 rounded">Clear</button>
+            <button onClick={() => setFilter("")} className="ml-2 px-2 py-1 text-xs bg-slate-800 border border-slate-700 rounded text-slate-200">Clear</button>
           </div>
 
           <div className="flex items-center gap-2 ml-auto w-full md:w-1/3">
-            <input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="flex-1 bg-black/40 px-2 py-1 rounded text-xs" />
-            <button className="px-3 py-1 text-xs bg-[#00F0FF] text-black rounded font-bold">Search</button>
+            <input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="flex-1 bg-slate-950 border border-slate-800 px-2 py-1 rounded text-xs text-slate-100" />
+            <button className="px-3 py-1 text-xs bg-teal-600 hover:bg-teal-500 text-white rounded font-semibold">Search</button>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full table-fixed text-[0.68rem] border-collapse">
             <thead>
-              <tr className="bg-white/[0.03] text-zinc-300 text-xs">
+              <tr className="bg-slate-950/40 text-slate-300 text-xs">
                 <th className="px-2 py-2 w-12">No</th>
                 <th className="px-2 py-2 w-48">Device</th>
                 <th className="px-2 py-2 w-28">Tag</th>
@@ -132,18 +132,18 @@ export default function Page() {
             </thead>
             <tbody>
               {filtered.map((r) => (
-                <tr key={r.id} className="odd:bg-white/[0.01] even:bg-transparent align-top">
-                  <td className="px-2 py-1 text-zinc-400">{r.id}</td>
-                  <td className="px-2 py-1 break-words whitespace-normal leading-tight">{r.device}</td>
-                  <td className="px-2 py-1">{r.tag}</td>
+                <tr key={r.id} className="odd:bg-slate-950/30 even:bg-slate-950/10 align-top">
+                  <td className="px-2 py-1 text-slate-400">{r.id}</td>
+                  <td className="px-2 py-1 break-words whitespace-normal leading-tight text-slate-100">{r.device}</td>
+                  <td className="px-2 py-1 text-slate-100">{r.tag}</td>
                   <td className="px-2 py-1">
                     <span className={`inline-block text-[10px] px-2 py-0.5 rounded ${badgeColor(r.status)}`}>{r.status}</span>
                   </td>
-                  <td className="px-2 py-1">{r.class}</td>
-                  <td className="px-2 py-1 text-center">{r.category}</td>
-                  <td className="px-2 py-1 break-words whitespace-normal leading-tight">{r.location}</td>
+                  <td className="px-2 py-1 text-slate-100">{r.class}</td>
+                  <td className="px-2 py-1 text-center text-slate-100">{r.category}</td>
+                  <td className="px-2 py-1 break-words whitespace-normal leading-tight text-slate-100">{r.location}</td>
                   <td className="px-2 py-1">
-                    <button onClick={() => openEditor(r)} className="w-8 h-8 flex items-center justify-center rounded bg-orange-500 text-white text-xs">
+                    <button onClick={() => openEditor(r)} className="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs">
                       ⚙
                     </button>
                   </td>
@@ -157,15 +157,15 @@ export default function Page() {
       {/* Modal / Popup for editing status */}
       {editingRow && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-[#09090b] border border-white/[0.06] rounded-lg p-4 w-[320px]">
-            <h3 className="text-sm font-bold mb-2">Change status for {editingRow.tag}</h3>
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 w-[320px] shadow-2xl">
+            <h3 className="text-sm font-bold text-slate-100 mb-2">Change status for {editingRow.tag}</h3>
             <div className="flex flex-col gap-2">
-              <select className="bg-black/40 px-2 py-1 rounded text-sm" value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
+              <select className="bg-slate-950 border border-slate-800 px-2 py-1 rounded text-sm text-slate-100" value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
                 {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
               <div className="flex justify-end gap-2 mt-3">
-                <button onClick={() => setEditingRow(null)} className="px-3 py-1 text-xs bg-white/5 rounded">Cancel</button>
-                <button onClick={saveStatus} className="px-3 py-1 text-xs bg-green-600 text-white rounded">Save</button>
+                <button onClick={() => setEditingRow(null)} className="px-3 py-1 text-xs bg-slate-800 border border-slate-700 rounded text-slate-200">Cancel</button>
+                <button onClick={saveStatus} className="px-3 py-1 text-xs bg-teal-600 hover:bg-teal-500 text-white rounded">Save</button>
               </div>
             </div>
           </div>
