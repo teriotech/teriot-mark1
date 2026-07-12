@@ -44,26 +44,26 @@ const formatCurrency = (value: number) =>
 
 export default function Page() {
   return (
-    <div className="text-[0.72rem] max-w-[1880px] mx-auto p-4 md:p-6">
+    <div className="bg-slate-950 text-slate-100 text-[0.72rem] max-w-[1880px] mx-auto p-4 md:p-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end justify-between mb-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.24em] text-zinc-400 mb-2">Maintenance Cost</div>
-          <h1 className="text-2xl md:text-3xl font-bold text-zinc-100">July 2026 summary</h1>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-400 mb-2">Maintenance Cost</div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-100">July 2026 summary</h1>
         </div>
-        <div className="flex items-center gap-2 text-zinc-400 text-xs uppercase">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">☰</span>
-          <span className="inline-flex h-10 min-w-[120px] items-center justify-center rounded-xl bg-white/5">Overview</span>
+        <div className="flex items-center gap-2 text-slate-400 text-xs uppercase">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950/40">☰</span>
+          <span className="inline-flex h-10 min-w-[120px] items-center justify-center rounded-xl bg-slate-950/40">Overview</span>
         </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
-        <div className="bg-[#09090b] border border-white/5 rounded-3xl p-4 shadow-[0_10px_60px_-40px_rgba(0,0,0,0.65)]">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-[0_10px_60px_-40px_rgba(0,0,0,0.65)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div>
-              <div className="text-sm text-zinc-400 uppercase tracking-[0.28em]">Daily cost by part type</div>
-              <div className="text-3xl font-semibold text-zinc-100 mt-2">July 2026</div>
+              <div className="text-sm text-slate-400 uppercase tracking-[0.28em]">Daily cost by part type</div>
+              <div className="text-3xl font-semibold text-slate-100 mt-2">July 2026</div>
             </div>
-            <div className="flex items-center gap-2 text-zinc-300 text-xs uppercase">
+            <div className="flex items-center gap-2 text-slate-300 text-xs uppercase">
               <div className="h-2.5 w-2.5 rounded-full bg-[#e0df17]" /> Electrical Parts
               <div className="h-2.5 w-2.5 rounded-full bg-[#03d5eb]" /> Mechanical Parts
             </div>
@@ -92,32 +92,32 @@ export default function Page() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 mt-4 text-center sm:grid-cols-4">
-            <div className="rounded-3xl border border-white/5 bg-white/5 px-4 py-5">
-              <div className="text-xs text-zinc-400 uppercase tracking-[0.22em]">Electrical parts</div>
-              <div className="mt-3 text-lg font-semibold text-zinc-100">{formatCurrency(totalElectrical)}</div>
+            <div className="rounded-3xl border border-slate-800/60 bg-slate-950/20 px-4 py-5">
+              <div className="text-xs text-slate-400 uppercase tracking-[0.22em]">Electrical parts</div>
+              <div className="mt-3 text-lg font-semibold text-slate-100">{formatCurrency(totalElectrical)}</div>
             </div>
-            <div className="rounded-3xl border border-white/5 bg-white/5 px-4 py-5">
-              <div className="text-xs text-zinc-400 uppercase tracking-[0.22em]">Mechanical parts</div>
-              <div className="mt-3 text-lg font-semibold text-zinc-100">{formatCurrency(totalMechanical)}</div>
+            <div className="rounded-3xl border border-slate-800/60 bg-slate-950/20 px-4 py-5">
+              <div className="text-xs text-slate-400 uppercase tracking-[0.22em]">Mechanical parts</div>
+              <div className="mt-3 text-lg font-semibold text-slate-100">{formatCurrency(totalMechanical)}</div>
             </div>
-            <div className="rounded-3xl border border-white/5 bg-white/5 px-4 py-5">
-              <div className="text-xs text-zinc-400 uppercase tracking-[0.22em]">Daily average</div>
-              <div className="mt-3 text-lg font-semibold text-zinc-100">{formatCurrency(dailyAverage)}</div>
+            <div className="rounded-3xl border border-slate-800/60 bg-slate-950/20 px-4 py-5">
+              <div className="text-xs text-slate-400 uppercase tracking-[0.22em]">Daily average</div>
+              <div className="mt-3 text-lg font-semibold text-slate-100">{formatCurrency(dailyAverage)}</div>
             </div>
-            <div className="rounded-3xl border border-white/5 bg-white/5 px-4 py-5">
-              <div className="text-xs text-zinc-400 uppercase tracking-[0.22em]">Total</div>
-              <div className="mt-3 text-lg font-semibold text-zinc-100">{formatCurrency(totalCost)}</div>
+            <div className="rounded-3xl border border-slate-800/60 bg-slate-950/20 px-4 py-5">
+              <div className="text-xs text-slate-400 uppercase tracking-[0.22em]">Total</div>
+              <div className="mt-3 text-lg font-semibold text-slate-100">{formatCurrency(totalCost)}</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-[#09090b] border border-white/5 rounded-3xl p-4 shadow-[0_10px_60px_-40px_rgba(0,0,0,0.65)]">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-[0_10px_60px_-40px_rgba(0,0,0,0.65)]">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-sm text-zinc-400 uppercase tracking-[0.28em]">Cost distribution</div>
-              <div className="text-xl md:text-2xl font-semibold text-zinc-100 mt-2">Part type share</div>
+              <div className="text-sm text-slate-400 uppercase tracking-[0.28em]">Cost distribution</div>
+              <div className="text-xl md:text-2xl font-semibold text-slate-100 mt-2">Part type share</div>
             </div>
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-zinc-300">☰</div>
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950/40 text-slate-300">☰</div>
           </div>
 
           <div className="flex flex-col items-center justify-center gap-8 py-4">
@@ -154,12 +154,12 @@ export default function Page() {
               {pieData.map((item) => {
                 const percent = totalCost === 0 ? 0 : Math.round((item.value / totalCost) * 10000) / 100;
                 return (
-                  <div key={item.name} className="rounded-3xl border border-white/5 bg-white/5 p-4 flex items-center justify-between gap-4">
+                  <div key={item.name} className="rounded-3xl border border-slate-800/60 bg-slate-950/20 p-4 flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-xs text-zinc-400 uppercase tracking-[0.22em]">{item.name}</div>
-                      <div className="mt-2 text-sm font-semibold text-zinc-100">{formatCurrency(item.value)}</div>
+                      <div className="text-xs text-slate-400 uppercase tracking-[0.22em]">{item.name}</div>
+                      <div className="mt-2 text-sm font-semibold text-slate-100">{formatCurrency(item.value)}</div>
                     </div>
-                    <div className="text-sm font-semibold text-zinc-100">{percent.toFixed(2)}%</div>
+                    <div className="text-sm font-semibold text-slate-100">{percent.toFixed(2)}%</div>
                   </div>
                 );
               })}
