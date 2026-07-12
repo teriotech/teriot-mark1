@@ -34,7 +34,6 @@ export default function MachinePressPage() {
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   // --- FUNGSI BARU: Ambil user langsung saat fungsi dipanggil ---
-  // Ini mencegah React "mengingat" state lama (Stale Closure)
   const getLoggedInUser = () => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("currentUser");
@@ -95,7 +94,6 @@ export default function MachinePressPage() {
         machine_no: randomMachine,
         count_no: nextCount,
         product_name: randomProduct,
-        // Panggil fungsi getLoggedInUser() di sini agar selalu mendapat data paling baru
         user: getLoggedInUser(), 
       };
 
@@ -214,35 +212,38 @@ export default function MachinePressPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-teal-500/30 p-4 md:p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
       {/* HEADER & ACTION SECTION */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-white">
-            Machine Press <span className="bg-gradient-to-r from-[#00F0FF] to-[#0066FF] bg-clip-text text-transparent">Logger</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-400">
-            Log aktivitas mesin press secara real-time.
-          </p>
+      <header className="bg-slate-900 border border-slate-800 rounded shadow-xl px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-md font-bold tracking-wider text-slate-200 flex items-center gap-2">
+              Machine Press <span className="text-teal-400">Logger</span>
+            </h1>
+            <p className="text-xs font-mono text-slate-500 mt-0.5">
+              Log aktivitas mesin press secara real-time.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setIsAutoMode(!isAutoMode)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all shrink-0 ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-all shrink-0 ${
               isAutoMode 
-                ? "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.15)]" 
-                : "bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                ? "bg-rose-900/30 hover:bg-rose-900/50 border border-rose-500/50 text-rose-400" 
+                : "bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300"
             }`}
           >
             {isAutoMode ? (
               <>
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
                 Stop Auto Trigger
               </>
             ) : (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
                 Start Auto Trigger
@@ -253,11 +254,11 @@ export default function MachinePressPage() {
           <button
             onClick={handleSimulateTrigger}
             disabled={isSimulating || isLoading || isAutoMode}
-            className="flex items-center gap-2 bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 border border-[#00F0FF]/30 text-[#00F0FF] px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,240,255,0.15)] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            className="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
             {isSimulating ? (
               <>
-                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -265,7 +266,7 @@ export default function MachinePressPage() {
               </>
             ) : (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                 </svg>
                 Manual Trigger
@@ -273,37 +274,37 @@ export default function MachinePressPage() {
             )}
           </button>
         </div>
-      </div>
+      </header>
 
       {/* FILTER & SEARCH SECTION */}
-      <div className="flex flex-col lg:flex-row gap-4 bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] p-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+      <div className="flex flex-col lg:flex-row gap-4 bg-slate-900 border border-slate-800 p-4 rounded shadow-xl">
         <div className="flex-1">
-          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 block">Pencarian</label>
+          <label className="text-[10px] font-bold text-teal-400 uppercase tracking-wider font-mono mb-1.5 block">Pencarian</label>
           <input 
             type="text" 
             placeholder="Cari ID, Mesin, Produk, Operator..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/[0.02] border border-white/[0.1] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
+            className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-mono transition-colors"
           />
         </div>
         <div className="flex gap-4 flex-1">
           <div className="flex-1">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 block">Dari Tanggal</label>
+            <label className="text-[10px] font-bold text-teal-400 uppercase tracking-wider font-mono mb-1.5 block">Dari Tanggal</label>
             <input 
               type="date" 
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-white/[0.02] border border-white/[0.1] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors [color-scheme:dark]"
+              className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-mono transition-colors [color-scheme:dark]"
             />
           </div>
           <div className="flex-1">
-            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 block">Sampai Tanggal</label>
+            <label className="text-[10px] font-bold text-teal-400 uppercase tracking-wider font-mono mb-1.5 block">Sampai Tanggal</label>
             <input 
               type="date" 
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-white/[0.02] border border-white/[0.1] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors [color-scheme:dark]"
+              className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-mono transition-colors [color-scheme:dark]"
             />
           </div>
         </div>
@@ -311,9 +312,9 @@ export default function MachinePressPage() {
           <button
             onClick={handleExportExcel}
             disabled={filteredRecords.length === 0}
-            className="w-full lg:w-auto flex items-center justify-center gap-2 bg-[#00FF66]/10 hover:bg-[#00FF66]/20 border border-[#00FF66]/30 text-[#00FF66] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full lg:w-auto flex items-center justify-center gap-1.5 bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 hover:border-blue-400 text-blue-400 hover:text-white px-4 py-2 rounded text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
             Export Excel
@@ -323,44 +324,44 @@ export default function MachinePressPage() {
 
       {/* ERROR ALERT */}
       {error && (
-        <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-lg text-xs text-rose-400 flex items-center gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <div className="bg-rose-950/40 border-l-2 border-l-rose-500 border-y border-r border-slate-800 p-4 rounded text-xs text-rose-400 flex items-center gap-3 font-mono">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
-          <span className="font-mono">{error}</span>
+          <span>{error}</span>
         </div>
       )}
 
       {/* TABLE SECTION */}
-      <div className="bg-[#09090b]/80 backdrop-blur-xl border border-white/[0.05] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-white/[0.05] flex justify-between items-center bg-white/[0.01]">
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse shadow-[0_0_5px_#00FF66]"></span>
+      <div className="bg-slate-900 border border-slate-800 rounded shadow-xl overflow-hidden flex flex-col">
+        <div className="bg-teal-950/40 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center">
+          <h2 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
             Live Data Log
           </h2>
-          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+          <span className="text-[10px] font-mono text-slate-500">
             Menampilkan: {filteredRecords.length} / {records.length} Records
           </span>
         </div>
         
-        <div ref={tableContainerRef} className="overflow-auto h-[500px] relative custom-scrollbar">
-          <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 z-10 bg-[#09090b] shadow-md">
-              <tr className="bg-white/[0.02] text-[10px] uppercase tracking-widest text-zinc-500 border-b border-white/[0.05]">
-                <th className="p-4 font-medium">ID</th>
-                <th className="p-4 font-medium">No. Mesin</th>
-                <th className="p-4 font-medium">Count</th>
-                <th className="p-4 font-medium">Nama Produk</th>
-                <th className="p-4 font-medium">Operator (User)</th>
-                <th className="p-4 font-medium">Waktu (Timestamp)</th>
+        <div ref={tableContainerRef} className="overflow-auto h-[500px] relative">
+          <table className="w-full text-left border-collapse font-mono text-xs">
+            <thead className="sticky top-0 z-10 bg-slate-950/90 backdrop-blur-sm shadow-md">
+              <tr className="text-slate-400 border-b border-slate-800 bg-slate-950/30">
+                <th className="p-3 font-medium w-20">ID</th>
+                <th className="p-3 font-medium">No. Mesin</th>
+                <th className="p-3 font-medium w-24">Count</th>
+                <th className="p-3 font-medium">Nama Produk</th>
+                <th className="p-3 font-medium">Operator (User)</th>
+                <th className="p-3 font-medium">Waktu (Timestamp)</th>
               </tr>
             </thead>
-            <tbody className="text-xs text-zinc-300">
+            <tbody className="divide-y divide-slate-800/50 text-slate-300">
               {isLoading && records.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-500">
+                  <td colSpan={6} className="p-8 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <svg className="animate-spin h-6 w-6 text-[#00F0FF]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -370,7 +371,7 @@ export default function MachinePressPage() {
                 </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-500">
+                  <td colSpan={6} className="p-8 text-center text-slate-500 italic">
                     Tidak ada data yang ditemukan.
                   </td>
                 </tr>
@@ -387,23 +388,23 @@ export default function MachinePressPage() {
                         key={item.id} 
                         ref={rowVirtualizer.measureElement}
                         data-index={virtualRow.index}
-                        className="border-b border-white/[0.02] hover:bg-white/[0.04] transition-colors"
+                        className="hover:bg-slate-950/30 transition-colors"
                       >
-                        <td className="p-4 font-mono text-zinc-500">#{item.id}</td>
-                        <td className="p-4 font-bold text-[#00F0FF]">{item.machine_no}</td>
-                        <td className="p-4">
-                          <span className="bg-white/[0.05] border border-white/[0.1] px-2 py-1 rounded text-[10px] font-mono">
+                        <td className="p-3 text-slate-500 font-bold">#{item.id}</td>
+                        <td className="p-3 font-semibold text-teal-400">{item.machine_no}</td>
+                        <td className="p-3">
+                          <span className="bg-slate-950 border border-slate-800 px-2 py-1 rounded text-[10px]">
                             {String(item.count_no).padStart(4, '0')}
                           </span>
                         </td>
-                        <td className="p-4 font-medium text-white">{item.product_name}</td>
-                        <td className="p-4 flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#00F0FF] to-[#7000FF] flex items-center justify-center text-[8px] font-bold text-white uppercase shrink-0">
+                        <td className="p-3 text-slate-200">{item.product_name}</td>
+                        <td className="p-3 flex items-center gap-2">
+                          <div className="w-5 h-5 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-300 uppercase shrink-0">
                             {item.user ? item.user.charAt(0) : "?"}
                           </div>
                           {item.user}
                         </td>
-                        <td className="p-4 text-zinc-500 font-mono text-[10px]">
+                        <td className="p-3 text-slate-500 text-[11px]">
                           {formatDate(item.timestamp || item.created_at)}
                         </td>
                       </tr>
