@@ -44,7 +44,7 @@ const menuData: Record<string, MenuItem[]> = {
   ],
   IOT: [
     { 
-      label: "Machine Press",
+      label: "Machine Press", status: "fullstack",
       subItems: [
         { label: "Overview", href: "/iot/machine_press/overview", status: "fullstack" },
         { label: "Logger", href: "/iot/machine_press/logger", status: "fullstack" },
@@ -95,15 +95,15 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Predictive Maintenance", href: "/maintenance/predictive_maintenance", status: "frontend" },
     { label: "Corrective Maintenance", href: "/maintenance/corrective_maintenance", status: "frontend" },
     { label: "Time Based Maintenance", href: "/maintenance/timebased_maintenance", status: "frontend" },
+    { label: "Lifetime Monitoring", href: "/maintenance/lifetime_monitoring", status: "frontend" },
     { label: "RTU Device", href: "/maintenance/rtu_device", status: "frontend" },
-    { label: "Sparepart", href: "/production/dummy" },
-    { label: "Maintenance Cost", href: "/production/dummy" },
-    { label: "Lifetime Monitoring", href: "/production/dummy" },
+    { label: "Sparepart", href: "/maintenance/sparepart", status: "frontend" },
+    { label: "Maintenance Cost", href: "/maintenance/maintenance_cost", status: "frontend" },
     { 
-      label: "Machine", 
+      label: "Machine", status: "fullstack",
       subItems: [
-        { label: "Machine Press", href: "/production/iot/mold/overview" },
-        { label: "Machine Injection", href: "/production/iot/mold/logger" },
+        { label: "Machine Press", href: "/production/iot/mold/overview", status: "fullstack" },
+        { label: "Machine Injection", href: "/production/iot/mold/logger"},
         { label: "Machine Role", href: "/production/iot/mold/operator-data" },
         { label: "Machine Mold", href: "/production/iot/mold/operator-data" },
       ]
