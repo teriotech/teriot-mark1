@@ -89,7 +89,6 @@ const initialEquipmentData: Equipment[] = [
   },
 ];
 
-
 export default function Page() {
   const [equipment, setEquipment] = useState<Equipment[]>(initialEquipmentData);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
@@ -155,105 +154,104 @@ export default function Page() {
   };
 
   return (
-    <div className="text-[0.72rem] max-w-[1880px] mx-auto p-2 md:p-4">
-      <div className="bg-[#09090b] border border-white/[0.04] rounded-xl p-4 mb-4">
-        <div className="flex items-start gap-4">
-          {/* Left Sidebar Equipment List */}
-          <div className="w-48 bg-white/[0.02] rounded-lg border border-white/[0.04] p-3 max-h-96 overflow-y-auto">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wide">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-teal-500/30 p-4 md:p-6">
+      
+      {/* Main Grid Layout Dashboard */}
+      <main className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start max-w-[1880px] mx-auto">
+        
+        {/* LEFT COLUMN: Equipment List (Span 1) */}
+        <div className="xl:col-span-1 space-y-6">
+          <div className="bg-slate-900 border border-slate-800 rounded shadow-xl overflow-hidden">
+            <div className="bg-teal-950/40 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center">
+              <h3 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono">
                 Equipment
               </h3>
               <button
                 onClick={() => setShowAddEquipment(true)}
-                className="w-5 h-5 flex items-center justify-center rounded bg-green-600 text-white text-[0.65rem] hover:bg-green-700 transition-colors"
+                className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-2 py-0.5 rounded flex items-center gap-1 text-[11px] transition-colors"
                 title="Add Equipment"
               >
-                +
+                + Add
               </button>
             </div>
-            {equipment.map((equip) => (
-              <div key={equip.id}>
+            
+            <div className="max-h-[700px] overflow-y-auto divide-y divide-slate-800/80 text-xs font-mono">
+              {equipment.map((equip) => (
                 <div
+                  key={equip.id}
                   onClick={() => setSelectedEquipment(equip.id)}
-                  className={`py-1.5 px-2 cursor-pointer rounded text-[0.75rem] flex items-center gap-2 transition-colors ${
+                  className={`p-3 cursor-pointer flex items-center gap-2 transition-colors ${
                     selectedEquipment === equip.id
-                      ? "bg-white/[0.1] text-sky-300"
-                      : "text-zinc-300 hover:bg-white/[0.05]"
+                      ? "bg-slate-950/50 text-teal-300 border-l-2 border-teal-500"
+                      : "text-slate-400 hover:bg-slate-950/30 hover:text-slate-200 border-l-2 border-transparent"
                   }`}
                 >
-                  <span className="text-zinc-400">⊙</span>
+                  <span className="text-slate-500">⊙</span>
                   {equip.label}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+        </div>
 
-          {/* Right Content Area */}
-          <div className="flex-1">
-            {selected ? (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h2 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
-                      ⊖ {selected.label}
-                    </h2>
-                    <h3 className="text-xs text-zinc-400 mt-1">Run Time Part</h3>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      Runtime based on cycletime cutting
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
+        {/* RIGHT COLUMN: Progress & Table (Span 3) */}
+        <div className="xl:col-span-3 space-y-6">
+          
+          {/* TOP BLOCK: Run Time Part Progress */}
+          <div className="bg-slate-900 border border-slate-800 rounded shadow-xl overflow-hidden">
+            <div className="bg-teal-950/40 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center">
+              <h3 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono">
+                {selected ? `⊖ ${selected.label} - Run Time Part` : "Run Time Part"}
+              </h3>
+              <div className="flex gap-2">
+                {selected && (
+                  <>
                     <button
                       onClick={() => setShowAddPart(true)}
-                      className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                      className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-3 py-1 rounded flex items-center gap-1 text-[11px] transition-colors"
                     >
                       + Add Part
                     </button>
                     {selected.parts.length > 0 && (
                       <button
                         onClick={() => setExpandedParts(!expandedParts)}
-                        className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded transition-colors"
+                        className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[11px] py-1 px-3 rounded transition-all font-medium"
                       >
                         {expandedParts ? "Hide" : "Show"}
                       </button>
                     )}
-                  </div>
-                </div>
+                  </>
+                )}
+              </div>
+            </div>
 
-                {/* Progress Bars */}
-                {selected.parts.length > 0 ? (
+            <div className="p-4 font-mono text-xs">
+              {selected ? (
+                selected.parts.length > 0 ? (
                   expandedParts && (
-                    <div className="space-y-3 mt-3">
+                    <div className="space-y-4">
                       {selected.parts.map((part) => {
-                        const progress = calculateProgress(
-                          part.ongoingRun,
-                          part.remaining
-                        );
+                        const progress = calculateProgress(part.ongoingRun, part.remaining);
                         return (
-                          <div key={part.id} className="space-y-1">
-                            <div className="text-xs text-zinc-300 font-medium">
-                              {part.label}
+                          <div key={part.id} className="space-y-1.5 bg-slate-950/40 p-3 rounded border border-slate-800/60">
+                            <div className="flex justify-between text-[11px] mb-1">
+                              <span className="text-slate-300 font-medium">{part.label}</span>
+                              <span className="text-teal-400 font-bold">{progress.toFixed(1)} %</span>
                             </div>
-                            <div className="flex items-center gap-2 h-6">
-                              <div className="flex-1 h-full bg-white/[0.05] rounded overflow-hidden border border-white/[0.1] relative group">
-                                <div className="flex h-full">
-                                  <div
-                                    className="bg-sky-600 h-full transition-all"
-                                    style={{ width: `${progress}%` }}
-                                  />
-                                  <div className="bg-red-500 h-full flex-1" />
-                                </div>
+                            <div className="flex items-center gap-3 h-4">
+                              <div className="flex-1 h-full bg-slate-800 rounded-full overflow-hidden flex relative group">
+                                <div
+                                  className="bg-teal-500 h-full transition-all"
+                                  style={{ width: `${progress}%` }}
+                                />
+                                <div className="bg-rose-500 h-full flex-1" />
                                 {/* Tooltip */}
-                                <div className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/80 px-2 py-0.5 rounded text-[0.65rem] text-sky-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 px-2 py-0.5 rounded text-[10px] text-teal-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-700">
                                   Current: {part.ongoingRun.toLocaleString()} CT
                                 </div>
                               </div>
-                              <div className="text-[0.65rem] text-zinc-400 w-24 text-right">
-                                {part.ongoingRun.toLocaleString()}
-                              </div>
-                              <div className="text-[0.65rem] text-zinc-400 w-24 text-right">
-                                {part.remaining.toLocaleString()}
+                              <div className="text-[10px] text-slate-400 w-24 text-right">
+                                <span className="text-teal-400">{part.ongoingRun.toLocaleString()}</span> / <span className="text-rose-400">{part.remaining.toLocaleString()}</span>
                               </div>
                             </div>
                           </div>
@@ -262,161 +260,165 @@ export default function Page() {
                     </div>
                   )
                 ) : (
-                  <div className="text-zinc-500 text-sm py-8">
+                  <div className="text-slate-500 text-center py-8 italic">
                     No lifetime parts data available for this equipment. Click '+ Add Part' to add submachines.
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-zinc-500 text-sm py-8">
-                Select equipment to view lifetime part data
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Table Section */}
-      <div className="bg-[#09090b] border border-white/[0.04] rounded-xl p-3">
-        <div className="flex items-center gap-2 mb-3">
-          <input
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-black/40 px-2 py-1 rounded text-xs"
-          />
-          <button className="px-3 py-1 text-xs bg-[#00F0FF] text-black rounded font-bold">
-            Search
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-fixed text-[0.68rem] border-collapse">
-            <thead>
-              <tr className="bg-white/[0.03] text-zinc-300 text-xs">
-                <th className="px-2 py-2 w-12">No</th>
-                <th className="px-2 py-2 w-40">Machine</th>
-                <th className="px-2 py-2 flex-1">Part</th>
-                <th className="px-2 py-2 w-28">Ongoing Run</th>
-                <th className="px-2 py-2 w-24">Lifetime</th>
-                <th className="px-2 py-2 w-64">Plan to do</th>
-                <th className="px-2 py-2 w-20">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selected && selected.parts.length > 0 ? (
-                selected.parts.map((item, idx) => (
-                  <tr
-                    key={item.id}
-                    className="odd:bg-white/[0.01] even:bg-transparent align-top border-b border-white/[0.05]"
-                  >
-                    <td className="px-2 py-2 text-zinc-400">{idx + 1}</td>
-                    <td className="px-2 py-2 text-zinc-300">{selected.label}</td>
-                    <td className="px-2 py-2 text-zinc-300 break-words whitespace-normal leading-tight">
-                      {item.label}
-                    </td>
-                    <td className="px-2 py-2 text-zinc-300">
-                      {item.ongoingRun.toLocaleString()}
-                    </td>
-                    <td className="px-2 py-2 text-zinc-300">
-                      {item.remaining.toLocaleString()}
-                    </td>
-                    <td className="px-2 py-2 text-red-400 break-words whitespace-normal leading-tight text-xs">
-                      Requires maintenance
-                    </td>
-                    <td className="px-2 py-2">
-                      <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-600 text-white text-xs hover:bg-blue-700 transition-colors">
-                        ✓
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                )
               ) : (
-                <tr>
-                  <td colSpan={7} className="px-2 py-4 text-center text-zinc-500">
-                    Select equipment to view data
-                  </td>
-                </tr>
+                <div className="text-slate-500 text-center py-8 italic">
+                  Select equipment from the left panel to view lifetime part data
+                </div>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </div>
+          </div>
 
-      {/* Add Equipment Modal */}
+          {/* BOTTOM BLOCK: Data Table */}
+          <div className="bg-slate-900 border border-slate-800 rounded shadow-xl overflow-hidden">
+            <div className="bg-teal-950/40 border-b border-slate-800 px-4 py-2.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h3 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono">
+                Part Details Matrix
+              </h3>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  placeholder="Search part..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full sm:w-48 bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-teal-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left font-mono text-xs border-collapse min-w-[700px]">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 bg-slate-950/30">
+                    <th className="p-3 w-12 text-center">No</th>
+                    <th className="p-3 w-40">Machine</th>
+                    <th className="p-3">Part</th>
+                    <th className="p-3 w-28">Ongoing Run</th>
+                    <th className="p-3 w-24">Lifetime</th>
+                    <th className="p-3 w-48">Plan to do</th>
+                    <th className="p-3 w-20 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {selected && selected.parts.length > 0 ? (
+                    selected.parts
+                      .filter((p) => p.label.toLowerCase().includes(search.toLowerCase()))
+                      .map((item, idx) => (
+                        <tr key={item.id} className="hover:bg-slate-950/30 transition-colors">
+                          <td className="p-3 text-center text-slate-500 font-bold">{idx + 1}</td>
+                          <td className="p-3 text-slate-300">{selected.label}</td>
+                          <td className="p-3 font-semibold text-teal-400 break-words whitespace-normal leading-tight">
+                            {item.label}
+                          </td>
+                          <td className="p-3 text-slate-300">{item.ongoingRun.toLocaleString()}</td>
+                          <td className="p-3 text-slate-300">{item.remaining.toLocaleString()}</td>
+                          <td className="p-3 text-rose-400 text-[11px] break-words whitespace-normal leading-tight">
+                            Requires maintenance
+                          </td>
+                          <td className="p-3 text-center">
+                            <button className="bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 hover:border-blue-400 text-blue-400 hover:text-white p-1.5 rounded transition-all">
+                              ✓
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="p-6 text-center text-slate-500 italic">
+                        Select equipment to view data
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      {/* MODAL POP UP 1: ADD EQUIPMENT */}
       {showAddEquipment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-[#09090b] border border-white/[0.06] rounded-lg p-4 w-[360px]">
-            <h3 className="text-sm font-bold mb-3">Add New Equipment</h3>
-            <div className="flex flex-col gap-3">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150 font-mono">
+            <div className="px-5 py-3 border-b border-slate-800 bg-slate-950/40 flex justify-between items-center">
+              <h2 className="text-xs font-bold text-teal-400 uppercase tracking-wider">Add New Equipment</h2>
+            </div>
+            <div className="p-5 space-y-4 text-xs">
               <input
                 type="text"
                 placeholder="Equipment name"
                 value={newEquipmentName}
                 onChange={(e) => setNewEquipmentName(e.target.value)}
-                className="bg-black/40 px-2 py-2 rounded text-sm border border-white/[0.1] focus:outline-none focus:border-sky-500 text-white"
+                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-slate-200"
                 onKeyPress={(e) => e.key === "Enter" && handleAddEquipment()}
               />
-              <div className="flex justify-end gap-2 mt-2">
-                <button
-                  onClick={() => setShowAddEquipment(false)}
-                  className="px-3 py-1 text-xs bg-white/5 rounded hover:bg-white/10 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddEquipment}
-                  className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                >
-                  Add Equipment
-                </button>
-              </div>
+            </div>
+            <div className="px-5 py-3 border-t border-slate-800 bg-slate-950/40 flex justify-end gap-2 text-xs">
+              <button
+                onClick={() => setShowAddEquipment(false)}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-400 px-4 py-1.5 rounded border border-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddEquipment}
+                className="bg-teal-600 hover:bg-teal-500 text-white font-bold px-4 py-1.5 rounded transition-colors"
+              >
+                Add Equipment
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Add Part Modal */}
+      {/* MODAL POP UP 2: ADD PART */}
       {showAddPart && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-[#09090b] border border-white/[0.06] rounded-lg p-4 w-[400px]">
-            <h3 className="text-sm font-bold mb-3">Add New Part to {selected?.label}</h3>
-            <div className="flex flex-col gap-3">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150 font-mono">
+            <div className="px-5 py-3 border-b border-slate-800 bg-slate-950/40 flex justify-between items-center">
+              <h2 className="text-xs font-bold text-teal-400 uppercase tracking-wider">
+                Add New Part to {selected?.label}
+              </h2>
+            </div>
+            <div className="p-5 space-y-3 text-xs">
               <input
                 type="text"
                 placeholder="Part name"
                 value={newPartName}
                 onChange={(e) => setNewPartName(e.target.value)}
-                className="bg-black/40 px-2 py-2 rounded text-sm border border-white/[0.1] focus:outline-none focus:border-sky-500 text-white"
+                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-slate-200"
               />
               <input
                 type="number"
                 placeholder="Ongoing Run (cycle time)"
                 value={newPartOngoing}
                 onChange={(e) => setNewPartOngoing(e.target.value)}
-                className="bg-black/40 px-2 py-2 rounded text-sm border border-white/[0.1] focus:outline-none focus:border-sky-500 text-white"
+                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-slate-200"
               />
               <input
                 type="number"
                 placeholder="Remaining Lifetime"
                 value={newPartRemaining}
                 onChange={(e) => setNewPartRemaining(e.target.value)}
-                className="bg-black/40 px-2 py-2 rounded text-sm border border-white/[0.1] focus:outline-none focus:border-sky-500 text-white"
+                className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 focus:outline-none focus:border-teal-500 text-slate-200"
               />
-              <div className="flex justify-end gap-2 mt-2">
-                <button
-                  onClick={() => setShowAddPart(false)}
-                  className="px-3 py-1 text-xs bg-white/5 rounded hover:bg-white/10 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddPart}
-                  className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                >
-                  Add Part
-                </button>
-              </div>
+            </div>
+            <div className="px-5 py-3 border-t border-slate-800 bg-slate-950/40 flex justify-end gap-2 text-xs">
+              <button
+                onClick={() => setShowAddPart(false)}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-400 px-4 py-1.5 rounded border border-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddPart}
+                className="bg-teal-600 hover:bg-teal-500 text-white font-bold px-4 py-1.5 rounded transition-colors"
+              >
+                Add Part
+              </button>
             </div>
           </div>
         </div>
