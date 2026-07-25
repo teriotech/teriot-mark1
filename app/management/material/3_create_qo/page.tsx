@@ -520,19 +520,19 @@ export default function QoPoManagementPage() {
 
   return (
     <>
-      {/* CSS Khusus Print untuk menghilangkan header/footer browser dan layout.tsx */}
+      
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page { 
             size: A4 portrait;
-            margin: 0; /* Menghilangkan header/footer bawaan browser (URL, Tanggal, dll) */
+            margin: 0; /* Menghilangkan header/footer bawaan browser */
           }
           body { 
             -webkit-print-color-adjust: exact; 
             print-color-adjust: exact;
             background-color: white !important;
           }
-          /* Sembunyikan SEMUA elemen di halaman (termasuk header/sidebar dari layout.tsx) */
+          /* Sembunyikan SEMUA elemen di halaman */
           body * {
             visibility: hidden;
           }
@@ -540,22 +540,24 @@ export default function QoPoManagementPage() {
           #print-area, #print-area * {
             visibility: visible;
           }
-          /* Posisikan area cetak di paling atas kiri kertas dengan margin yang pas */
+          /* Posisikan area cetak di paling atas kiri kertas secara absolut */
           #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            /* PERUBAHAN: Margin atas dibuat 0.5cm agar mepet ke atas dan muat 1 page */
-            padding: 0.5cm 1.5cm 0.5cm 1.5cm; 
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            /* Padding disesuaikan agar mepet ke atas dan muat 1 page */
+            padding: 0.5cm 1cm !important; 
             box-sizing: border-box;
             background-color: white;
           }
-          /* Pastikan parent tidak memotong konten yang panjang (multi-page) */
-          html, body, main, div {
+          /* HAPUS 'div' dari sini agar tidak membatalkan position: absolute pada #print-area */
+          html, body, main {
             height: auto !important;
             overflow: visible !important;
             position: static !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
         }
       `}} />
@@ -1171,10 +1173,10 @@ export default function QoPoManagementPage() {
             {/* Detail Informasi Perusahaan Header Right */}
             <div className="text-right leading-snug">
               <h1 className="text-base font-bold uppercase tracking-wider">PT. TERIOT DIGITAL TECHNOLOGY</h1>
-              <p>www.teriot.tech</p>
-              <p>Grand Wisata Ruko Blok H20</p>
+              <p>www.teriot.id</p>
+              <p>Aurelia Ruko No G33</p>
               <p>Bekasi, Jawa Barat 17320</p>
-              <p>Phone : (0295) 5576 5571 email : sales@teriot.tech</p>
+              <p>Phone : (+62) 8516 3657 641 email : sales@teriot.id</p>
             </div>
           </div>
 
@@ -1352,7 +1354,8 @@ export default function QoPoManagementPage() {
 
           {/* Footer Document Note */}
           <div className="mt-8 text-center text-[10px] font-bold tracking-tight text-gray-700">
-            *PO INI SUDAH MELALUI PROSES PEMERIKSAAN DAN DITANDATANGANI SECARA ELEKTRONIK
+            * Dokumen ini dicetak dari sistem TERIOT DIGITAL TECHNOLOGY, <br />
+            * Dokumen ini sah dan berlaku sebagai bukti transaksi.
           </div>
         </div>
       )}

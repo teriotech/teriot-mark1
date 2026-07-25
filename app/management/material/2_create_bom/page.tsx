@@ -120,23 +120,23 @@ const SearchableSelect = ({
   return (
     <div ref={wrapperRef} className="relative w-full">
       <div
-        className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded cursor-pointer flex justify-between items-center focus:border-blue-500"
+        className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg cursor-pointer flex justify-between items-center focus:border-blue-500 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="truncate text-xs text-slate-200">
           {displayValue || placeholder}
         </span>
-        <ChevronDown className="w-3 h-3 text-slate-400" />
+        <ChevronDown className="w-4 h-4 text-slate-400" />
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl max-h-60 flex flex-col overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl max-h-60 flex flex-col overflow-hidden">
           <div className="p-2 border-b border-slate-700 bg-slate-800 sticky top-0">
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                className="w-full bg-slate-900 border border-slate-700 text-white pl-7 pr-2 py-1.5 rounded text-xs focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-900 border border-slate-700 text-white pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:border-blue-500"
                 placeholder="Cari Part Number / Spec..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -150,7 +150,7 @@ const SearchableSelect = ({
               filteredOptions.map((opt) => (
                 <div
                   key={opt.id}
-                  className="px-3 py-2 text-xs text-slate-200 hover:bg-blue-600 hover:text-white cursor-pointer truncate transition-colors"
+                  className="px-3 py-2.5 text-xs text-slate-200 hover:bg-blue-600 hover:text-white cursor-pointer truncate transition-colors"
                   onClick={() => {
                     onChange(opt.id.toString());
                     setIsOpen(false);
@@ -161,7 +161,7 @@ const SearchableSelect = ({
                 </div>
               ))
             ) : (
-              <div className="px-3 py-3 text-xs text-slate-400 text-center">
+              <div className="px-3 py-4 text-xs text-slate-400 text-center">
                 Material tidak ditemukan
               </div>
             )}
@@ -193,7 +193,7 @@ export default function CreateBomPage() {
 
   useEffect(() => {
     fetchBomList();
-    fetchMasterMaterials(); // Pindahkan ke sini agar selalu siap saat Edit
+    fetchMasterMaterials();
   }, []);
 
   const fetchBomList = async () => {
@@ -267,19 +267,16 @@ export default function CreateBomPage() {
     setIsModalOpen(true);
   };
 
-  // --- FITUR EDIT BOM ---
   const handleEditBom = (group: BomGroup, e: React.MouseEvent) => {
-    e.stopPropagation(); // Mencegah expand/collapse
+    e.stopPropagation();
     setEditingCustomer(group.customer);
     setOriginalItemIds(group.items.map((i) => i.id));
     setCustomerName(group.customer);
 
-    // Rekonstruksi data dari flat list ke struktur Mother & Child
     const mpMap: Record<string, FormChildPart[]> = {};
     group.items.forEach((item) => {
       if (!mpMap[item.mother_part]) mpMap[item.mother_part] = [];
       
-      // Cari material_id dari masterMaterials berdasarkan part_number
       const matchedMaterial = masterMaterials.find(m => m.part_number === item.part_number);
 
       mpMap[item.mother_part].push({
@@ -305,7 +302,6 @@ export default function CreateBomPage() {
     setIsModalOpen(true);
   };
 
-  // --- FITUR DELETE BOM ---
   const handleDeleteBom = async (group: BomGroup, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm(`Apakah Anda yakin ingin menghapus seluruh BOM untuk Customer: ${group.customer}?`)) {
@@ -325,11 +321,9 @@ export default function CreateBomPage() {
     }
   };
 
-  // --- FITUR EXPORT PDF ---
   const handlePrintPdf = (group: BomGroup, e: React.MouseEvent) => {
     e.stopPropagation();
     setPrintGroup(group);
-    // Beri waktu React untuk merender komponen print sebelum memanggil window.print
     setTimeout(() => {
       window.print();
     }, 300);
@@ -503,7 +497,6 @@ export default function CreateBomPage() {
 
     setIsSubmitting(true);
     try {
-      // Jika sedang mode Edit, hapus data lama terlebih dahulu
       if (editingCustomer && originalItemIds.length > 0) {
         const deleteRequests = originalItemIds.map((id) =>
           fetch(`/api/management/create_bom?id=${id}`, { method: "DELETE" })
@@ -511,7 +504,6 @@ export default function CreateBomPage() {
         await Promise.all(deleteRequests);
       }
 
-      // Simpan data baru
       const requests = payloadItems.map(async (item) => {
         const res = await fetch("/api/management/create_bom", {
           method: "POST",
@@ -552,7 +544,6 @@ export default function CreateBomPage() {
 
   return (
     <>
-      {/* --- TAMPILAN UTAMA (Disembunyikan saat Print) --- */}
       <div className="min-h-screen bg-slate-900 text-slate-100 p-6 font-sans print:hidden">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
@@ -575,7 +566,6 @@ export default function CreateBomPage() {
             </button>
           </div>
 
-          {/* Filter Bar */}
           <div className="flex items-center gap-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -589,7 +579,6 @@ export default function CreateBomPage() {
             </div>
           </div>
 
-          {/* Daftar BOM */}
           {isLoading ? (
             <div className="text-center py-12 text-slate-400">Loading BOM data...</div>
           ) : filteredBomGroups.length === 0 ? (
@@ -643,7 +632,6 @@ export default function CreateBomPage() {
                           </span>
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="flex items-center gap-2">
                           <button
                             onClick={(e) => handlePrintPdf(group, e)}
@@ -767,6 +755,7 @@ export default function CreateBomPage() {
         {/* POP-UP MODAL: CREATE / EDIT BOM */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+            {/* PERUBAHAN: max-w-5xl diubah menjadi max-w-[95vw] agar modal menjadi full wide */}
             <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-[95vw] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden my-auto">
               <div className="px-6 py-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -785,7 +774,7 @@ export default function CreateBomPage() {
                 </button>
               </div>
 
-              <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              <div className="p-6 overflow-auto flex-1 space-y-6">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/60">
                   <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
                     Nama Customer <span className="text-red-400">*</span>
@@ -865,7 +854,7 @@ export default function CreateBomPage() {
                           </div>
 
                           <div className="pl-2 sm:pl-4 border-l-2 border-slate-700 space-y-3">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-2">
                               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                                 Child Parts Selection
                               </span>
@@ -884,19 +873,20 @@ export default function CreateBomPage() {
                                 Belum ada child part di dalam mother part ini.
                               </p>
                             ) : (
-                              <div className="space-y-3 overflow-x-auto pb-2">
-                                {mp.children.map((child) => {
+                              <div className="space-y-3 pb-2">
+                                {mp.children.map((child, childIdx) => {
                                   const unitPriceWithMargin = child.price + (child.price * child.margin / 100) + child.markup;
                                   const totalPrice = unitPriceWithMargin * child.qty;
 
                                   return (
                                     <div
                                       key={child.id}
-                                      className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-lg border border-slate-700/50 text-xs min-w-max"
+                                      style={{ zIndex: mp.children.length - childIdx }}
+                                      className="relative flex items-center gap-3 bg-slate-900/60 p-3 rounded-lg border border-slate-700/50 text-xs min-w-max transition-all"
                                     >
                                       {/* Material Select */}
                                       <div className="w-64 flex-shrink-0">
-                                        <label className="block text-[10px] text-slate-400 mb-1">Master Material</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Master Material</label>
                                         <SearchableSelect
                                           options={masterMaterials}
                                           value={child.material_id}
@@ -907,76 +897,76 @@ export default function CreateBomPage() {
 
                                       {/* Description */}
                                       <div className="w-48 flex-shrink-0">
-                                        <label className="block text-[10px] text-slate-400 mb-1">Description</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Description</label>
                                         <input
                                           type="text"
                                           value={child.description}
                                           onChange={(e) => updateChildField(mp.id, child.id, "description", e.target.value)}
-                                          placeholder="Deskripsi"
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                          placeholder="Deskripsi Material"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
 
                                       {/* Qty */}
                                       <div className="w-20 flex-shrink-0">
-                                        <label className="block text-[10px] text-slate-400 mb-1">Qty</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Qty</label>
                                         <input
                                           type="number"
                                           min="1"
                                           value={child.qty}
                                           onChange={(e) => updateChildField(mp.id, child.id, "qty", Number(e.target.value))}
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
 
                                       {/* Unit */}
                                       <div className="w-20 flex-shrink-0">
-                                        <label className="block text-[10px] text-slate-400 mb-1">Unit</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Unit</label>
                                         <input
                                           type="text"
                                           value={child.unit}
                                           onChange={(e) => updateChildField(mp.id, child.id, "unit", e.target.value)}
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
 
                                       {/* Base Price */}
                                       <div className="w-32 flex-shrink-0">
-                                        <label className="block text-[10px] text-slate-400 mb-1">Base Price (Rp)</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Base Price (Rp)</label>
                                         <input
                                           type="number"
                                           value={child.price}
                                           onChange={(e) => updateChildField(mp.id, child.id, "price", Number(e.target.value))}
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
 
                                       {/* Margin */}
                                       <div className="w-20 flex-shrink-0">
-                                        <label className="block text-[10px] text-slate-400 mb-1">Margin (%)</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Margin (%)</label>
                                         <input
                                           type="number"
                                           value={child.margin}
                                           onChange={(e) => updateChildField(mp.id, child.id, "margin", Number(e.target.value))}
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
 
                                       {/* Markup */}
                                       <div className="w-32 flex-shrink-0">
-                                        <label className="block text-[10px] text-slate-400 mb-1">Markup (Rp)</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Markup (Rp)</label>
                                         <input
                                           type="number"
                                           value={child.markup}
                                           onChange={(e) => updateChildField(mp.id, child.id, "markup", Number(e.target.value))}
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
 
                                       {/* Total Price Display */}
                                       <div className="w-36 flex-shrink-0 flex flex-col justify-end pb-1">
-                                        <span className="text-[10px] text-slate-400">Total Price</span>
-                                        <span className="font-bold text-emerald-400">Rp {totalPrice.toLocaleString("id-ID")}</span>
+                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-1">Total Price</span>
+                                        <span className="font-bold text-emerald-400 text-sm">Rp {totalPrice.toLocaleString("id-ID")}</span>
                                       </div>
 
                                       {/* Delete Button */}
@@ -984,7 +974,8 @@ export default function CreateBomPage() {
                                         <button
                                           type="button"
                                           onClick={() => removeChildPart(mp.id, child.id)}
-                                          className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded transition-colors"
+                                          className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+                                          title="Hapus Child Part"
                                         >
                                           <Trash2 className="w-4 h-4" />
                                         </button>
@@ -1024,10 +1015,9 @@ export default function CreateBomPage() {
         )}
       </div>
 
-      {/* --- TAMPILAN CETAK / EXPORT PDF (Hanya muncul saat di-print) --- */}
+      {/* --- TAMPILAN CETAK / EXPORT PDF --- */}
       {printGroup && (
         <div className="hidden print:block bg-white text-black p-8 font-sans">
-          {/* KOP Perusahaan */}
           <div className="flex items-center border-b-4 border-black pb-4 mb-6">
             <div className="w-24 h-24 bg-gray-200 flex items-center justify-center font-bold text-gray-500 border border-gray-400">
               LOGO
@@ -1039,14 +1029,12 @@ export default function CreateBomPage() {
             </div>
           </div>
 
-          {/* Judul Dokumen */}
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold underline uppercase">Bill of Materials (BOM)</h2>
             <p className="text-sm mt-2"><strong>Customer:</strong> {printGroup.customer}</p>
             <p className="text-sm"><strong>Tanggal:</strong> {new Date().toLocaleDateString("id-ID")}</p>
           </div>
 
-          {/* Tabel BOM */}
           <table className="w-full border-collapse border border-black text-sm mb-8">
             <thead>
               <tr className="bg-gray-200">
@@ -1082,7 +1070,6 @@ export default function CreateBomPage() {
             </tfoot>
           </table>
 
-          {/* T&C dan Tanda Tangan */}
           <div className="flex justify-between mt-12 text-sm">
             <div className="w-1/2 pr-8">
               <h3 className="font-bold mb-2 underline">Terms & Conditions:</h3>
