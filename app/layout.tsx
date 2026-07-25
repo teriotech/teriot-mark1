@@ -115,9 +115,43 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Genba", href: "/production/dummy" },
     { label: "Visitor Form", href: "/production/register_user" },
   ],
-  USER: [
+  User: [
     { label: "User Register", href: "/user/register" },
     { label: "User Management", href: "/user/user_management" },
+  ],
+  Management: [
+    { 
+      label: "Material", status: "fullstack",
+      subItems: [
+        { label: "Master Material", href: "/management/material/1_master_material", status: "fullstack" },
+        { label: "Create BOM", href: "/management/material/2_create_bom", status: "fullstack" },
+        { label: "Create QO & PO", href: "/management/material/3_create_qo", status: "fullstack" },
+        { label: "Cost Analysis", href: "/management/material/4_cost_analysis", status: "fullstack" },
+      ]
+    },
+    { 
+      label: "Project Management",
+      subItems: [
+        { label: "Planning", href: "/management/project/1_planning", status: "fullstack" },
+        { label: "Project Running", href: "/management/project/2_project_running", status: "fullstack" },
+      ]
+    },
+    { 
+      label: "Finance Management",
+      subItems: [
+        { label: "Invoice", href: "/management/finance/1_invoice", status: "fullstack" },
+        { label: "Form Finance", href: "/management/finance/2_form_finance", status: "fullstack" },
+        { label: "Datapack", href: "/management/finance/3_datapack", status: "fullstack" },
+      ]
+    },
+    { 
+      label: "R&D Management",
+      subItems: [
+        { label: "Development Product", href: "/management/rd/1_development_product", status: "fullstack" },
+        { label: "Testing Product", href: "/management/rd/2_testing_product", status: "fullstack" },
+      ]
+    },
+    { label: "List Supplier", href: "/management/supplier/list" },
   ],
 };
 
@@ -389,7 +423,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="rounded-lg border border-white/[0.1] bg-black/50 px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00F0FF]/50 focus:ring-1 focus:ring-[#00F0FF]/50 transition-all placeholder:text-zinc-600"
-                    placeholder="admin@lge.com"
+                    placeholder="Email Account"
                   />
                 </label>
 
@@ -436,7 +470,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                   <button
                     type="button"
-                    onClick={() => setIsRegisterModalOpen(true)}
+                    onClick={() => (window.location.href = "https://transindomu.com/production/contact")}
                     className="w-full rounded-lg bg-orange-500 px-3 py-3 sm:py-2 text-xs font-medium text-white hover:bg-orange-600 transition-all flex justify-center items-center shadow-sm"
                   >
                     Belum punya akun? Daftar Sekarang
@@ -630,7 +664,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <nav className="flex-1 min-w-0 flex items-center gap-4 md:gap-6 lg:gap-8 text-[10px] md:text-xs font-bold uppercase tracking-widest overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-2">
                   {Object.keys(menuData)
                     .filter((menu) => {
-                      if (menu === "HSE" || menu === "USER") {
+                      if (menu === "Management" || menu === "User") {
                         return currentUser?.authority === "Admin";
                       }
                       return true;
