@@ -7,6 +7,7 @@ export interface CreateBomPayload {
   mother_part: string;
   part_number: string;
   description?: string;
+  technical_specification?: string; // <-- Ditambahkan di sini
   qty: number;
   unit?: string;
   price?: number;
@@ -49,9 +50,11 @@ export async function GET(request: Request) {
       query = query.ilike("customer", `%${customer}%`);
     }
 
-    // Filter pencarian umum (part number atau description)
+    // Filter pencarian umum (part_number, description, atau technical_specification)
     if (search) {
-      query = query.or(`part_number.ilike.%${search}%,description.ilike.%${search}%`);
+      query = query.or(
+        `part_number.ilike.%${search}%,description.ilike.%${search}%,technical_specification.ilike.%${search}%`
+      );
     }
 
     const { data, error } = await query;
@@ -88,6 +91,7 @@ export async function POST(request: Request) {
       mother_part: body.mother_part.trim(),
       part_number: body.part_number.trim(),
       description: body.description?.trim() || null,
+      technical_specification: body.technical_specification?.trim() || null, // <-- Ditambahkan di sini
       qty: body.qty !== undefined ? Number(body.qty) : 1,
       unit: body.unit?.trim() || "Pcs",
       price: body.price !== undefined ? Number(body.price) : 0,
@@ -141,6 +145,9 @@ export async function PUT(request: Request) {
     if (body.mother_part !== undefined) updateData.mother_part = body.mother_part.trim();
     if (body.part_number !== undefined) updateData.part_number = body.part_number.trim();
     if (body.description !== undefined) updateData.description = body.description.trim();
+    if (body.technical_specification !== undefined) {
+      updateData.technical_specification = body.technical_specification.trim(); // <-- Ditambahkan di sini
+    }
     if (body.qty !== undefined) updateData.qty = Number(body.qty);
     if (body.unit !== undefined) updateData.unit = body.unit.trim();
     if (body.price !== undefined) updateData.price = Number(body.price);

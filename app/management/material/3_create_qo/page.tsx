@@ -43,6 +43,7 @@ interface BomItem {
   mother_part: string;
   part_number: string;
   description?: string;
+  technical_specification?: string;
   qty: number;
   unit?: string;
   price: number;
@@ -58,6 +59,7 @@ interface FormChildPart {
   material_id?: number;
   part_number: string;
   description: string;
+  technical_specification: string;
   qty: number;
   unit: string;
   price: number;
@@ -240,10 +242,10 @@ export default function QoPoManagementPage() {
           const totalCost = items.reduce((sum, item) => {
             const price = Number(item.price) || 0;
             const margin = Number(item.margin) || 0;
-            const markup = Number(item.markup) || 0;
             const qty = Number(item.qty) || 1;
-            const unitPriceWithMargin = price + (price * margin / 100) + markup;
-            return sum + unitPriceWithMargin * qty;
+            // Kalkulasi Total Price = qty * (base price + (base price * margin %))
+            const totalPrice = qty * (price + (price * margin / 100));
+            return sum + totalPrice;
           }, 0);
 
           return {
@@ -340,6 +342,7 @@ export default function QoPoManagementPage() {
       id: `cp-${Date.now()}-${Math.random()}`,
       part_number: "",
       description: "",
+      technical_specification: "",
       qty: 1,
       unit: "Pcs",
       price: 0,
@@ -372,7 +375,8 @@ export default function QoPoManagementPage() {
                     ...ch,
                     material_id: mat.id,
                     part_number: mat.part_number,
-                    description: mat.description || mat.technical_specification || "",
+                    description: mat.description || "",
+                    technical_specification: mat.technical_specification || "",
                     qty: mat.qty > 0 ? mat.qty : 1,
                     unit: mat.unit || "Pcs",
                     price: Number(mat.price) || 0,
@@ -380,7 +384,7 @@ export default function QoPoManagementPage() {
                     markup: Number(mat.markup) || 0,
                   };
                 }
-                return { ...ch, material_id: undefined, part_number: "", description: "" };
+                return { ...ch, material_id: undefined, part_number: "", description: "", technical_specification: "" };
               }
               return ch;
             }),
@@ -427,10 +431,10 @@ export default function QoPoManagementPage() {
     return children.reduce((sum, ch) => {
       const price = Number(ch.price) || 0;
       const margin = Number(ch.margin) || 0;
-      const markup = Number(ch.markup) || 0;
       const qty = Number(ch.qty) || 0;
-      const unitPriceWithMargin = price + (price * margin / 100) + markup;
-      return sum + unitPriceWithMargin * qty;
+      // Kalkulasi Total Price = qty * (base price + (base price * margin %))
+      const totalPrice = qty * (price + (price * margin / 100));
+      return sum + totalPrice;
     }, 0);
   };
 
@@ -469,11 +473,13 @@ export default function QoPoManagementPage() {
           mother_part: mp.mother_part_name.trim(),
           part_number: ch.part_number.trim(),
           description: ch.description?.trim() || "",
+          technical_specification: ch.technical_specification?.trim() || "",
           qty: Number(ch.qty) || 1,
           unit: ch.unit?.trim() || "Pcs",
           price: Number(ch.price) || 0,
           margin: Number(ch.margin) || 0,
-          markup: Number(ch.markup) || 0,
+          // Kalkulasi Markup = base price * margin * qty
+          markup: Number(ch.price) * (Number(ch.margin) / 100) * (Number(ch.qty) || 1),
         });
       }
     }
@@ -684,13 +690,20 @@ export default function QoPoManagementPage() {
                       <div className="border-t border-slate-700/50 bg-slate-900/40 p-5 space-y-6">
                         {Object.keys(motherPartMap).map((mpName) => {
                           const children = motherPartMap[mpName];
-                          const subTotal = children.reduce((sum, item) => {
+                          
+                          // Urutkan berdasarkan Total Price tertinggi
+                          const sortedChildren = [...children].sort((a, b) => {
+                            const totalA = (Number(a.qty) || 1) * ((Number(a.price) || 0) + ((Number(a.price) || 0) * (Number(a.margin) || 0) / 100));
+                            const totalB = (Number(b.qty) || 1) * ((Number(b.price) || 0) + ((Number(b.price) || 0) * (Number(b.margin) || 0) / 100));
+                            return totalB - totalA;
+                          });
+
+                          const subTotal = sortedChildren.reduce((sum, item) => {
                             const price = Number(item.price) || 0;
                             const margin = Number(item.margin) || 0;
-                            const markup = Number(item.markup) || 0;
                             const qty = Number(item.qty) || 1;
-                            const unitPriceWithMargin = price + (price * margin / 100) + markup;
-                            return sum + unitPriceWithMargin * qty;
+                            const totalPrice = qty * (price + (price * margin / 100));
+                            return sum + totalPrice;
                           }, 0);
 
                           return (
@@ -714,6 +727,7 @@ export default function QoPoManagementPage() {
                                     <tr>
                                       <th className="px-4 py-2.5">Part Number</th>
                                       <th className="px-4 py-2.5">Description</th>
+                                      <th className="px-4 py-2.5">Technical Spec</th>
                                       <th className="px-4 py-2.5">Qty / Unit</th>
                                       <th className="px-4 py-2.5 text-right">Base Price</th>
                                       <th className="px-4 py-2.5 text-right">Margin (%)</th>
@@ -722,13 +736,15 @@ export default function QoPoManagementPage() {
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-slate-700/30">
-                                    {children.map((child) => {
+                                    {sortedChildren.map((child) => {
                                       const basePrice = Number(child.price) || 0;
                                       const margin = Number(child.margin) || 0;
-                                      const markup = Number(child.markup) || 0;
                                       const qty = Number(child.qty) || 1;
-                                      const unitPriceWithMargin = basePrice + (basePrice * margin / 100) + markup;
-                                      const totalPrice = unitPriceWithMargin * qty;
+                                      
+                                      // Kalkulasi Markup = base price * margin * qty
+                                      const calculatedMarkup = basePrice * (margin / 100) * qty;
+                                      // Kalkulasi Total Price = qty * (base price + (base price * margin %))
+                                      const totalPrice = qty * (basePrice + (basePrice * margin / 100));
 
                                       return (
                                         <tr key={child.id} className="hover:bg-slate-700/20">
@@ -736,6 +752,7 @@ export default function QoPoManagementPage() {
                                             {child.part_number}
                                           </td>
                                           <td className="px-4 py-2.5">{child.description || "-"}</td>
+                                          <td className="px-4 py-2.5">{child.technical_specification || "-"}</td>
                                           <td className="px-4 py-2.5">
                                             {child.qty} {child.unit}
                                           </td>
@@ -744,7 +761,7 @@ export default function QoPoManagementPage() {
                                           </td>
                                           <td className="px-4 py-2.5 text-right">{margin}%</td>
                                           <td className="px-4 py-2.5 text-right">
-                                            Rp {markup.toLocaleString("id-ID")}
+                                            Rp {calculatedMarkup.toLocaleString("id-ID")}
                                           </td>
                                           <td className="px-4 py-2.5 text-right font-medium text-emerald-400">
                                             Rp {totalPrice.toLocaleString("id-ID")}
@@ -1016,8 +1033,10 @@ export default function QoPoManagementPage() {
                             ) : (
                               <div className="space-y-3 overflow-x-auto pb-2">
                                 {mp.children.map((child) => {
-                                  const unitPriceWithMargin = child.price + (child.price * child.margin / 100) + child.markup;
-                                  const totalPrice = unitPriceWithMargin * child.qty;
+                                  // Kalkulasi Total Price = qty * (base price + (base price * margin %))
+                                  const totalPrice = child.qty * (child.price + (child.price * child.margin / 100));
+                                  // Kalkulasi Markup = base price * margin * qty
+                                  const calculatedMarkup = child.price * (child.margin / 100) * child.qty;
 
                                   return (
                                     <div
@@ -1025,7 +1044,7 @@ export default function QoPoManagementPage() {
                                       className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-lg border border-slate-700/50 text-xs min-w-max"
                                     >
                                       {/* Material Select */}
-                                      <div className="w-64 flex-shrink-0">
+                                      <div className="w-48 flex-shrink-0">
                                         <label className="block text-[10px] text-slate-400 mb-1">Master Material</label>
                                         <SearchableSelect
                                           options={masterMaterials}
@@ -1036,7 +1055,7 @@ export default function QoPoManagementPage() {
                                       </div>
 
                                       {/* Description */}
-                                      <div className="w-48 flex-shrink-0">
+                                      <div className="w-32 flex-shrink-0">
                                         <label className="block text-[10px] text-slate-400 mb-1">Description</label>
                                         <input
                                           type="text"
@@ -1047,8 +1066,20 @@ export default function QoPoManagementPage() {
                                         />
                                       </div>
 
+                                      {/* Technical Spec */}
+                                      <div className="w-32 flex-shrink-0">
+                                        <label className="block text-[10px] text-slate-400 mb-1">Tech Spec</label>
+                                        <input
+                                          type="text"
+                                          value={child.technical_specification}
+                                          onChange={(e) => updateChildField(mp.id, child.id, "technical_specification", e.target.value)}
+                                          placeholder="Spesifikasi"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                        />
+                                      </div>
+
                                       {/* Qty */}
-                                      <div className="w-20 flex-shrink-0">
+                                      <div className="w-16 flex-shrink-0">
                                         <label className="block text-[10px] text-slate-400 mb-1">Qty</label>
                                         <input
                                           type="number"
@@ -1060,7 +1091,7 @@ export default function QoPoManagementPage() {
                                       </div>
 
                                       {/* Unit */}
-                                      <div className="w-20 flex-shrink-0">
+                                      <div className="w-16 flex-shrink-0">
                                         <label className="block text-[10px] text-slate-400 mb-1">Unit</label>
                                         <input
                                           type="text"
@@ -1071,7 +1102,7 @@ export default function QoPoManagementPage() {
                                       </div>
 
                                       {/* Base Price */}
-                                      <div className="w-32 flex-shrink-0">
+                                      <div className="w-24 flex-shrink-0">
                                         <label className="block text-[10px] text-slate-400 mb-1">Base Price (Rp)</label>
                                         <input
                                           type="number"
@@ -1082,7 +1113,7 @@ export default function QoPoManagementPage() {
                                       </div>
 
                                       {/* Margin */}
-                                      <div className="w-20 flex-shrink-0">
+                                      <div className="w-16 flex-shrink-0">
                                         <label className="block text-[10px] text-slate-400 mb-1">Margin (%)</label>
                                         <input
                                           type="number"
@@ -1092,19 +1123,19 @@ export default function QoPoManagementPage() {
                                         />
                                       </div>
 
-                                      {/* Markup */}
-                                      <div className="w-32 flex-shrink-0">
+                                      {/* Markup (Read Only) */}
+                                      <div className="w-24 flex-shrink-0">
                                         <label className="block text-[10px] text-slate-400 mb-1">Markup (Rp)</label>
                                         <input
                                           type="number"
-                                          value={child.markup}
-                                          onChange={(e) => updateChildField(mp.id, child.id, "markup", Number(e.target.value))}
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-2 py-1.5 rounded focus:outline-none focus:border-blue-500"
+                                          value={calculatedMarkup}
+                                          readOnly
+                                          className="w-full bg-slate-700 border border-slate-600 text-slate-300 px-2 py-1.5 rounded cursor-not-allowed"
                                         />
                                       </div>
 
                                       {/* Total Price Display */}
-                                      <div className="w-36 flex-shrink-0 flex flex-col justify-end pb-1">
+                                      <div className="w-28 flex-shrink-0 flex flex-col justify-end pb-1">
                                         <span className="text-[10px] text-slate-400">Total Price</span>
                                         <span className="font-bold text-emerald-400">Rp {totalPrice.toLocaleString("id-ID")}</span>
                                       </div>
@@ -1155,7 +1186,6 @@ export default function QoPoManagementPage() {
       </div>
 
       {/* --- TAMPILAN CETAK / EXPORT PDF (Hanya muncul saat di-print) --- */}
-      {/* PERUBAHAN: Menghapus min-h-screen agar tidak memaksa tinggi halaman */}
       {printConfig && (
         <div id="print-area" className="hidden print:block bg-white text-black font-sans w-full text-xs">
           {/* KOP Perusahaan */}
@@ -1192,7 +1222,6 @@ export default function QoPoManagementPage() {
             {/* Sisi Kiri: Detail Customer */}
             <div className="space-y-1">
               <div className="flex">
-                {/* PERUBAHAN: Mengubah To menjadi From jika tipe PO */}
                 <span className="w-20 font-semibold">{printConfig.type === "PO" ? "From" : "To"}</span>
                 <span>: {printConfig.type === "PO" ? "PT. TERIOT TECHNOLOGY" : printConfig.group.customer}</span>
               </div>
@@ -1247,32 +1276,49 @@ export default function QoPoManagementPage() {
               </tr>
             </thead>
             <tbody>
-              {printConfig.group.items.map((item, idx) => {
-                const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100) + (item.markup || 0);
-                const totalPrice = unitPriceWithMargin * item.qty;
-                return (
-                  <tr key={item.id || idx} className="align-top">
-                    <td className="border-x border-black p-1.5 text-center">{idx + 1}</td>
-                    <td className="border-x border-black p-1.5">
-                      <div className="font-semibold">{item.description || item.mother_part || "Mitsubishi PLC FX3 U16MR Compact Controller"}</div>
-                    </td>
-                    <td className="border-x border-black p-1.5 text-center">
-                      {item.qty} {item.unit || "EA"}
-                    </td>
-                    {printConfig.type === "QO" && (
-                      <>
-                        <td className="border-x border-black p-1.5 text-right">
-                          Rp{unitPriceWithMargin.toLocaleString("id-ID")}
-                        </td>
-                        <td className="border-x border-black p-1.5 text-right font-semibold">
-                          Rp{totalPrice.toLocaleString("id-ID")}
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                );
+              {/* Urutkan item berdasarkan Total Price tertinggi ke terendah */}
+              {[...printConfig.group.items]
+                .sort((a, b) => {
+                  const totalA = (Number(a.qty) || 1) * ((Number(a.price) || 0) + ((Number(a.price) || 0) * (Number(a.margin) || 0) / 100));
+                  const totalB = (Number(b.qty) || 1) * ((Number(b.price) || 0) + ((Number(b.price) || 0) * (Number(b.margin) || 0) / 100));
+                  return totalB - totalA;
+                })
+                .map((item, idx) => {
+                  const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100);
+                  const totalPrice = unitPriceWithMargin * item.qty;
+                  
+                  // PERBAIKAN: Format Description - Technical Spec agar lebih aman
+                  const descParts = [];
+                  if (item.description) descParts.push(item.description);
+                  if (item.technical_specification) descParts.push(item.technical_specification);
+                  
+                  const displayDescription = descParts.length > 0 
+                    ? descParts.join(" - ") 
+                    : item.mother_part || "General Part";
+
+                  return (
+                    <tr key={item.id || idx} className="align-top">
+                      <td className="border-x border-black p-1.5 text-center">{idx + 1}</td>
+                      <td className="border-x border-black p-1.5">
+                        <div className="font-semibold">{displayDescription}</div>
+                      </td>
+                      <td className="border-x border-black p-1.5 text-center">
+                        {item.qty} {item.unit || "EA"}
+                      </td>
+                      {printConfig.type === "QO" && (
+                        <>
+                          <td className="border-x border-black p-1.5 text-right">
+                            Rp{unitPriceWithMargin.toLocaleString("id-ID")}
+                          </td>
+                          <td className="border-x border-black p-1.5 text-right font-semibold">
+                            Rp{totalPrice.toLocaleString("id-ID")}
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  );
               })}
-              {/* Spacer Baris Kosong untuk menjaga tinggi tabel (diperkecil agar muat 1 page) */}
+              {/* Spacer Baris Kosong untuk menjaga tinggi tabel */}
               <tr className="h-8">
                 <td className="border-x border-black"></td>
                 <td className="border-x border-black"></td>
@@ -1324,22 +1370,28 @@ export default function QoPoManagementPage() {
           {/* Tanda Tangan & Stamp Supplier */}
           <div className="flex justify-between items-end mt-8 mb-4">
             {/* Approved By */}
-            {/* PERUBAHAN: Memperlebar w-36 menjadi w-48 dan h-16 menjadi h-24 */}
             <div className="text-center w-48">
               <p className="font-bold mb-2">Approved By</p>
               <div className="h-24 flex items-center justify-center">
-                <span className="italic text-gray-400">[ Signature ]</span>
+                <img 
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://teriot.id" 
+                  alt="Barcode teriot.id" 
+                  className="w-16 h-16 object-contain" 
+                />
               </div>
-              <p className="font-bold underline uppercase border-t border-black pt-1">{printDirector || "DIRECTOR"}</p>
-              <p className="font-bold text-[10px]">PT. TERIOT TECH</p>
+              <p className="font-bold underline uppercase border-t border-black pt-1">{printDirector || "Damita"}</p>
+              <p className="font-bold text-[10px]">Director</p>
             </div>
 
             {/* Checked By */}
-            {/* PERUBAHAN: Memperlebar w-36 menjadi w-48 dan h-16 menjadi h-24 */}
             <div className="text-center w-48">
               <p className="font-bold mb-2">Checked By</p>
               <div className="h-24 flex items-center justify-center">
-                <span className="italic text-gray-400">[ Signature ]</span>
+                <img 
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://teriot.id" 
+                  alt="Barcode teriot.id" 
+                  className="w-16 h-16 object-contain" 
+                />
               </div>
               <p className="font-bold border-t border-black pt-1">{printAccounting || "Revalgi"}</p>
               <p className="text-[10px]">Purchasing</p>

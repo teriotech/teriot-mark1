@@ -42,6 +42,7 @@ interface BomItem {
   mother_part: string;
   part_number: string;
   description?: string;
+  technical_specification?: string; // Ditambahkan
   qty: number;
   unit?: string;
   price: number;
@@ -57,11 +58,12 @@ interface FormChildPart {
   material_id?: number;
   part_number: string;
   description: string;
-  qty: number;
+  technical_specification: string; // Ditambahkan
+  qty: number | string;
   unit: string;
-  price: number;
-  margin: number;
-  markup: number;
+  price: number | string;
+  margin: number | string;
+  markup: number | string;
 }
 
 // Interface Mother Part di dalam Form Pop-up
@@ -222,10 +224,10 @@ export default function CreateBomPage() {
           const totalCost = items.reduce((sum, item) => {
             const price = Number(item.price) || 0;
             const margin = Number(item.margin) || 0;
-            const markup = Number(item.markup) || 0;
-            const qty = Number(item.qty) || 1;
-            const unitPriceWithMargin = price + (price * margin / 100) + markup;
-            return sum + unitPriceWithMargin * qty;
+            const qty = Number(item.qty) || 0;
+            const markup = price * (margin / 100) * qty;
+            const totalPrice = (price * qty) + markup;
+            return sum + totalPrice;
           }, 0);
 
           return {
@@ -284,10 +286,11 @@ export default function CreateBomPage() {
         material_id: matchedMaterial?.id,
         part_number: item.part_number,
         description: item.description || "",
+        technical_specification: item.technical_specification || matchedMaterial?.technical_specification || "", // Ditambahkan
         qty: item.qty,
         unit: item.unit || "Pcs",
         price: item.price,
-        margin: item.margin || 0,
+        margin: item.margin || "",
         markup: item.markup || 0,
       });
     });
@@ -357,10 +360,11 @@ export default function CreateBomPage() {
       id: `cp-${Date.now()}-${Math.random()}`,
       part_number: "",
       description: "",
-      qty: 1,
+      technical_specification: "", // Ditambahkan
+      qty: "", 
       unit: "Pcs",
       price: 0,
-      margin: 0,
+      margin: "", 
       markup: 0,
     };
 
@@ -389,15 +393,16 @@ export default function CreateBomPage() {
                     ...ch,
                     material_id: mat.id,
                     part_number: mat.part_number,
-                    description: mat.description || mat.technical_specification || "",
-                    qty: mat.qty > 0 ? mat.qty : 1,
+                    description: mat.description || "",
+                    technical_specification: mat.technical_specification || "", // Ditambahkan
+                    qty: mat.qty > 0 ? mat.qty : "",
                     unit: mat.unit || "Pcs",
                     price: Number(mat.price) || 0,
-                    margin: Number(mat.margin) || 0,
-                    markup: Number(mat.markup) || 0,
+                    margin: mat.margin ? Number(mat.margin) : "",
+                    markup: 0, 
                   };
                 }
-                return { ...ch, material_id: undefined, part_number: "", description: "" };
+                return { ...ch, material_id: undefined, part_number: "", description: "", technical_specification: "" };
               }
               return ch;
             }),
@@ -444,10 +449,10 @@ export default function CreateBomPage() {
     return children.reduce((sum, ch) => {
       const price = Number(ch.price) || 0;
       const margin = Number(ch.margin) || 0;
-      const markup = Number(ch.markup) || 0;
       const qty = Number(ch.qty) || 0;
-      const unitPriceWithMargin = price + (price * margin / 100) + markup;
-      return sum + unitPriceWithMargin * qty;
+      const markup = price * (margin / 100) * qty;
+      const totalPrice = (price * qty) + markup;
+      return sum + totalPrice;
     }, 0);
   };
 
@@ -481,16 +486,27 @@ export default function CreateBomPage() {
           return;
         }
 
+        if (!ch.qty || Number(ch.qty) <= 0) {
+          alert(`Qty untuk Part '${ch.part_number}' tidak boleh kosong atau 0.`);
+          return;
+        }
+
+        const basePrice = Number(ch.price) || 0;
+        const margin = Number(ch.margin) || 0;
+        const qty = Number(ch.qty);
+        const calculatedMarkup = basePrice * (margin / 100) * qty;
+
         payloadItems.push({
           customer: customerName.trim(),
           mother_part: mp.mother_part_name.trim(),
           part_number: ch.part_number.trim(),
           description: ch.description?.trim() || "",
-          qty: Number(ch.qty) || 1,
+          technical_specification: ch.technical_specification?.trim() || "", // Ditambahkan ke Payload
+          qty: qty,
           unit: ch.unit?.trim() || "Pcs",
-          price: Number(ch.price) || 0,
-          margin: Number(ch.margin) || 0,
-          markup: Number(ch.markup) || 0,
+          price: basePrice,
+          margin: margin,
+          markup: calculatedMarkup,
         });
       }
     }
@@ -672,10 +688,10 @@ export default function CreateBomPage() {
                           const subTotal = children.reduce((sum, item) => {
                             const price = Number(item.price) || 0;
                             const margin = Number(item.margin) || 0;
-                            const markup = Number(item.markup) || 0;
-                            const qty = Number(item.qty) || 1;
-                            const unitPriceWithMargin = price + (price * margin / 100) + markup;
-                            return sum + unitPriceWithMargin * qty;
+                            const qty = Number(item.qty) || 0;
+                            const markup = price * (margin / 100) * qty;
+                            const totalPrice = (price * qty) + markup;
+                            return sum + totalPrice;
                           }, 0);
 
                           return (
@@ -699,10 +715,11 @@ export default function CreateBomPage() {
                                     <tr>
                                       <th className="px-4 py-2.5">Part Number</th>
                                       <th className="px-4 py-2.5">Description</th>
+                                      <th className="px-4 py-2.5">Technical Spec</th>
                                       <th className="px-4 py-2.5">Qty / Unit</th>
                                       <th className="px-4 py-2.5 text-right">Base Price</th>
                                       <th className="px-4 py-2.5 text-right">Margin (%)</th>
-                                      <th className="px-4 py-2.5 text-right">Markup</th>
+                                      <th className="px-4 py-2.5 text-right">Total Markup</th>
                                       <th className="px-4 py-2.5 text-right">Total Price</th>
                                     </tr>
                                   </thead>
@@ -710,10 +727,13 @@ export default function CreateBomPage() {
                                     {children.map((child) => {
                                       const basePrice = Number(child.price) || 0;
                                       const margin = Number(child.margin) || 0;
-                                      const markup = Number(child.markup) || 0;
-                                      const qty = Number(child.qty) || 1;
-                                      const unitPriceWithMargin = basePrice + (basePrice * margin / 100) + markup;
-                                      const totalPrice = unitPriceWithMargin * qty;
+                                      const qty = Number(child.qty) || 0;
+                                      const markup = basePrice * (margin / 100) * qty;
+                                      const totalPrice = (basePrice * qty) + markup;
+
+                                      // Ambil Technical Spec dari data BOM atau fallback ke masterMaterials
+                                      const matchedMaterial = masterMaterials.find(m => m.part_number === child.part_number);
+                                      const techSpec = child.technical_specification || matchedMaterial?.technical_specification || "-";
 
                                       return (
                                         <tr key={child.id} className="hover:bg-slate-700/20">
@@ -721,6 +741,7 @@ export default function CreateBomPage() {
                                             {child.part_number}
                                           </td>
                                           <td className="px-4 py-2.5">{child.description || "-"}</td>
+                                          <td className="px-4 py-2.5">{techSpec}</td>
                                           <td className="px-4 py-2.5">
                                             {child.qty} {child.unit}
                                           </td>
@@ -755,7 +776,6 @@ export default function CreateBomPage() {
         {/* POP-UP MODAL: CREATE / EDIT BOM */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-            {/* PERUBAHAN: max-w-5xl diubah menjadi max-w-[95vw] agar modal menjadi full wide */}
             <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-[95vw] max-h-[95vh] flex flex-col shadow-2xl overflow-hidden my-auto">
               <div className="px-6 py-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -875,8 +895,13 @@ export default function CreateBomPage() {
                             ) : (
                               <div className="space-y-3 pb-2">
                                 {mp.children.map((child, childIdx) => {
-                                  const unitPriceWithMargin = child.price + (child.price * child.margin / 100) + child.markup;
-                                  const totalPrice = unitPriceWithMargin * child.qty;
+                                  // Kalkulasi Otomatis
+                                  const basePrice = Number(child.price) || 0;
+                                  const margin = Number(child.margin) || 0;
+                                  const qty = Number(child.qty) || 0;
+                                  
+                                  const calculatedMarkup = basePrice * (margin / 100) * qty;
+                                  const totalPrice = (basePrice * qty) + calculatedMarkup;
 
                                   return (
                                     <div
@@ -896,13 +921,25 @@ export default function CreateBomPage() {
                                       </div>
 
                                       {/* Description */}
-                                      <div className="w-48 flex-shrink-0">
+                                      <div className="w-40 flex-shrink-0">
                                         <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Description</label>
                                         <input
                                           type="text"
                                           value={child.description}
                                           onChange={(e) => updateChildField(mp.id, child.id, "description", e.target.value)}
                                           placeholder="Deskripsi Material"
+                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                                        />
+                                      </div>
+
+                                      {/* Technical Spec (Ditambahkan) */}
+                                      <div className="w-40 flex-shrink-0">
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Tech Spec</label>
+                                        <input
+                                          type="text"
+                                          value={child.technical_specification}
+                                          onChange={(e) => updateChildField(mp.id, child.id, "technical_specification", e.target.value)}
+                                          placeholder="Spesifikasi Teknis"
                                           className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
@@ -914,7 +951,7 @@ export default function CreateBomPage() {
                                           type="number"
                                           min="1"
                                           value={child.qty}
-                                          onChange={(e) => updateChildField(mp.id, child.id, "qty", Number(e.target.value))}
+                                          onChange={(e) => updateChildField(mp.id, child.id, "qty", e.target.value)}
                                           className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
@@ -936,7 +973,7 @@ export default function CreateBomPage() {
                                         <input
                                           type="number"
                                           value={child.price}
-                                          onChange={(e) => updateChildField(mp.id, child.id, "price", Number(e.target.value))}
+                                          onChange={(e) => updateChildField(mp.id, child.id, "price", e.target.value)}
                                           className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
@@ -947,19 +984,19 @@ export default function CreateBomPage() {
                                         <input
                                           type="number"
                                           value={child.margin}
-                                          onChange={(e) => updateChildField(mp.id, child.id, "margin", Number(e.target.value))}
+                                          onChange={(e) => updateChildField(mp.id, child.id, "margin", e.target.value)}
                                           className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
                                         />
                                       </div>
 
-                                      {/* Markup */}
+                                      {/* Markup (Read Only) */}
                                       <div className="w-32 flex-shrink-0">
-                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Markup (Rp)</label>
+                                        <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Total Markup (Rp)</label>
                                         <input
                                           type="number"
-                                          value={child.markup}
-                                          onChange={(e) => updateChildField(mp.id, child.id, "markup", Number(e.target.value))}
-                                          className="w-full bg-slate-800 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                                          value={calculatedMarkup}
+                                          readOnly
+                                          className="w-full bg-slate-800/50 border border-slate-700 text-slate-400 px-3 py-2 rounded-lg cursor-not-allowed focus:outline-none"
                                         />
                                       </div>
 
@@ -1041,6 +1078,7 @@ export default function CreateBomPage() {
                 <th className="border border-black p-2 text-left">Mother Part</th>
                 <th className="border border-black p-2 text-left">Part Number</th>
                 <th className="border border-black p-2 text-left">Description</th>
+                <th className="border border-black p-2 text-left">Technical Spec</th>
                 <th className="border border-black p-2 text-center">Qty</th>
                 <th className="border border-black p-2 text-right">Unit Price (Rp)</th>
                 <th className="border border-black p-2 text-right">Total Price (Rp)</th>
@@ -1048,13 +1086,19 @@ export default function CreateBomPage() {
             </thead>
             <tbody>
               {printGroup.items.map((item, idx) => {
-                const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100) + (item.markup || 0);
+                const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100);
                 const totalPrice = unitPriceWithMargin * item.qty;
+                
+                // Ambil Technical Spec dari data BOM atau fallback ke masterMaterials
+                const matchedMaterial = masterMaterials.find(m => m.part_number === item.part_number);
+                const techSpec = item.technical_specification || matchedMaterial?.technical_specification || "-";
+
                 return (
                   <tr key={item.id} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                     <td className="border border-black p-2">{item.mother_part}</td>
                     <td className="border border-black p-2 font-semibold">{item.part_number}</td>
                     <td className="border border-black p-2">{item.description || "-"}</td>
+                    <td className="border border-black p-2">{techSpec}</td>
                     <td className="border border-black p-2 text-center">{item.qty} {item.unit}</td>
                     <td className="border border-black p-2 text-right">{unitPriceWithMargin.toLocaleString("id-ID")}</td>
                     <td className="border border-black p-2 text-right font-semibold">{totalPrice.toLocaleString("id-ID")}</td>
@@ -1064,7 +1108,7 @@ export default function CreateBomPage() {
             </tbody>
             <tfoot>
               <tr className="bg-gray-200 font-bold">
-                <td colSpan={5} className="border border-black p-2 text-right">GRAND TOTAL ESTIMATION</td>
+                <td colSpan={6} className="border border-black p-2 text-right">GRAND TOTAL ESTIMATION</td>
                 <td className="border border-black p-2 text-right">Rp {printGroup.total_cost.toLocaleString("id-ID")}</td>
               </tr>
             </tfoot>
