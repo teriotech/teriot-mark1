@@ -126,6 +126,7 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Master Material", href: "/management/material/1_master_material", status: "fullstack" },
         { label: "Create BOM", href: "/management/material/2_create_bom", status: "fullstack" },
         { label: "Create QO & PO", href: "/management/material/3_create_qo", status: "fullstack" },
+        { label: "Create QO & PO TMI", href: "/management/material/3_create_qo_TMI", status: "fullstack" },
         { label: "Cost Analysis", href: "/management/material/4_cost_analysis", status: "fullstack" },
       ]
     },
