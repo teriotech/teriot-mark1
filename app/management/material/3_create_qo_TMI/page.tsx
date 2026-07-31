@@ -1377,9 +1377,11 @@ export default function QoPoManagementPage() {
       {bastConfig && (
         <div
           id="print-area-bast"
-          className="hidden print:flex flex-col justify-between bg-white text-black font-sans w-full text-xs max-h-[280mm] h-[280mm] box-border p-2"
+          // PERBAIKAN 1: Ganti 'justify-between' menjadi 'justify-start'
+          className="hidden print:flex flex-col justify-start bg-white text-black font-sans w-full text-xs max-h-[280mm] h-[280mm] box-border p-2"
         >
-          <div className="flex-1 flex flex-col">
+          {/* PERBAIKAN 2: Hapus 'flex-1' agar konten tidak memakan seluruh sisa ruang */}
+          <div className="flex flex-col">
             {/* KOP PERUSAHAAN TRANSINDO */}
             <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-4">
               <div className="w-44 h-14 flex items-center">
@@ -1491,7 +1493,8 @@ export default function QoPoManagementPage() {
           </div>
 
           {/* AREA TANDA TANGAN */}
-          <div className="break-inside-avoid pt-6 mb-8">
+          {/* PERBAIKAN 3: Mengganti pt-6 menjadi mt-8 agar jaraknya pas di bawah teks */}
+          <div className="break-inside-avoid mt-8 mb-8">
             <div className="flex justify-between items-start text-xs">
               {/* Tanda Tangan First Participant */}
               <div className="w-56 text-left">
