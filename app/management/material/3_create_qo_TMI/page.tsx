@@ -207,7 +207,7 @@ export default function QoPoManagementPage() {
   const [printDocNumber, setPrintDocNumber] = useState<string>("");
   
   const [printTerms, setPrintTerms] = useState<string>(
-    "due to plan & Project activity, it might be change depends on device & condition\n- Status Devices (ready or not) \n- Schedule User (available or not)\nGrace Period 30 Days after User Acceptance Test is Confirmed\nThis price is not include tax (PPN 11%)"
+    "due to plan & Project activity, it might be change depends on device & condition\nThe listed prices are subject to change at any time without prior notice. \nThe estimated costs above do not include tax (11% VAT)\nThis document is valid and recognized as an official quotation\nestimate from the company. Payment shall be made in accordance with the mutually agreed terms"
   );
   const [printDirector, setPrintDirector] = useState<string>("");
   const [printAccounting, setPrintAccounting] = useState<string>("");
