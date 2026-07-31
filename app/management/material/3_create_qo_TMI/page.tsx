@@ -128,7 +128,7 @@ export default function QoPoManagementPage() {
   const [customerName, setCustomerName] = useState<string>("");
   const [motherParts, setMotherParts] = useState<FormMotherPart[]>([]);
 
-  // Print States (Consolidated)
+  // Print States (QO / PO)
   const [printConfig, setPrintConfig] = useState<{ group: BomGroup; type: PrintType } | null>(null);
   const [isPrintSettingsOpen, setIsPrintSettingsOpen] = useState<boolean>(false);
   const [printForm, setPrintForm] = useState({
@@ -137,16 +137,18 @@ export default function QoPoManagementPage() {
     director: "", accounting: ""
   });
 
-  // BAST States (Consolidated)
+  // BAST States (Dikembalikan seperti referensi)
   const [isBastModalOpen, setIsBastModalOpen] = useState(false);
   const [bastConfig, setBastConfig] = useState<{ group: BomGroup } | null>(null);
-  const [bastForm, setBastForm] = useState({
-    qoNumber: "", project: "", customer: "",
-    firstCompany: "PT. TRANSINDO MULTI INDUSTRI",
-    firstAddress: "Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14, Bedahan, Sawangan, Depok",
-    firstName: "Damita",
-    secondCompany: "", secondAddress: "", secondName: ""
-  });
+  const [bastQoNumber, setBastQoNumber] = useState("");
+  const [bastProject, setBastProject] = useState("");
+  const [bastCustomer, setBastCustomer] = useState("");
+  const [bastFirstCompany, setBastFirstCompany] = useState("PT. TRANSINDO MULTI INDUSTRI");
+  const [bastFirstAddress, setBastFirstAddress] = useState("Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14, Bedahan, Sawangan, Depok");
+  const [bastFirstName, setBastFirstName] = useState("Damita");
+  const [bastSecondCompany, setBastSecondCompany] = useState("");
+  const [bastSecondAddress, setBastSecondAddress] = useState("");
+  const [bastSecondName, setBastSecondName] = useState("");
 
   // --- EFFECTS ---
   useEffect(() => {
@@ -203,6 +205,7 @@ export default function QoPoManagementPage() {
   // --- HANDLERS ---
   const handleOpenModal = () => { setCustomerName(""); setMotherParts([]); setIsModalOpen(true); };
 
+  // Handler QO / PO
   const handleOpenPrintSettings = (group: BomGroup, type: PrintType, e: React.MouseEvent) => {
     e.stopPropagation();
     setPrintConfig({ group, type });
@@ -217,25 +220,38 @@ export default function QoPoManagementPage() {
     setIsPrintSettingsOpen(true);
   };
 
-  const handleOpenBastSettings = (group: BomGroup, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setBastConfig({ group });
-    const date = new Date();
-    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    
-    setBastForm(prev => ({
-      ...prev,
-      customer: group.customer || "",
-      secondCompany: group.customer || "",
-      qoNumber: `QO${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getFullYear().toString().slice(-2)}${randomNum}`,
-      project: "", secondAddress: "", secondName: ""
-    }));
-    setIsBastModalOpen(true);
-  };
-
   const executePrint = (setter: React.Dispatch<React.SetStateAction<boolean>>) => {
     setter(false);
     setTimeout(() => window.print(), 300);
+  };
+
+  // Handler BAST (Dikembalikan seperti referensi)
+  const handleOpenBastSettings = (group: BomGroup, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBastConfig({ group });
+    
+    const currentCustomer = group.customer || "";
+    setBastCustomer(currentCustomer);
+    setBastSecondCompany(currentCustomer);
+  
+    const date = new Date();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    
+    setBastQoNumber(`QO${month}${year}${randomNum}`);
+    setBastProject("");
+    setBastSecondAddress("");
+    setBastSecondName("");
+  
+    setIsBastModalOpen(true);
+  };
+  
+  const executeBastPrint = () => {
+    setIsBastModalOpen(false);
+    setTimeout(() => {
+      window.print();
+    }, 300);
   };
 
   // --- FORM BOM HANDLERS ---
@@ -441,7 +457,7 @@ export default function QoPoManagementPage() {
           )}
         </div>
 
-        {/* --- MODAL PRINT SETTINGS --- */}
+        {/* --- MODAL PRINT SETTINGS (QO / PO) --- */}
         {isPrintSettingsOpen && printConfig && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl overflow-hidden my-auto">
@@ -494,25 +510,25 @@ export default function QoPoManagementPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="col-span-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 space-y-3">
-                  <div><label className="block text-slate-300 text-xs font-semibold mb-1">Quotation Number</label><input type="text" value={bastForm.qoNumber} onChange={(e) => setBastForm({ ...bastForm, qoNumber: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white" /></div>
-                  <div><label className="block text-slate-300 text-xs font-semibold mb-1">Project Name</label><input type="text" placeholder="Contoh: Automation Machine Setup" value={bastForm.project} onChange={(e) => setBastForm({ ...bastForm, project: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white" /></div>
+                  <div><label className="block text-slate-300 text-xs font-semibold mb-1">Quotation Number</label><input type="text" value={bastQoNumber} onChange={(e) => setBastQoNumber(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white" /></div>
+                  <div><label className="block text-slate-300 text-xs font-semibold mb-1">Project Name</label><input type="text" placeholder="Contoh: Automation Machine Setup" value={bastProject} onChange={(e) => setBastProject(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white" /></div>
                 </div>
                 <div className="space-y-3 bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
                   <h4 className="font-bold text-purple-400 text-xs uppercase tracking-wider">1st Participant (Pihak Ke-1)</h4>
-                  <div><label className="block text-slate-300 text-xs mb-1">Company Name</label><input type="text" value={bastForm.firstCompany} onChange={(e) => setBastForm({ ...bastForm, firstCompany: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
-                  <div><label className="block text-slate-300 text-xs mb-1">Address</label><textarea rows={2} value={bastForm.firstAddress} onChange={(e) => setBastForm({ ...bastForm, firstAddress: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
-                  <div><label className="block text-slate-300 text-xs mb-1">Responsible Name</label><input type="text" value={bastForm.firstName} onChange={(e) => setBastForm({ ...bastForm, firstName: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
+                  <div><label className="block text-slate-300 text-xs mb-1">Company Name</label><input type="text" value={bastFirstCompany} onChange={(e) => setBastFirstCompany(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
+                  <div><label className="block text-slate-300 text-xs mb-1">Address</label><textarea rows={2} value={bastFirstAddress} onChange={(e) => setBastFirstAddress(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
+                  <div><label className="block text-slate-300 text-xs mb-1">Responsible Name</label><input type="text" value={bastFirstName} onChange={(e) => setBastFirstName(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
                 </div>
                 <div className="space-y-3 bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
                   <h4 className="font-bold text-emerald-400 text-xs uppercase tracking-wider">2nd Participant (Customer)</h4>
-                  <div><label className="block text-slate-300 text-xs mb-1">Company Name</label><input type="text" value={bastForm.secondCompany} onChange={(e) => setBastForm({ ...bastForm, secondCompany: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
-                  <div><label className="block text-slate-300 text-xs mb-1">Address</label><textarea rows={2} placeholder="Masukkan alamat customer..." value={bastForm.secondAddress} onChange={(e) => setBastForm({ ...bastForm, secondAddress: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
-                  <div><label className="block text-slate-300 text-xs mb-1">Responsible Name</label><input type="text" placeholder="Nama penanggung jawab customer..." value={bastForm.secondName} onChange={(e) => setBastForm({ ...bastForm, secondName: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
+                  <div><label className="block text-slate-300 text-xs mb-1">Company Name</label><input type="text" value={bastSecondCompany} onChange={(e) => setBastSecondCompany(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
+                  <div><label className="block text-slate-300 text-xs mb-1">Address</label><textarea rows={2} placeholder="Masukkan alamat customer..." value={bastSecondAddress} onChange={(e) => setBastSecondAddress(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
+                  <div><label className="block text-slate-300 text-xs mb-1">Responsible Name</label><input type="text" placeholder="Nama penanggung jawab customer..." value={bastSecondName} onChange={(e) => setBastSecondName(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs" /></div>
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
                 <button onClick={() => setIsBastModalOpen(false)} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg">Cancel</button>
-                <button onClick={() => executePrint(setIsBastModalOpen)} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg flex items-center gap-2"><Printer className="w-4 h-4" /> Export BAST PDF</button>
+                <button onClick={executeBastPrint} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg flex items-center gap-2"><Printer className="w-4 h-4" /> Export BAST PDF</button>
               </div>
             </div>
           </div>
@@ -603,9 +619,9 @@ export default function QoPoManagementPage() {
               </div>
             </div>
             <div className="space-y-1 text-xs mb-6 font-sans">
-              <div className="flex"><span className="w-36 font-semibold">Quotation Number</span><span>: {bastForm.qoNumber || "-"}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Project</span><span>: {bastForm.project || "-"}</span></div>
-              <div className="flex"><span className="w-36 font-semibold">Customer</span><span>: {bastForm.secondCompany || bastForm.customer || "-"}</span></div>
+              <div className="flex"><span className="w-36 font-semibold">Quotation Number</span><span>: {bastQoNumber || "-"}</span></div>
+              <div className="flex"><span className="w-36 font-semibold">Project</span><span>: {bastProject || "-"}</span></div>
+              <div className="flex"><span className="w-36 font-semibold">Customer</span><span>: {bastSecondCompany || bastCustomer || "-"}</span></div>
             </div>
             <div className="text-center my-4"><h2 className="text-base font-bold uppercase tracking-widest border-b-2 border-black inline-block pb-0.5">CERTIFICATE OF COMPLETION</h2></div>
             <p className="text-xs mb-4">This Certificate of completion is made by and between :</p>
@@ -613,32 +629,32 @@ export default function QoPoManagementPage() {
               <div>
                 <p className="font-bold">1.</p>
                 <div className="pl-4 space-y-1">
-                  <div className="flex"><span className="w-32 font-semibold">Company Name</span><span>: {bastForm.firstCompany}</span></div>
-                  <div className="flex"><span className="w-32 font-semibold">Address</span><span className="flex-1">: {bastForm.firstAddress}</span></div>
-                  <div className="flex"><span className="w-32 font-semibold">Name</span><span>: {bastForm.firstName || "____________________"}</span></div>
-                  <p className="pt-0.5">As the responsible from <span className="font-semibold">{bastForm.firstCompany}</span>, now will be called as the First Participant.</p>
+                  <div className="flex"><span className="w-32 font-semibold">Company Name</span><span>: {bastFirstCompany}</span></div>
+                  <div className="flex"><span className="w-32 font-semibold">Address</span><span className="flex-1">: {bastFirstAddress}</span></div>
+                  <div className="flex"><span className="w-32 font-semibold">Name</span><span>: {bastFirstName || "____________________"}</span></div>
+                  <p className="pt-0.5">As the responsible from <span className="font-semibold">{bastFirstCompany}</span>, now will be called as the First Participant.</p>
                 </div>
               </div>
               <div>
                 <p className="font-bold">2.</p>
                 <div className="pl-4 space-y-1">
-                  <div className="flex"><span className="w-32 font-semibold">Company Name</span><span>: {bastForm.secondCompany || bastForm.customer}</span></div>
-                  <div className="flex"><span className="w-32 font-semibold">Address</span><span className="flex-1">: {bastForm.secondAddress || "-"}</span></div>
-                  <div className="flex"><span className="w-32 font-semibold">Name</span><span>: {bastForm.secondName || "____________________"}</span></div>
-                  <p className="pt-0.5">As the responsible from <span className="font-semibold">{bastForm.secondCompany || bastForm.customer}</span>, now will be called as the Second.</p>
+                  <div className="flex"><span className="w-32 font-semibold">Company Name</span><span>: {bastSecondCompany || bastCustomer}</span></div>
+                  <div className="flex"><span className="w-32 font-semibold">Address</span><span className="flex-1">: {bastSecondAddress || "-"}</span></div>
+                  <div className="flex"><span className="w-32 font-semibold">Name</span><span>: {bastSecondName || "____________________"}</span></div>
+                  <p className="pt-0.5">As the responsible from <span className="font-semibold">{bastSecondCompany || bastCustomer}</span>, now will be called as the Second.</p>
                 </div>
               </div>
             </div>
             <div className="space-y-3 text-xs text-justify leading-relaxed">
-              <p>First Participant and Second Participant area already doing the assessment for <span className="font-semibold">{bastForm.project || "Project"}</span> refer from quotation number <span className="font-semibold">{bastForm.qoNumber}</span>.</p>
+              <p>First Participant and Second Participant area already doing the assessment for <span className="font-semibold">{bastProject || "Project"}</span> refer from quotation number <span className="font-semibold">{bastQoNumber}</span>.</p>
               <p>As the assessment, both participants agree that the work is 100% ( One Hundred Percent ) finished and works properly.</p>
               <p>In witness whereof, the participants here caused this agreement to be made and signed so that it shall be used as it must.</p>
             </div>
           </div>
           <div className="break-inside-avoid pt-6 mb-8">
             <div className="flex justify-between items-start text-xs">
-              <div className="w-56 text-left"><p className="font-bold uppercase">FIRST PARTICIPANT</p><p className="font-semibold text-[11px]">{bastForm.firstCompany}</p><div className="h-20"></div><div className="border-b border-black w-full"></div></div>
-              <div className="w-56 text-left"><p className="font-bold uppercase">SECOND PARTICIPANT</p><p className="font-semibold text-[11px]">{bastForm.secondCompany || bastForm.customer}</p><div className="h-20"></div><div className="border-b border-black w-full"></div></div>
+              <div className="w-56 text-left"><p className="font-bold uppercase">FIRST PARTICIPANT</p><p className="font-semibold text-[11px]">{bastFirstCompany}</p><div className="h-20"></div><div className="border-b border-black w-full"></div></div>
+              <div className="w-56 text-left"><p className="font-bold uppercase">SECOND PARTICIPANT</p><p className="font-semibold text-[11px]">{bastSecondCompany || bastCustomer}</p><div className="h-20"></div><div className="border-b border-black w-full"></div></div>
             </div>
           </div>
         </div>
