@@ -362,52 +362,52 @@ export default function QoPoManagementPage() {
   };
 
   // State Khusus BAST (Berita Acara Serah Terima)
-const [isBastModalOpen, setIsBastModalOpen] = useState(false);
-const [bastConfig, setBastConfig] = useState<{ group: BomGroup } | null>(null);
+  const [isBastModalOpen, setIsBastModalOpen] = useState(false);
+  const [bastConfig, setBastConfig] = useState<{ group: BomGroup } | null>(null);
 
-// Field Inputs Modal BAST
-const [bastQoNumber, setBastQoNumber] = useState("");
-const [bastProject, setBastProject] = useState("");
-const [bastCustomer, setBastCustomer] = useState("");
-const [bastFirstCompany, setBastFirstCompany] = useState("PT. TRANSINDO MULTI INDUSTRI");
-const [bastFirstAddress, setBastFirstAddress] = useState("Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14, Bedahan, Sawangan, Depok");
-const [bastFirstName, setBastFirstName] = useState("Damita");
+  // Field Inputs Modal BAST
+  const [bastQoNumber, setBastQoNumber] = useState("");
+  const [bastProject, setBastProject] = useState("");
+  const [bastCustomer, setBastCustomer] = useState("");
+  const [bastFirstCompany, setBastFirstCompany] = useState("PT. TRANSINDO MULTI INDUSTRI");
+  const [bastFirstAddress, setBastFirstAddress] = useState("Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14, Bedahan, Sawangan, Depok");
+  const [bastFirstName, setBastFirstName] = useState("Damita");
 
-const [bastSecondCompany, setBastSecondCompany] = useState("");
-const [bastSecondAddress, setBastSecondAddress] = useState("");
-const [bastSecondName, setBastSecondName] = useState("");
+  const [bastSecondCompany, setBastSecondCompany] = useState("");
+  const [bastSecondAddress, setBastSecondAddress] = useState("");
+  const [bastSecondName, setBastSecondName] = useState("");
 
-// Handler Membuka Modal BAST
-const handleOpenBastSettings = (group: BomGroup, e: React.MouseEvent) => {
-  e.stopPropagation();
-  setBastConfig({ group });
-  
-  // Ambil Customer dari Group
-  const currentCustomer = group.customer || "";
-  setBastCustomer(currentCustomer);
-  setBastSecondCompany(currentCustomer);
+  // Handler Membuka Modal BAST
+  const handleOpenBastSettings = (group: BomGroup, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBastConfig({ group });
+    
+    // Ambil Customer dari Group
+    const currentCustomer = group.customer || "";
+    setBastCustomer(currentCustomer);
+    setBastSecondCompany(currentCustomer);
 
-  // Auto Generate Quotation Number jika belum ada
-  const date = new Date();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear().toString().slice(-2);
-  const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  
-  setBastQoNumber(`QO${month}${year}${randomNum}`);
-  setBastProject("");
-  setBastSecondAddress("");
-  setBastSecondName("");
+    // Auto Generate Quotation Number jika belum ada
+    const date = new Date();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    
+    setBastQoNumber(`QO${month}${year}${randomNum}`);
+    setBastProject("");
+    setBastSecondAddress("");
+    setBastSecondName("");
 
-  setIsBastModalOpen(true);
-};
+    setIsBastModalOpen(true);
+  };
 
-// Handler Eksekusi Print BAST
-const executeBastPrint = () => {
-  setIsBastModalOpen(false);
-  setTimeout(() => {
-    window.print();
-  }, 300);
-};
+  // Handler Eksekusi Print BAST
+  const executeBastPrint = () => {
+    setIsBastModalOpen(false);
+    setTimeout(() => {
+      window.print();
+    }, 300);
+  };
 
   const handleSelectMaterialForChild = (mpId: string, childId: string, materialIdVal: string) => {
     const mat = masterMaterials.find((m) => m.id === Number(materialIdVal));
@@ -575,17 +575,23 @@ const executeBastPrint = () => {
 
   return (
     <>
-      
+      {/* --- CSS KHUSUS PRINT (Diperbarui untuk Mobile 1 Halaman) --- */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page { 
             size: A4 portrait;
-            margin: 0; /* Menghilangkan header/footer bawaan browser */
+            margin: 0; 
           }
-          body { 
+          /* Memaksa body dan html agar tidak melebihi 1 halaman (100vh) */
+          html, body {
+            width: 100% !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important; 
+            background-color: white !important;
             -webkit-print-color-adjust: exact; 
             print-color-adjust: exact;
-            background-color: white !important;
           }
           /* Sembunyikan SEMUA elemen di halaman */
           body * {
@@ -595,24 +601,21 @@ const executeBastPrint = () => {
           #print-area, #print-area *, #print-area-bast, #print-area-bast * {
             visibility: visible;
           }
-          /* Posisikan area cetak di paling atas kiri kertas secara absolut */
+          /* Posisikan area cetak di paling atas kiri kertas secara absolut dan batasi tingginya */
           #print-area, #print-area-bast {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
-            width: 100% !important;
-            /* Padding disesuaikan agar mepet ke atas dan muat 1 page */
-            padding: 0.5cm 1cm !important; 
-            box-sizing: border-box;
-            background-color: white;
-          }
-          /* HAPUS 'div' dari sini agar tidak membatalkan position: absolute pada #print-area */
-          html, body, main {
-            height: auto !important;
-            overflow: visible !important;
-            position: static !important;
-            padding: 0 !important;
-            margin: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            padding: 8mm 10mm !important; 
+            box-sizing: border-box !important;
+            background-color: white !important;
+            page-break-inside: avoid !important;
+            page-break-after: avoid !important;
+            page-break-before: avoid !important;
+            overflow: hidden !important;
           }
         }
       `}} />
@@ -709,42 +712,42 @@ const executeBastPrint = () => {
                         </div>
 
                         {/* Action Buttons (Export QO, PO, & BAST) */}
-<div className="flex items-center gap-2">
-  {/* Button QO */}
-  <button
-    onClick={(e) => handleOpenPrintSettings(group, "QO", e)}
-    className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700/50 rounded-lg transition-colors"
-    title="Generate Quotation (QO)"
-  >
-    <FileText className="w-5 h-5" />
-  </button>
+                        <div className="flex items-center gap-2">
+                          {/* Button QO */}
+                          <button
+                            onClick={(e) => handleOpenPrintSettings(group, "QO", e)}
+                            className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-700/50 rounded-lg transition-colors"
+                            title="Generate Quotation (QO)"
+                          >
+                            <FileText className="w-5 h-5" />
+                          </button>
 
-  {/* Button PO */}
-  <button
-    onClick={(e) => handleOpenPrintSettings(group, "PO", e)}
-    className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-700/50 rounded-lg transition-colors"
-    title="Generate Purchase Order (PO)"
-  >
-    <ShoppingCart className="w-5 h-5" />
-  </button>
+                          {/* Button PO */}
+                          <button
+                            onClick={(e) => handleOpenPrintSettings(group, "PO", e)}
+                            className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-700/50 rounded-lg transition-colors"
+                            title="Generate Purchase Order (PO)"
+                          >
+                            <ShoppingCart className="w-5 h-5" />
+                          </button>
 
-  {/* TOMBOL BARU: BAST (Certificate of Completion) */}
-  <button
-    onClick={(e) => handleOpenBastSettings(group, e)}
-    className="p-2 text-slate-400 hover:text-purple-400 hover:bg-slate-700/50 rounded-lg transition-colors"
-    title="Generate BAST / Certificate of Completion"
-  >
-    <ClipboardCheck className="w-5 h-5" />
-  </button>
+                          {/* TOMBOL BARU: BAST (Certificate of Completion) */}
+                          <button
+                            onClick={(e) => handleOpenBastSettings(group, e)}
+                            className="p-2 text-slate-400 hover:text-purple-400 hover:bg-slate-700/50 rounded-lg transition-colors"
+                            title="Generate BAST / Certificate of Completion"
+                          >
+                            <ClipboardCheck className="w-5 h-5" />
+                          </button>
 
-  <div className="p-2 bg-slate-700/50 rounded-lg text-slate-300 ml-2">
-    {isExpanded ? (
-      <ChevronDown className="w-5 h-5" />
-    ) : (
-      <ChevronRight className="w-5 h-5" />
-    )}
-  </div>
-</div>
+                          <div className="p-2 bg-slate-700/50 rounded-lg text-slate-300 ml-2">
+                            {isExpanded ? (
+                              <ChevronDown className="w-5 h-5" />
+                            ) : (
+                              <ChevronRight className="w-5 h-5" />
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -927,18 +930,6 @@ const executeBastPrint = () => {
 
                 {/* Signatures */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-2">
-                      Checked by (Accounting/Purchasing)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Kosongkan jika ingin ditulis tangan"
-                      value={printAccounting}
-                      onChange={(e) => setPrintAccounting(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-                    />
-                  </div> */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">
                       Approved by (Project Manager)
@@ -976,130 +967,130 @@ const executeBastPrint = () => {
         )}
 
         {/* --- MODAL INPUT SETTINGS BAST --- */}
-{isBastModalOpen && (
-  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-2xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-      <div className="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-          <ClipboardCheck className="w-5 h-5 text-purple-400" />
-          Settings BAST / Certificate of Completion
-        </h3>
-        <button
-          onClick={() => setIsBastModalOpen(false)}
-          className="text-slate-400 hover:text-white"
-        >
-          ✕
-        </button>
-      </div>
+        {isBastModalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-2xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <ClipboardCheck className="w-5 h-5 text-purple-400" />
+                  Settings BAST / Certificate of Completion
+                </h3>
+                <button
+                  onClick={() => setIsBastModalOpen(false)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        {/* Quotation & Project Info */}
-        <div className="col-span-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 space-y-3">
-          <div>
-            <label className="block text-slate-300 text-xs font-semibold mb-1">Quotation Number</label>
-            <input
-              type="text"
-              value={bastQoNumber}
-              onChange={(e) => setBastQoNumber(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-slate-300 text-xs font-semibold mb-1">Project Name</label>
-            <input
-              type="text"
-              placeholder="Contoh: Automation Machine Setup"
-              value={bastProject}
-              onChange={(e) => setBastProject(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white"
-            />
-          </div>
-        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {/* Quotation & Project Info */}
+                <div className="col-span-2 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 space-y-3">
+                  <div>
+                    <label className="block text-slate-300 text-xs font-semibold mb-1">Quotation Number</label>
+                    <input
+                      type="text"
+                      value={bastQoNumber}
+                      onChange={(e) => setBastQoNumber(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-xs font-semibold mb-1">Project Name</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Automation Machine Setup"
+                      value={bastProject}
+                      onChange={(e) => setBastProject(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white"
+                    />
+                  </div>
+                </div>
 
-        {/* FIRST PARTICIPANT (TRANSINDO) */}
-        <div className="space-y-3 bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
-          <h4 className="font-bold text-purple-400 text-xs uppercase tracking-wider">1st Participant (Pihak Ke-1)</h4>
-          <div>
-            <label className="block text-slate-300 text-xs mb-1">Company Name</label>
-            <input
-              type="text"
-              value={bastFirstCompany}
-              onChange={(e) => setBastFirstCompany(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
-            />
-          </div>
-          <div>
-            <label className="block text-slate-300 text-xs mb-1">Address</label>
-            <textarea
-              rows={2}
-              value={bastFirstAddress}
-              onChange={(e) => setBastFirstAddress(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
-            />
-          </div>
-          <div>
-            <label className="block text-slate-300 text-xs mb-1">Responsible Name</label>
-            <input
-              type="text"
-              value={bastFirstName}
-              onChange={(e) => setBastFirstName(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
-            />
-          </div>
-        </div>
+                {/* FIRST PARTICIPANT (TRANSINDO) */}
+                <div className="space-y-3 bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
+                  <h4 className="font-bold text-purple-400 text-xs uppercase tracking-wider">1st Participant (Pihak Ke-1)</h4>
+                  <div>
+                    <label className="block text-slate-300 text-xs mb-1">Company Name</label>
+                    <input
+                      type="text"
+                      value={bastFirstCompany}
+                      onChange={(e) => setBastFirstCompany(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-xs mb-1">Address</label>
+                    <textarea
+                      rows={2}
+                      value={bastFirstAddress}
+                      onChange={(e) => setBastFirstAddress(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-xs mb-1">Responsible Name</label>
+                    <input
+                      type="text"
+                      value={bastFirstName}
+                      onChange={(e) => setBastFirstName(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
+                    />
+                  </div>
+                </div>
 
-        {/* SECOND PARTICIPANT (CUSTOMER) */}
-        <div className="space-y-3 bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
-          <h4 className="font-bold text-emerald-400 text-xs uppercase tracking-wider">2nd Participant (Customer)</h4>
-          <div>
-            <label className="block text-slate-300 text-xs mb-1">Company Name</label>
-            <input
-              type="text"
-              value={bastSecondCompany}
-              onChange={(e) => setBastSecondCompany(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
-            />
-          </div>
-          <div>
-            <label className="block text-slate-300 text-xs mb-1">Address</label>
-            <textarea
-              rows={2}
-              placeholder="Masukkan alamat customer..."
-              value={bastSecondAddress}
-              onChange={(e) => setBastSecondAddress(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
-            />
-          </div>
-          <div>
-            <label className="block text-slate-300 text-xs mb-1">Responsible Name</label>
-            <input
-              type="text"
-              placeholder="Nama penanggung jawab customer..."
-              value={bastSecondName}
-              onChange={(e) => setBastSecondName(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
-            />
-          </div>
-        </div>
-      </div>
+                {/* SECOND PARTICIPANT (CUSTOMER) */}
+                <div className="space-y-3 bg-slate-900/30 p-3 rounded-lg border border-slate-700/30">
+                  <h4 className="font-bold text-emerald-400 text-xs uppercase tracking-wider">2nd Participant (Customer)</h4>
+                  <div>
+                    <label className="block text-slate-300 text-xs mb-1">Company Name</label>
+                    <input
+                      type="text"
+                      value={bastSecondCompany}
+                      onChange={(e) => setBastSecondCompany(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-xs mb-1">Address</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Masukkan alamat customer..."
+                      value={bastSecondAddress}
+                      onChange={(e) => setBastSecondAddress(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-xs mb-1">Responsible Name</label>
+                    <input
+                      type="text"
+                      placeholder="Nama penanggung jawab customer..."
+                      value={bastSecondName}
+                      onChange={(e) => setBastSecondName(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2.5 py-1 text-white text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
 
-      <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
-        <button
-          onClick={() => setIsBastModalOpen(false)}
-          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={executeBastPrint}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg flex items-center gap-2"
-        >
-          <Printer className="w-4 h-4" /> Export BAST PDF
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
+                <button
+                  onClick={() => setIsBastModalOpen(false)}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={executeBastPrint}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg flex items-center gap-2"
+                >
+                  <Printer className="w-4 h-4" /> Export BAST PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* POP-UP MODAL: CREATE NEW */}
         {isModalOpen && (
@@ -1374,383 +1365,79 @@ const executeBastPrint = () => {
       </div>
 
       {/* --- TAMPILAN CETAK BAST / CERTIFICATE OF COMPLETION --- */}
-{bastConfig && (
-  <div
-    id="print-area-bast"
-    className="hidden print:flex flex-col justify-between bg-white text-black font-sans w-full text-xs max-h-[280mm] h-[280mm] box-border p-2"
-  >
-    <div className="flex-1 flex flex-col">
-      {/* KOP PERUSAHAAN TRANSINDO */}
-      <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-4">
-        <div className="w-44 h-14 flex items-center">
-          <img
-            src="/image/transindo.png"
-            alt="TRANSINDO Logo"
-            loading="eager"
-            className="max-w-full max-h-full object-contain"
-            style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
-          />
-        </div>
-        <div className="text-right leading-tight text-[9.5px]">
-          <h1 className="text-xs font-bold uppercase tracking-wider">PT. TRANSINDO MULTI INDUSTRI</h1>
-          <p>www.transindomu.com</p>
-          <p>Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14</p>
-          <p>Kelurahan Bedahan, Sawangan, Depok, Jawa Barat 16514</p>
-          <p>Phone : (+62) 8516 3657 641 email : sales@transindomu.com</p>
-        </div>
-      </div>
-
-      {/* METADATA ATAS */}
-      <div className="space-y-1 text-xs mb-6 font-sans">
-        <div className="flex">
-          <span className="w-36 font-semibold">Quotation Number</span>
-          <span>: {bastQoNumber || "-"}</span>
-        </div>
-        <div className="flex">
-          <span className="w-36 font-semibold">Project</span>
-          <span>: {bastProject || "-"}</span>
-        </div>
-        <div className="flex">
-          <span className="w-36 font-semibold">Customer</span>
-          <span>: {bastSecondCompany || bastCustomer || "-"}</span>
-        </div>
-      </div>
-
-      {/* JUDUL BAST */}
-      <div className="text-center my-4">
-        <h2 className="text-base font-bold uppercase tracking-widest border-b-2 border-black inline-block pb-0.5">
-          CERTIFICATE OF COMPLETION
-        </h2>
-      </div>
-
-      <p className="text-xs mb-4">This Certificate of completion is made by and between :</p>
-
-      {/* PARTICIPANTS SECTION */}
-      <div className="space-y-4 text-xs mb-6">
-        {/* 1. First Participant */}
-        <div>
-          <p className="font-bold">1.</p>
-          <div className="pl-4 space-y-1">
-            <div className="flex">
-              <span className="w-32 font-semibold">Company Name</span>
-              <span>: {bastFirstCompany}</span>
+      {bastConfig && (
+        <div
+          id="print-area-bast"
+          className="hidden print:flex flex-col justify-between bg-white text-black font-sans w-full text-xs h-full max-h-full box-border"
+        >
+          <div className="flex-1 flex flex-col">
+            {/* KOP PERUSAHAAN TRANSINDO */}
+            <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-4">
+              <div className="w-44 h-14 flex items-center">
+                <img
+                  src="/image/transindo.png"
+                  alt="TRANSINDO Logo"
+                  loading="eager"
+                  className="max-w-full max-h-full object-contain"
+                  style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
+                />
+              </div>
+              <div className="text-right leading-tight text-[9.5px]">
+                <h1 className="text-xs font-bold uppercase tracking-wider">PT. TRANSINDO MULTI INDUSTRI</h1>
+                <p>www.transindomu.com</p>
+                <p>Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14</p>
+                <p>Kelurahan Bedahan, Sawangan, Depok, Jawa Barat 16514</p>
+                <p>Phone : (+62) 8516 3657 641 email : sales@transindomu.com</p>
+              </div>
             </div>
-            <div className="flex">
-              <span className="w-32 font-semibold">Address</span>
-              <span className="flex-1">: {bastFirstAddress}</span>
-            </div>
-            <div className="flex">
-              <span className="w-32 font-semibold">Name</span>
-              <span>: {bastFirstName || "____________________"}</span>
-            </div>
-            <p className="pt-0.5">
-              As the responsible from <span className="font-semibold">{bastFirstCompany}</span>, now will be called as the First Participant.
-            </p>
-          </div>
-        </div>
 
-        {/* 2. Second Participant */}
-        <div>
-          <p className="font-bold">2.</p>
-          <div className="pl-4 space-y-1">
-            <div className="flex">
-              <span className="w-32 font-semibold">Company Name</span>
-              <span>: {bastSecondCompany || bastCustomer}</span>
-            </div>
-            <div className="flex">
-              <span className="w-32 font-semibold">Address</span>
-              <span className="flex-1">: {bastSecondAddress || "-"}</span>
-            </div>
-            <div className="flex">
-              <span className="w-32 font-semibold">Name</span>
-              <span>: {bastSecondName || "____________________"}</span>
-            </div>
-            <p className="pt-0.5">
-              As the responsible from <span className="font-semibold">{bastSecondCompany || bastCustomer}</span>, now will be called as the Second.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* DESKRIPSI PERNYATAAN BAST */}
-      <div className="space-y-3 text-xs text-justify leading-relaxed">
-        <p>
-          First Participant and Second Participant area already doing the assessment for <span className="font-semibold">{bastProject || "Project"}</span> refer from quotation number <span className="font-semibold">{bastQoNumber}</span>.
-        </p>
-        <p>
-          As the assessment, both participants agree that the work is 100% ( One Hundred Percent ) finished and works properly.
-        </p>
-        <p>
-          In witness whereof, the participants here caused this agreement to be made and signed so that it shall be used as it must.
-        </p>
-      </div>
-    </div>
-
-    {/* AREA TANDA TANGAN */}
-    <div className="break-inside-avoid pt-6 mb-8">
-      <div className="flex justify-between items-start text-xs">
-        {/* Tanda Tangan First Participant */}
-        <div className="w-56 text-left">
-          <p className="font-bold uppercase">FIRST PARTICIPANT</p>
-          <p className="font-semibold text-[11px]">{bastFirstCompany}</p>
-          <div className="h-20"></div>
-          <div className="border-b border-black w-full"></div>
-        </div>
-
-        {/* Tanda Tangan Second Participant */}
-        <div className="w-56 text-left">
-          <p className="font-bold uppercase">SECOND PARTICIPANT</p>
-          <p className="font-semibold text-[11px]">{bastSecondCompany || bastCustomer}</p>
-          <div className="h-20"></div>
-          <div className="border-b border-black w-full"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
-      {/* --- TAMPILAN CETAK / EXPORT PDF (Hanya muncul saat di-print) --- */}
-{printConfig && (() => {
-  // Hitung jumlah item untuk mendeteksi potensi overflow 1 lembar
-  const itemCount = printConfig.group?.items?.length || 0;
-  const isCompact = itemCount > 5; // Jika item > 5, aktifkan mode compact/kecil
-
-  return (
-    <>
-      {/* Style CSS Khusus Cetak 1 Lembar */}
-      <style jsx global>{`
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 8mm 10mm;
-          }
-          body {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            background: #fff !important;
-          }
-          #print-area {
-            page-break-after: avoid !important;
-            page-break-inside: avoid !important;
-          }
-        }
-      `}</style>
-
-      <div
-        id="print-area"
-        className="hidden print:flex flex-col justify-between bg-white text-black font-sans w-full text-xs max-h-[280mm] h-[280mm] box-border"
-      >
-        {/* BAGIAN ATAS: Kop, Header, Meta & Tabel */}
-        <div className="flex-1 flex flex-col">
-          {/* KOP Perusahaan */}
-          <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-3">
-            {/* Logo Perusahaan */}
-            <div className="w-44 h-14 flex items-center">
-              <img
-                src="/image/transindo.png"
-                alt="TRANSINDO Logo"
-                loading="eager"
-                className="max-w-full max-h-full object-contain"
-                style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
-              />
-            </div>
-            {/* Detail Informasi Perusahaan Header Right */}
-            <div className="text-right leading-tight text-[9.5px]">
-              <h1 className="text-xs font-bold uppercase tracking-wider">PT. TRANSINDO MULTI INDUSTRI</h1>
-              <p>www.transindomu.com</p>
-              <p>Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14</p>
-              <p>Kelurahan Bedahan, Sawangan, Depok, Jawa Barat 16514</p>
-              <p>Phone : (+62) 8516 3657 641 email : sales@transindomu.com</p>
-            </div>
-          </div>
-
-          {/* Judul Dokumen */}
-          <div className="text-center my-1.5">
-            <h2 className="text-sm font-bold uppercase tracking-widest border-b border-black pb-0.5 inline-block w-full">
-              {printConfig.type === "QO" ? "QUOTATION" : "PURCHASE ORDER"}
-            </h2>
-          </div>
-
-          {/* Section Informasi Metadata Dokumen */}
-          <div className="grid grid-cols-2 gap-3 border-b border-black pb-2 mb-3 text-[10.5px]">
-            {/* Sisi Kiri: Detail Customer */}
-            <div className="space-y-0.5">
+            {/* METADATA ATAS */}
+            <div className="space-y-1 text-xs mb-6 font-sans">
               <div className="flex">
-                <span className="w-16 font-semibold">{printConfig.type === "PO" ? "From" : "To"}</span>
-                <span className="flex-1 truncate">: {printConfig.type === "PO" ? "PT. TRANSINDO MULTI INDUSTRI" : printConfig.group.customer}</span>
+                <span className="w-36 font-semibold">Quotation Number</span>
+                <span>: {bastQoNumber || "-"}</span>
               </div>
               <div className="flex">
-                <span className="w-16 font-semibold">Address</span>
-                <span className="flex-1 leading-none">: {printAddress || "-"}</span>
+                <span className="w-36 font-semibold">Project</span>
+                <span>: {bastProject || "-"}</span>
               </div>
-              <div className="flex pt-1">
-                <span className="w-16 font-semibold">Subject</span>
-                <span className="flex-1 truncate">: {printSubject || "-"}</span>
+              {/* BARIS TANGGAL BARU */}
+              <div className="flex">
+                <span className="w-36 font-semibold">Date</span>
+                <span>: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               </div>
               <div className="flex">
-                <span className="w-16 font-semibold">Contact</span>
-                <span className="flex-1 truncate">: {printContact || "-"}</span>
+                <span className="w-36 font-semibold">Customer</span>
+                <span>: {bastSecondCompany || bastCustomer || "-"}</span>
               </div>
             </div>
 
-            {/* Sisi Kanan: Metadata Transaksi */}
-            <div className="space-y-0.5 pl-3 border-l border-gray-300">
-              <div className="flex">
-                <span className="w-24 font-semibold">{printConfig.type === "QO" ? "QO Number" : "PO Number"}</span>
-                <span>: {printDocNumber}</span>
-              </div>
-              <div className="flex">
-                <span className="w-24 font-semibold">Date</span>
-                <span>: {new Date().toISOString().split('T')[0].replace(/-/g, '/')}</span>
-              </div>
-              <div className="flex">
-                <span className="w-24 font-semibold">Page</span>
-                <span>: 1 of 1</span>
-              </div>
-              <div className="flex">
-                <span className="w-24 font-semibold">Shipment</span>
-                <span>: {printShipment || "-"}</span>
-              </div>
+            {/* JUDUL BAST */}
+            <div className="text-center my-4">
+              <h2 className="text-base font-bold uppercase tracking-widest border-b-2 border-black inline-block pb-0.5">
+                CERTIFICATE OF COMPLETION
+              </h2>
             </div>
-          </div>
 
-          {/* Tabel Data Items - DESCRIPTION LEBIH SEMPIT & TECH SPEC LEBIH LEBAR */}
-          <div className="w-full break-inside-avoid">
-            <table className={`w-full border-collapse border border-black mb-0 ${isCompact ? 'text-[9.5px]' : 'text-[10.5px]'}`}>
-              <thead>
-                <tr className="bg-blue-100/50 text-left font-semibold">
-                  <th className={`border border-black w-8 text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>No</th>
-                  {/* Kolom Description: Lebih Sempit (w-1/4) */}
-                  <th className={`border border-black w-1/4 ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Description Item</th>
-                  {/* Kolom Technical Spec: Lebih Lebar (Mengambil sisa ruang) */}
-                  <th className={`border border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Technical Spec</th>
-                  <th className={`border border-black w-16 text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>Qty</th>
-                  {printConfig.type === "QO" && (
-                    <>
-                      <th className={`border border-black w-24 text-right ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Unit Price</th>
-                      <th className={`border border-black w-28 text-right ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Total Price</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {[...printConfig.group.items]
-                  .sort((a, b) => {
-                    const totalA = (Number(a.qty) || 1) * ((Number(a.price) || 0) + ((Number(a.price) || 0) * (Number(a.margin) || 0) / 100));
-                    const totalB = (Number(b.qty) || 1) * ((Number(b.price) || 0) + ((Number(b.price) || 0) * (Number(b.margin) || 0) / 100));
-                    return totalB - totalA;
-                  })
-                  .map((item, idx) => {
-                    const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100);
-                    const totalPrice = unitPriceWithMargin * item.qty;
+            <p className="text-xs mb-4">This Certificate of completion is made by and between :</p>
 
-                    const itemDesc = item.description || item.mother_part || "General Part";
-                    const techSpec = item.technical_specification || "-";
-
-                    return (
-                      <tr key={item.id || idx} className="align-top">
-                        <td className={`border-x border-black text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>{idx + 1}</td>
-                        {/* Description Item Cell */}
-                        <td className={`border-x border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
-                          <div className="font-semibold leading-snug break-words">{itemDesc}</div>
-                        </td>
-                        {/* Technical Spec Cell */}
-                        <td className={`border-x border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
-                          <div className="leading-snug text-gray-800 break-words">{techSpec}</div>
-                        </td>
-                        <td className={`border-x border-black text-center whitespace-nowrap ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>
-                          {item.qty} {item.unit || "EA"}
-                        </td>
-                        {printConfig.type === "QO" && (
-                          <>
-                            <td className={`border-x border-black text-right whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
-                              Rp{unitPriceWithMargin.toLocaleString("id-ID")}
-                            </td>
-                            <td className={`border-x border-black text-right font-semibold whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
-                              Rp{totalPrice.toLocaleString("id-ID")}
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    );
-                  })}
-                {/* Spacer baris kosong jika item sedikit */}
-                {!isCompact && (
-                  <tr className="h-4">
-                    <td className="border-x border-black"></td>
-                    <td className="border-x border-black"></td>
-                    <td className="border-x border-black"></td>
-                    <td className="border-x border-black"></td>
-                    {printConfig.type === "QO" && (
-                      <>
-                        <td className="border-x border-black"></td>
-                        <td className="border-x border-black"></td>
-                      </>
-                    )}
-                  </tr>
-                )}
-              </tbody>
-            </table>
-
-            {/* Section Total & Summary (Hanya Muncul di QO) */}
-            {printConfig.type === "QO" && (
-              <div className="border border-t-0 border-black mb-3">
-                <div className={`flex justify-between items-center bg-blue-100/50 border-t border-black font-bold ${isCompact ? 'p-1 text-[9.5px]' : 'p-1.5 text-[10.5px]'}`}>
-                  <span className="w-full text-right pr-4">Sub Total</span>
-                  <span className="w-32 text-right">Rp{printConfig.group.total_cost.toLocaleString("id-ID")}</span>
-                </div>
-                <div className={`bg-blue-50/50 border-t border-black space-y-0.5 ${isCompact ? 'p-1 text-[9px]' : 'p-1.5 text-[10px]'}`}>
-                  <div className="flex justify-between font-semibold">
-                    <span className="w-full text-right pr-4">Sub Total (Product, Material, Service) :</span>
-                    <span className="w-32 text-right">Rp{printConfig.group.total_cost.toLocaleString("id-ID")}</span>
+            {/* PARTICIPANTS SECTION */}
+            <div className="space-y-4 text-xs mb-6">
+              {/* 1. First Participant */}
+              <div>
+                <p className="font-bold">1.</p>
+                <div className="pl-4 space-y-1">
+                  <div className="flex">
+                    <span className="w-32 font-semibold">Company Name</span>
+                    <span>: {bastFirstCompany}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-[10.5px] pt-0.5 border-t border-gray-300">
-                    <span className="w-full text-right pr-4">Grand Total :</span>
-                    <span className="w-32 text-right">Rp{printConfig.group.total_cost.toLocaleString("id-ID")}</span>
+                  <div className="flex">
+                    <span className="w-32 font-semibold">Address</span>
+                    <span className="flex-1">: {bastFirstAddress}</span>
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* BAGIAN BAWAH: Term & Condition BERDAMPINGAN dengan Tanda Tangan */}
-        <div className="break-inside-avoid mt-2 pt-1">
-          <div className="flex justify-between items-start gap-4 my-2">
-            
-            {/* SISI KIRI: Terms & Conditions */}
-            <div className="flex-1 space-y-0.5 text-[9.5px] leading-tight">
-              <h3 className="font-bold">Term & Condition :</h3>
-              <ol className="list-decimal pl-3 space-y-0.5">
-                {printTerms.split('\n').map((term, index) => (
-                  term.trim() !== "" && <li key={index}>{term}</li>
-                ))}
-              </ol>
-            </div>
-
-            {/* SISI KANAN: Tanda Tangan Director / Project Manager */}
-            <div className="text-center w-48 shrink-0">
-              <p className="font-bold mb-1 text-[10.5px]">Approved By</p>
-              {/* Space Kosong Tanda Tangan */}
-              <div className={isCompact ? "h-12" : "h-16"}></div>
-              <p className="font-bold underline uppercase border-t border-black pt-0.5 text-[10.5px]">
-                {printDirector || "Damita"}
-              </p>
-              <p className="font-bold text-[9.5px]">Project Manager</p>
-            </div>
-
-          </div>
-
-          {/* Footer Document Note */}
-          <div className="mt-2 text-center text-[8.5px] font-bold tracking-tight text-gray-600 border-t border-gray-200 pt-1">
-            * Dokumen ini dicetak dari sistem TRANSINDO MULTI INDUSTRI, <br />
-            * Dokumen ini sah dan berlaku sebagai bukti transaksi.
-          </div>
-        </div>
-      </div>
-    </>
-  );
-})()}
-    </>
-  );
-}
+                  <div className="flex">
+                    <span className="w-32 font-semibold">Name</span>
+                    <span>: {bastFirstName || "____________________"}</span>
+                  </div>
+                  <p className="pt-0.5">
+                    As the```
