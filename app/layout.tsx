@@ -131,13 +131,7 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Cost Analysis", href: "/management/material/4_cost_analysis", status: "fullstack" },
       ]
     },
-    { 
-      label: "Project Management",
-      subItems: [
-        { label: "Planning", href: "/management/project/1_planning", status: "fullstack" },
-        { label: "Project Running", href: "/management/project/2_project_running", status: "fullstack" },
-      ]
-    },
+    { label: "Project Management", href: "/management/project", status: "frontend" },
     { 
       label: "Finance Management",
       subItems: [
