@@ -88,6 +88,7 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Warehouse", href: "/production/dummy" },
     { label: "Truckscale", href: "/production/dummy" },
     { label: "Purchasing", href: "/production/dummy" },
+    { label: "Stockyard", href: "/production/dummy" },
   ],
   Maintenance: [
     { label: "Overview Machine", href: "/maintenance/overview_machine", status: "frontend" },
@@ -125,7 +126,7 @@ const menuData: Record<string, MenuItem[]> = {
       subItems: [
         { label: "Master Material", href: "/management/material/1_master_material", status: "fullstack" },
         { label: "Create BOM", href: "/management/material/2_create_bom", status: "fullstack" },
-        { label: "Create QO & PO", href: "/management/material/3_create_qo", status: "fullstack" },
+        { label: "Create QO & PO TERIOT", href: "/management/material/3_create_qo", status: "fullstack" },
         { label: "Create QO & PO TMI", href: "/management/material/3_create_qo_TMI", status: "fullstack" },
         { label: "Cost Analysis", href: "/management/material/4_cost_analysis", status: "fullstack" },
       ]

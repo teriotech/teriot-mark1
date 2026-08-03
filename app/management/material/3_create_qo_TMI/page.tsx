@@ -17,6 +17,7 @@ import {
   Printer,
   Trash2,
   ClipboardCheck,
+  Receipt, // Tambahan Icon untuk Invoice
 } from "lucide-react";
 
 // Interface Master Material (Untuk Dropdown Pilihan)
@@ -212,6 +213,20 @@ export default function QoPoManagementPage() {
   const [printDirector, setPrintDirector] = useState<string>("");
   const [printAccounting, setPrintAccounting] = useState<string>("");
 
+  // --- STATE KHUSUS INVOICE ---
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState<boolean>(false);
+  const [invoiceConfig, setInvoiceConfig] = useState<{ group: BomGroup } | null>(null);
+  
+  const [invoiceCustomer, setInvoiceCustomer] = useState<string>("");
+  const [invoiceAttn, setInvoiceAttn] = useState<string>("");
+  const [invoiceAddress, setInvoiceAddress] = useState<string>("");
+  const [invoicePhone, setInvoicePhone] = useState<string>("");
+  const [invoiceNo, setInvoiceNo] = useState<string>("");
+  const [invoiceRevision, setInvoiceRevision] = useState<string>("0");
+  const [invoicePaymentMethod, setInvoicePaymentMethod] = useState<string>("a. Direct Payment to PT. Transindo Multi Industri\nb. Term of Payment 14 days");
+  const [invoiceApprovedBy, setInvoiceApprovedBy] = useState<string>("Meita Surya");
+    const [invoiceDate, setInvoiceDate] = useState<string>("");
+
   useEffect(() => {
     fetchBomList();
     fetchMasterMaterials();
@@ -289,6 +304,13 @@ export default function QoPoManagementPage() {
   // --- FITUR EXPORT PDF (QO & PO) DENGAN POP-UP SETTINGS ---
   const handleOpenPrintSettings = (group: BomGroup, type: PrintType, e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Bersihkan state lain agar tidak tumpang tindih
+    setBastConfig(null);
+    setIsBastModalOpen(false);
+    setInvoiceConfig(null);
+    setIsInvoiceModalOpen(false);
+
     setPrintConfig({ group, type });
     
     // Generate Auto Number (Format: QO/PO + MM + YY + 3 Digit Random)
@@ -309,7 +331,45 @@ export default function QoPoManagementPage() {
 
   const executePrint = () => {
     setIsPrintSettingsOpen(false);
-    // Beri waktu React untuk merender komponen print dan menutup modal sebelum memanggil window.print
+    setTimeout(() => {
+      window.print();
+    }, 300);
+  };
+
+  // --- FITUR EXPORT INVOICE ---
+ const handleOpenInvoiceSettings = (group: BomGroup, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Bersihkan state lain
+    setPrintConfig(null);
+    setIsPrintSettingsOpen(false);
+    setBastConfig(null);
+    setIsBastModalOpen(false);
+
+    setInvoiceConfig({ group });
+    
+    // Generate Auto Number Invoice
+    const date = new Date();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    setInvoiceNo(`INV${month}${year}${randomNum}`);
+    
+    // Reset field & SET DEFAULT DATE KE HARI INI
+     setInvoiceCustomer(group.customer);
+    setInvoiceAttn("");
+    setInvoiceAddress("");
+    setInvoicePhone("");
+    setInvoiceRevision("0");
+    setInvoicePaymentMethod("a. Direct Payment to PT. Transindo Multi Industri\nb. Term of Payment 14 days");
+    setInvoiceApprovedBy("Meita Surya");
+    setInvoiceDate(date.toISOString().split('T')[0]); // Format YYYY-MM-DD untuk input type="date"
+    
+    setIsInvoiceModalOpen(true);
+  };
+
+  const executeInvoicePrint = () => {
+    setIsInvoiceModalOpen(false);
     setTimeout(() => {
       window.print();
     }, 300);
@@ -380,6 +440,13 @@ export default function QoPoManagementPage() {
   // Handler Membuka Modal BAST
   const handleOpenBastSettings = (group: BomGroup, e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Bersihkan state lain
+    setPrintConfig(null);
+    setIsPrintSettingsOpen(false);
+    setInvoiceConfig(null);
+    setIsInvoiceModalOpen(false);
+
     setBastConfig({ group });
     
     // Ambil Customer dari Group
@@ -592,11 +659,13 @@ export default function QoPoManagementPage() {
             visibility: hidden;
           }
           /* Tampilkan HANYA area cetak dan anak-anaknya */
-          #print-area, #print-area *, #print-area-bast, #print-area-bast * {
+          #print-area, #print-area *, 
+          #print-area-bast, #print-area-bast *,
+          #print-area-invoice, #print-area-invoice * {
             visibility: visible;
           }
           /* Posisikan area cetak di paling atas kiri kertas secara absolut */
-          #print-area, #print-area-bast {
+          #print-area, #print-area-bast, #print-area-invoice {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
@@ -624,10 +693,10 @@ export default function QoPoManagementPage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
                 <Layers className="w-8 h-8 text-blue-500" />
-                Quotation & Purchase Order Generator
+                Quotation, Purchase Order, BAST and Invoice Generator
               </h1>
               <p className="text-sm text-slate-400 mt-1">
-                Generate dokumen QO / PO per Customer berdasarkan data BOM.
+                Generate dokumen QO / PO / BAST / Invoice per Customer berdasarkan data BOM.
               </p>
             </div>
 
@@ -708,7 +777,7 @@ export default function QoPoManagementPage() {
                           </span>
                         </div>
 
-                        {/* Action Buttons (Export QO, PO, & BAST) */}
+                        {/* Action Buttons (Export QO, PO, BAST, & INVOICE) */}
                         <div className="flex items-center gap-2">
                           {/* Button QO */}
                           <button
@@ -728,13 +797,22 @@ export default function QoPoManagementPage() {
                             <ShoppingCart className="w-5 h-5" />
                           </button>
 
-                          {/* TOMBOL BARU: BAST (Certificate of Completion) */}
+                          {/* Button BAST */}
                           <button
                             onClick={(e) => handleOpenBastSettings(group, e)}
                             className="p-2 text-slate-400 hover:text-purple-400 hover:bg-slate-700/50 rounded-lg transition-colors"
                             title="Generate BAST / Certificate of Completion"
                           >
                             <ClipboardCheck className="w-5 h-5" />
+                          </button>
+
+                          {/* Button INVOICE */}
+                          <button
+                            onClick={(e) => handleOpenInvoiceSettings(group, e)}
+                            className="p-2 text-slate-400 hover:text-amber-400 hover:bg-slate-700/50 rounded-lg transition-colors"
+                            title="Generate Invoice"
+                          >
+                            <Receipt className="w-5 h-5" />
                           </button>
 
                           <div className="p-2 bg-slate-700/50 rounded-lg text-slate-300 ml-2">
@@ -846,7 +924,7 @@ export default function QoPoManagementPage() {
           )}
         </div>
 
-        {/* POP-UP MODAL: PRINT SETTINGS */}
+        {/* POP-UP MODAL: PRINT SETTINGS QO/PO */}
         {isPrintSettingsOpen && printConfig && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl overflow-hidden my-auto">
@@ -860,7 +938,10 @@ export default function QoPoManagementPage() {
                   </h2>
                 </div>
                 <button
-                  onClick={() => setIsPrintSettingsOpen(false)}
+                  onClick={() => {
+                    setIsPrintSettingsOpen(false);
+                    setPrintConfig(null);
+                  }}
                   className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/50"
                 >
                   <X className="w-6 h-6" />
@@ -957,7 +1038,10 @@ export default function QoPoManagementPage() {
               <div className="px-6 py-4 bg-slate-800 border-t border-slate-700 flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsPrintSettingsOpen(false)}
+                  onClick={() => {
+                    setIsPrintSettingsOpen(false);
+                    setPrintConfig(null);
+                  }}
                   className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium transition-colors"
                 >
                   Batal
@@ -985,7 +1069,10 @@ export default function QoPoManagementPage() {
                   Settings BAST / Certificate of Completion
                 </h3>
                 <button
-                  onClick={() => setIsBastModalOpen(false)}
+                  onClick={() => {
+                    setIsBastModalOpen(false);
+                    setBastConfig(null);
+                  }}
                   className="text-slate-400 hover:text-white"
                 >
                   ✕
@@ -1085,7 +1172,10 @@ export default function QoPoManagementPage() {
 
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
                 <button
-                  onClick={() => setIsBastModalOpen(false)}
+                  onClick={() => {
+                    setIsBastModalOpen(false);
+                    setBastConfig(null);
+                  }}
                   className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg"
                 >
                   Cancel
@@ -1095,6 +1185,107 @@ export default function QoPoManagementPage() {
                   className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg flex items-center gap-2"
                 >
                   <Printer className="w-4 h-4" /> Export BAST PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- MODAL INPUT SETTINGS INVOICE --- */}
+        {isInvoiceModalOpen && invoiceConfig && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl overflow-hidden my-auto">
+              <div className="px-6 py-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-600/20 text-amber-400 rounded-lg">
+                    <Receipt className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Pengaturan Cetak Invoice</h2>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsInvoiceModalOpen(false);
+                    setInvoiceConfig(null);
+                  }}
+                  className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/50"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Kiri: Info Klien */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-amber-400 border-b border-slate-700 pb-2">Informasi Klien</h3>
+                    <div>
+  <label className="block text-xs font-semibold text-slate-300 mb-1">To (Customer)</label>
+  <input 
+    type="text" 
+    value={invoiceCustomer} 
+    onChange={(e) => setInvoiceCustomer(e.target.value)} 
+    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" 
+  />
+</div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Attn</label>
+                      <input type="text" value={invoiceAttn} onChange={(e) => setInvoiceAttn(e.target.value)} placeholder="Nama Penerima" className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Address</label>
+                      <textarea rows={2} value={invoiceAddress} onChange={(e) => setInvoiceAddress(e.target.value)} placeholder="Alamat Lengkap" className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Phone</label>
+                      <input type="text" value={invoicePhone} onChange={(e) => setInvoicePhone(e.target.value)} placeholder="Nomor Telepon" className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                  </div>
+
+                  {/* Kanan: Detail Invoice */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-amber-400 border-b border-slate-700 pb-2">Detail Invoice</h3>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Invoice No</label>
+                      <input type="text" value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
+                      <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Revision</label>
+                      <input type="number" value={invoiceRevision} onChange={(e) => setInvoiceRevision(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Payment Method</label>
+                      <textarea rows={3} value={invoicePaymentMethod} onChange={(e) => setInvoicePaymentMethod(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">Approved By (Finance & Tax Control)</label>
+                      <input type="text" value={invoiceApprovedBy} onChange={(e) => setInvoiceApprovedBy(e.target.value)} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded text-white focus:border-amber-500 focus:outline-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4 bg-slate-800 border-t border-slate-700 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsInvoiceModalOpen(false);
+                    setInvoiceConfig(null);
+                  }}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={executeInvoicePrint}
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                >
+                  <Printer className="w-4 h-4" />
+                  Generate Invoice PDF
                 </button>
               </div>
             </div>
@@ -1377,10 +1568,8 @@ export default function QoPoManagementPage() {
       {bastConfig && (
         <div
           id="print-area-bast"
-          // PERBAIKAN 1: Ganti 'justify-between' menjadi 'justify-start'
           className="hidden print:flex flex-col justify-start bg-white text-black font-sans w-full text-xs max-h-[280mm] h-[280mm] box-border p-2"
         >
-          {/* PERBAIKAN 2: Hapus 'flex-1' agar konten tidak memakan seluruh sisa ruang */}
           <div className="flex flex-col">
             {/* KOP PERUSAHAAN TRANSINDO */}
             <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-4">
@@ -1493,7 +1682,6 @@ export default function QoPoManagementPage() {
           </div>
 
           {/* AREA TANDA TANGAN */}
-          {/* PERBAIKAN 3: Mengganti pt-6 menjadi mt-8 agar jaraknya pas di bawah teks */}
           <div className="break-inside-avoid mt-8 mb-8">
             <div className="flex justify-between items-start text-xs">
               {/* Tanda Tangan First Participant */}
@@ -1516,7 +1704,198 @@ export default function QoPoManagementPage() {
         </div>
       )}
 
-      {/* --- TAMPILAN CETAK / EXPORT PDF (Hanya muncul saat di-print) --- */}
+      {/* --- TAMPILAN CETAK / EXPORT PDF INVOICE --- */}
+      {invoiceConfig && (() => {
+        const itemCount = invoiceConfig.group?.items?.length || 0;
+        const isCompact = itemCount > 5;
+        
+        const subTotal = invoiceConfig.group.total_cost;
+        const ppn = subTotal * 0.11;
+        const grandTotal = subTotal + ppn;
+
+        return (
+          <div
+            id="print-area-invoice"
+            className="hidden print:flex flex-col justify-start bg-white text-black font-sans w-full text-xs box-border"
+          >
+            <div className="flex flex-col">
+              {/* KOP Perusahaan */}
+              <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-3">
+                <div className="w-44 h-14 flex items-center">
+                  <img
+                    src="/image/transindo.png"
+                    alt="TRANSINDO Logo"
+                    loading="eager"
+                    className="max-w-full max-h-full object-contain"
+                    style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
+                  />
+                </div>
+                <div className="text-right leading-tight text-[9.5px]">
+                  <h1 className="text-xs font-bold uppercase tracking-wider">PT. TRANSINDO MULTI INDUSTRI</h1>
+                  <p>www.transindomu.com</p>
+                  <p>Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14</p>
+                  <p>Kelurahan Bedahan, Sawangan, Depok, Jawa Barat 16514</p>
+                  <p>Phone : (+62) 8516 3657 641 email : sales@transindomu.com</p>
+                </div>
+              </div>
+
+              {/* Judul Dokumen */}
+              <div className="text-center my-1.5">
+                <h2 className="text-sm font-bold uppercase tracking-widest border-b border-black pb-0.5 inline-block w-full">
+                  INVOICE
+                </h2>
+              </div>
+
+              {/* Section Informasi Metadata Dokumen */}
+              <div className="grid grid-cols-2 gap-3 border-b border-black pb-2 mb-3 text-[10.5px]">
+                {/* Sisi Kiri: Detail Customer */}
+                <div className="space-y-0.5">
+                  <div className="flex">
+  <span className="w-16 font-semibold">To</span>
+  <span className="flex-1 truncate">: {invoiceCustomer}</span>
+</div>
+                  <div className="flex">
+                    <span className="w-16 font-semibold">Attn</span>
+                    <span className="flex-1 truncate">: {invoiceAttn || "-"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="w-16 font-semibold">Address</span>
+                    <span className="flex-1 leading-none">: {invoiceAddress || "-"}</span>
+                  </div>
+                  <div className="flex pt-1">
+                    <span className="w-16 font-semibold">Phone</span>
+                    <span className="flex-1 truncate">: {invoicePhone || "-"}</span>
+                  </div>
+                </div>
+
+                {/* Sisi Kanan: Metadata Transaksi */}
+                <div className="space-y-0.5 pl-3 border-l border-gray-300">
+                  <div className="flex">
+                    <span className="w-24 font-semibold">Invoice No</span>
+                    <span>: {invoiceNo}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="w-24 font-semibold">Date</span>
+                    <span>: {invoiceDate ? new Date(invoiceDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : "-"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="w-24 font-semibold">Email</span>
+                    <span>: sales@transindomu.com</span>
+                  </div>
+                  <div className="flex">
+                    <span className="w-24 font-semibold">Revision</span>
+                    <span>: {invoiceRevision}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabel Data Items */}
+              <div className="w-full break-inside-avoid">
+                <table className={`w-full border-collapse border border-black mb-0 ${isCompact ? 'text-[9.5px]' : 'text-[10.5px]'}`}>
+                  <thead>
+                    <tr className="bg-blue-100/50 text-left font-semibold">
+                      <th className={`border border-black w-8 text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>No</th>
+                      {/* GABUNGKAN KOLOM DAN HAPUS w-1/4 AGAR LEBARNYA MENYESUAIKAN */}
+                      <th className={`border border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Description Item</th>
+                      {/* HAPUS KOLOM TECHNICAL SPEC DI SINI */}
+                      <th className={`border border-black w-16 text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>Qty</th>
+                      <th className={`border border-black w-24 text-right ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Unit Price</th>
+                      <th className={`border border-black w-28 text-right ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Total Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...invoiceConfig.group.items]
+                      .sort((a, b) => {
+                        const totalA = (Number(a.qty) || 1) * ((Number(a.price) || 0) + ((Number(a.price) || 0) * (Number(a.margin) || 0) / 100));
+                        const totalB = (Number(b.qty) || 1) * ((Number(b.price) || 0) + ((Number(b.price) || 0) * (Number(b.margin) || 0) / 100));
+                        return totalB - totalA;
+                      })
+                      .map((item, idx) => {
+                        const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100);
+                        const totalPrice = unitPriceWithMargin * item.qty;
+                        const itemDesc = item.description || item.mother_part || "General Part";
+                        const techSpec = item.technical_specification || "-";
+
+                        return (
+                          <tr key={item.id || idx} className="align-top">
+                            <td className={`border-x border-black text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>{idx + 1}</td>
+                            {/* GABUNGKAN DATA DESCRIPTION DAN TECH SPEC DI SINI */}
+                            <td className={`border-x border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
+                              <div className="leading-snug break-words">
+                                <span className="font-bold">{itemDesc}</span> - {techSpec}
+                              </div>
+                            </td>
+                            {/* HAPUS TD TECHNICAL SPEC DI SINI */}
+                            <td className={`border-x border-black text-center whitespace-nowrap ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>
+                              {item.qty} {item.unit || "EA"}
+                            </td>
+                            <td className={`border-x border-black text-right whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
+                              Rp{unitPriceWithMargin.toLocaleString("id-ID")}
+                            </td>
+                            <td className={`border-x border-black text-right font-semibold whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
+                              Rp{totalPrice.toLocaleString("id-ID")}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+
+                {/* Section Total & Summary Invoice */}
+                <div className="border border-t-0 border-black mb-3">
+                  <div className={`flex justify-between items-center bg-blue-50/50 border-t border-black font-semibold ${isCompact ? 'p-1 text-[9.5px]' : 'p-1.5 text-[10.5px]'}`}>
+                    <span className="w-full text-right pr-4">Sub Total :</span>
+                    <span className="w-32 text-right">Rp{subTotal.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className={`flex justify-between items-center bg-blue-50/50 border-t border-black font-semibold ${isCompact ? 'p-1 text-[9.5px]' : 'p-1.5 text-[10.5px]'}`}>
+                    <span className="w-full text-right pr-4">PPN 11% :</span>
+                    <span className="w-32 text-right">Rp{ppn.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className={`flex justify-between items-center bg-blue-100/50 border-t border-black font-bold ${isCompact ? 'p-1 text-[10.5px]' : 'p-1.5 text-[11.5px]'}`}>
+                    <span className="w-full text-right pr-4">Grand Total :</span>
+                    <span className="w-32 text-right">Rp{grandTotal.toLocaleString("id-ID")}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* BAGIAN BAWAH: Payment Method & Tanda Tangan */}
+            <div className="break-inside-avoid mt-2 pt-1">
+              <div className="flex justify-between items-start gap-4 my-2">
+                
+                {/* SISI KIRI: Payment Method & Bank Details */}
+                <div className="flex-1 space-y-2 text-[9.5px] leading-tight">
+                  <div>
+                    <h3 className="font-bold mb-0.5">Payment Method :</h3>
+                    <div className="whitespace-pre-wrap pl-2">{invoicePaymentMethod}</div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold mb-0.5">Bank Transfer :</h3>
+                    <div className="pl-2">
+                      <p>Bank : BANK BNI</p>
+                      <p>Account Name : PT. TRANSINDO MULTI INDUSTRI</p>
+                      <p>Account Number : 2089710424</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SISI KANAN: Tanda Tangan Finance */}
+                <div className="text-center w-48 shrink-0">
+                  <p className="font-bold mb-1 text-[10.5px]">Approved By</p>
+                  <div className={isCompact ? "h-12" : "h-16"}></div>
+                  <p className="font-bold underline uppercase border-t border-black pt-0.5 text-[10.5px]">
+                    {invoiceApprovedBy || "Meita Surya"}
+                  </p>
+                  <p className="font-bold text-[9.5px]">Finance & Tax Control</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* --- TAMPILAN CETAK / EXPORT PDF QO/PO (Hanya muncul saat di-print) --- */}
       {printConfig && (() => {
         // Hitung jumlah item untuk mendeteksi potensi overflow 1 lembar
         const itemCount = printConfig.group?.items?.length || 0;
@@ -1623,7 +2002,7 @@ export default function QoPoManagementPage() {
 
                 {/* Tabel Data Items - DESCRIPTION LEBIH SEMPIT & TECH SPEC LEBIH LEBAR */}
                 <div className="w-full break-inside-avoid">
-                  <table className={`w-full border-collapse border border-black mb-0 ${isCompact ? 'text-[9.5px]' : 'text-[10.5px]'}`}>
+                  <table className={`w-full border-collapse border-black mb-0 ${isCompact ? 'text-[9.5px]' : 'text-[10.5px]'}`}>
                     <thead>
                       <tr className="bg-blue-100/50 text-left font-semibold">
                         <th className={`border border-black w-8 text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>No</th>
