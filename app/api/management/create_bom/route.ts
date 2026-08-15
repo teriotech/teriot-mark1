@@ -3,11 +3,12 @@ import { createServerSupabaseClient } from "@/app/lib/supabase";
 
 // Interface untuk payload yang diterima dari frontend
 export interface CreateBomPayload {
+  qo_number?: string; // <-- Ditambahkan di sini
   customer: string;
   mother_part: string;
   part_number: string;
   description?: string;
-  technical_specification?: string; // <-- Ditambahkan di sini
+  technical_specification?: string;
   qty: number;
   unit?: string;
   price?: number;
@@ -17,13 +18,14 @@ export interface CreateBomPayload {
 
 /**
  * GET: Mengambil daftar BOM
- * Bisa difilter berdasarkan customer atau pencarian umum.
+ * Bisa difilter berdasarkan customer, qo_number, atau pencarian umum.
  */
 export async function GET(request: Request) {
   try {
     const supabase = await createServerSupabaseClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const qo_number = searchParams.get("qo_number"); // <-- Ditambahkan di sini
     const customer = searchParams.get("customer");
     const search = searchParams.get("search");
 
@@ -45,15 +47,20 @@ export async function GET(request: Request) {
       .select("*")
       .order("created_at", { ascending: false });
 
+    // Filter berdasarkan QO Number
+    if (qo_number) {
+      query = query.ilike("qo_number", `%${qo_number}%`); // <-- Ditambahkan di sini
+    }
+
     // Filter berdasarkan customer
     if (customer) {
       query = query.ilike("customer", `%${customer}%`);
     }
 
-    // Filter pencarian umum (part_number, description, atau technical_specification)
+    // Filter pencarian umum (qo_number, part_number, description, atau technical_specification)
     if (search) {
       query = query.or(
-        `part_number.ilike.%${search}%,description.ilike.%${search}%,technical_specification.ilike.%${search}%`
+        `qo_number.ilike.%${search}%,part_number.ilike.%${search}%,description.ilike.%${search}%,technical_specification.ilike.%${search}%` // <-- Updated di sini
       );
     }
 
@@ -87,11 +94,12 @@ export async function POST(request: Request) {
     }
 
     const insertData = {
+      qo_number: body.qo_number?.trim() || null, // <-- Ditambahkan di sini
       customer: body.customer.trim(),
       mother_part: body.mother_part.trim(),
       part_number: body.part_number.trim(),
       description: body.description?.trim() || null,
-      technical_specification: body.technical_specification?.trim() || null, // <-- Ditambahkan di sini
+      technical_specification: body.technical_specification?.trim() || null,
       qty: body.qty !== undefined ? Number(body.qty) : 1,
       unit: body.unit?.trim() || "Pcs",
       price: body.price !== undefined ? Number(body.price) : 0,
@@ -141,12 +149,15 @@ export async function PUT(request: Request) {
       updated_at: new Date().toISOString(),
     };
 
+    if (body.qo_number !== undefined) {
+      updateData.qo_number = body.qo_number.trim(); // <-- Ditambahkan di sini
+    }
     if (body.customer !== undefined) updateData.customer = body.customer.trim();
     if (body.mother_part !== undefined) updateData.mother_part = body.mother_part.trim();
     if (body.part_number !== undefined) updateData.part_number = body.part_number.trim();
     if (body.description !== undefined) updateData.description = body.description.trim();
     if (body.technical_specification !== undefined) {
-      updateData.technical_specification = body.technical_specification.trim(); // <-- Ditambahkan di sini
+      updateData.technical_specification = body.technical_specification.trim();
     }
     if (body.qty !== undefined) updateData.qty = Number(body.qty);
     if (body.unit !== undefined) updateData.unit = body.unit.trim();
