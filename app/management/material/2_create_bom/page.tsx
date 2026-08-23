@@ -186,6 +186,9 @@ export default function CreateBomPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [customerName, setCustomerName] = useState<string>("");
+  // Project Name is intentionally blank for every new BOM.
+  // It is required because a BOM now creates its Project automatically.
+  const [projectName, setProjectName] = useState<string>("");
   const [motherParts, setMotherParts] = useState<FormMotherPart[]>([]);
 
   // State untuk Edit & Print
@@ -265,6 +268,7 @@ export default function CreateBomPage() {
     setEditingCustomer(null);
     setOriginalItemIds([]);
     setCustomerName("");
+    setProjectName("");
     setMotherParts([]);
     setIsModalOpen(true);
   };
@@ -274,6 +278,7 @@ export default function CreateBomPage() {
     setEditingCustomer(group.customer);
     setOriginalItemIds(group.items.map((i) => i.id));
     setCustomerName(group.customer);
+    setProjectName("");
 
     const mpMap: Record<string, FormChildPart[]> = {};
     group.items.forEach((item) => {
@@ -462,6 +467,13 @@ export default function CreateBomPage() {
       return;
     }
 
+    // A new BOM creates a Project at the BOM & Design stage.
+    // Existing BOM edits do not create a duplicate Project.
+    if (!editingCustomer && !projectName.trim()) {
+      alert("Project Name tidak boleh kosong.");
+      return;
+    }
+
     if (motherParts.length === 0) {
       alert("Tambahkan setidaknya satu Mother Part.");
       return;
@@ -536,12 +548,44 @@ export default function CreateBomPage() {
 
       await Promise.all(requests);
 
-      alert(editingCustomer ? "BOM Berhasil Diperbarui!" : "BOM Berhasil Dibuat dan Tersimpan!");
+      // New BOM -> automatically create the matching Project through the
+      // existing Project Management API. The project enters at BOM & Design
+      // because this BOM is the triggering workflow stage.
+      if (!editingCustomer) {
+        const projectResponse = await fetch("/api/management/project", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            project_name: projectName.trim(),
+            client_company: customerName.trim(),
+            current_stage: "bom_design",
+            status: "In Progress",
+            stage_notes: {
+              bom_design: {
+                notes: "Project created automatically from BOM creation.",
+              },
+            },
+          }),
+        });
+
+        if (!projectResponse.ok) {
+          const errorData = await projectResponse.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || "BOM tersimpan, tetapi Project gagal dibuat."
+          );
+        }
+      }
+
+      alert(
+        editingCustomer
+          ? "BOM Berhasil Diperbarui!"
+          : "BOM Berhasil Dibuat dan Project berhasil dibuat."
+      );
       setIsModalOpen(false);
       fetchBomList();
     } catch (err: any) {
-      console.error("Gagal menyimpan BOM:", err);
-      alert(`Terjadi kesalahan saat menyimpan data BOM:\n${err.message}`);
+      console.error("Gagal menyimpan BOM / Project:", err);
+      alert(`Terjadi kesalahan saat menyimpan data:\n${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -561,7 +605,7 @@ export default function CreateBomPage() {
   return (
     <>
       <div className="min-h-screen bg-slate-900 text-slate-100 p-6 font-sans print:hidden">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
@@ -806,6 +850,41 @@ export default function CreateBomPage() {
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                   />
+
+                  {!editingCustomer && (
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                          Project Name <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Masukkan nama project"
+                          value={projectName}
+                          onChange={(e) => setProjectName(e.target.value)}
+                          className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1.5">
+                          Dikosongkan secara default. Project akan dibuat otomatis saat BOM disimpan.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                          Project Company
+                        </label>
+                        <input
+                          type="text"
+                          value={customerName}
+                          readOnly
+                          className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 cursor-not-allowed"
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1.5">
+                          Otomatis sama dengan Nama Customer / judul BOM.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
