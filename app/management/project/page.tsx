@@ -30,7 +30,6 @@ interface ProjectStageHistory {
   [key: string]: StageHistoryEntry;
 }
 
-type StageCategory = "pending" | "inprogress" | "warning" | "danger" | "completed";
 type FinalCategory = "none" | "completed_green" | "closed_red";
 
 interface ProjectStageNotes {
@@ -86,27 +85,9 @@ const PROJECT_STAGES: { id: ProjectStage; label: string; icon: React.ComponentTy
   { id: "payment", label: "Payment", icon: CheckCircle2, description: "Payment processing and completion" },
 ];
 
-const WARNING_THRESHOLD_DAYS = 4;
-const DANGER_THRESHOLD_DAYS = 10;
-
 // ============================================================================
 // Helpers
 // ============================================================================
-
-function daysBetween(from: Date, to: Date): number {
-  const ms = to.getTime() - from.getTime();
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
-}
-
-function getStageCategory(entry: StageHistoryEntry | undefined): StageCategory {
-  if (!entry || !entry.entered_at) return "pending";
-  if (entry.completed_at) return "completed";
-  const enteredDate = new Date(entry.entered_at);
-  const days = daysBetween(enteredDate, new Date());
-  if (days >= DANGER_THRESHOLD_DAYS) return "danger";
-  if (days >= WARNING_THRESHOLD_DAYS) return "warning";
-  return "inprogress";
-}
 
 function getStartOfDayTime(dateValue: string | number | Date | null | undefined): number | null {
   if (!dateValue) return null;
@@ -114,14 +95,6 @@ function getStartOfDayTime(dateValue: string | number | Date | null | undefined)
   d.setHours(0, 0, 0, 0);
   return d.getTime();
 }
-
-const STAGE_CATEGORY_CONFIG: Record<StageCategory, { bg: string; text: string; border: string; dot: string; label: string }> = {
-  pending: { bg: "bg-slate-100", text: "text-slate-500", border: "border-slate-200", dot: "bg-slate-300", label: "Not Started" },
-  inprogress: { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200", dot: "bg-indigo-500", label: "Current" },
-  warning: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", dot: "bg-amber-500", label: "Warning" },
-  danger: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", dot: "bg-red-500", label: "Danger" },
-  completed: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", dot: "bg-emerald-500", label: "Pass" },
-};
 
 // ============================================================================
 // UI Components
@@ -158,19 +131,6 @@ const StageStatusBadge: React.FC<{ status: StageStatus }> = ({ status }) => {
   );
 };
 
-const StageCategoryBadge: React.FC<{ category: StageCategory; daysActive?: number }> = ({ category, daysActive }) => {
-  const config = STAGE_CATEGORY_CONFIG[category];
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-semibold ${config.bg} ${config.text} ${config.border}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-      {config.label}
-      {typeof daysActive === "number" && category !== "pending" && category !== "completed" && (
-        <span className="opacity-75">· {daysActive}d</span>
-      )}
-    </span>
-  );
-};
-
 // ============================================================================
 // Project Timeline Chart (Gantt Style)
 // ============================================================================
@@ -185,11 +145,14 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
 
   const stagesWithDates = PROJECT_STAGES.map((stage) => {
     const entry = stageHistory[stage.id];
+    const status = project.stage_notes[stage.id]?.stage_status || "Pending";
+    
     if (entry?.plan_start_date) minTime = Math.min(minTime, getStartOfDayTime(entry.plan_start_date)!);
     if (entry?.plan_end_date) maxTime = Math.max(maxTime, getStartOfDayTime(entry.plan_end_date)!);
     if (entry?.entered_at) minTime = Math.min(minTime, getStartOfDayTime(entry.entered_at)!);
     if (entry?.completed_at) maxTime = Math.max(maxTime, getStartOfDayTime(entry.completed_at)!);
-    return { ...stage, entry, category: getStageCategory(entry) };
+    
+    return { ...stage, entry, status };
   });
 
   minTime -= 2 * 86400000;
@@ -238,7 +201,16 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
               const planStart = getStartOfDayTime(s.entry?.plan_start_date);
               const planEnd = getStartOfDayTime(s.entry?.plan_end_date);
               const actualStart = getStartOfDayTime(s.entry?.entered_at);
-              const actualEnd = getStartOfDayTime(s.entry?.completed_at) || (actualStart ? todayTime : null);
+              
+              // Logika Actual End Date: Hanya diisi jika status Completed. Jika belum, gunakan hari ini (todayTime)
+              const isCompleted = s.status === "Completed";
+              const actualEnd = isCompleted ? getStartOfDayTime(s.entry?.completed_at) : (actualStart ? todayTime : null);
+
+              // Menentukan warna bar berdasarkan Stage Status
+              let actualBarColor = 'bg-gradient-to-r from-slate-400 to-slate-500 border-slate-600';
+              if (s.status === 'Completed') actualBarColor = 'bg-gradient-to-r from-emerald-400 to-emerald-500 border-emerald-600';
+              else if (s.status === 'In Progress') actualBarColor = 'bg-gradient-to-r from-indigo-400 to-indigo-500 border-indigo-600';
+              else if (s.status === 'Issue') actualBarColor = 'bg-gradient-to-r from-red-400 to-red-500 border-red-600';
 
               return (
                 <div key={s.id} className="relative h-12 flex items-center group border-b border-slate-50 pb-2">
@@ -263,16 +235,12 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
                   {/* Actual Bar */}
                   {actualStart && actualEnd && (
                     <div 
-                      className={`absolute bottom-1.5 h-4 rounded-md shadow-md border z-10 ${
-                        s.category === 'completed' 
-                          ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 border-emerald-600' 
-                          : 'bg-gradient-to-r from-indigo-400 to-indigo-500 border-indigo-600'
-                      }`}
+                      className={`absolute bottom-1.5 h-4 rounded-md shadow-md border z-10 ${actualBarColor}`}
                       style={{ 
                         left: ((actualStart - minTime) / 86400000) * DAY_WIDTH, 
                         width: Math.max((((actualEnd - actualStart) / 86400000) + 1) * DAY_WIDTH, DAY_WIDTH) 
                       }}
-                      title={`Actual: ${new Date(actualStart).toLocaleDateString()} - ${s.entry?.completed_at ? new Date(actualEnd).toLocaleDateString() : 'In Progress'}`}
+                      title={`Actual: ${new Date(actualStart).toLocaleDateString()} - ${isCompleted ? new Date(actualEnd).toLocaleDateString() : 'In Progress'}`}
                     />
                   )}
                 </div>
@@ -283,10 +251,11 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
       </div>
       
       {/* Legend */}
-      <div className="flex items-center gap-6 mt-4 text-xs font-bold text-slate-600 justify-center bg-slate-50 py-2.5 rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-bold text-slate-600 justify-center bg-slate-50 py-2.5 rounded-lg border border-slate-200 shadow-sm">
         <div className="flex items-center gap-2"><div className="w-4 h-3 bg-gradient-to-r from-amber-300 to-yellow-400 border border-amber-500 rounded-sm shadow-sm"></div> Plan Timeline</div>
         <div className="flex items-center gap-2"><div className="w-4 h-3 bg-gradient-to-r from-indigo-400 to-indigo-500 border border-indigo-600 rounded-sm shadow-sm"></div> Actual (In Progress)</div>
         <div className="flex items-center gap-2"><div className="w-4 h-3 bg-gradient-to-r from-emerald-400 to-emerald-500 border border-emerald-600 rounded-sm shadow-sm"></div> Actual (Completed)</div>
+        <div className="flex items-center gap-2"><div className="w-4 h-3 bg-gradient-to-r from-red-400 to-red-500 border border-red-600 rounded-sm shadow-sm"></div> Actual (Issue)</div>
       </div>
     </div>
   );
@@ -299,10 +268,8 @@ const StageDetailsCard: React.FC<{
   stage: ProjectStage;
   stageData: ProjectStageNotes[ProjectStage] | undefined;
   historyEntry: StageHistoryEntry | undefined;
-  category: StageCategory;
-  daysActive?: number;
   onEdit: () => void;
-}> = ({ stage, stageData, historyEntry, category, daysActive, onEdit }) => {
+}> = ({ stage, stageData, historyEntry, onEdit }) => {
   const stageInfo = PROJECT_STAGES.find((s) => s.id === stage);
   if (!stageInfo) return null;
 
@@ -313,15 +280,11 @@ const StageDetailsCard: React.FC<{
           <stageInfo.icon size={18} className="text-indigo-600" />
           <p className="font-bold text-slate-900 text-sm">{stageInfo.label}</p>
         </div>
-        <StageCategoryBadge category={category} daysActive={daysActive} />
+        {/* Menggunakan StageStatusBadge di Header */}
+        <StageStatusBadge status={stageData?.stage_status || "Pending"} />
       </div>
 
       <div className="p-4 flex-1 overflow-y-auto space-y-4 text-sm">
-        <div className="flex justify-between items-center bg-indigo-50/50 px-3 py-2 rounded-lg border border-indigo-100">
-          <span className="text-xs font-semibold text-slate-600">Stage Status:</span>
-          <StageStatusBadge status={stageData?.stage_status || "Pending"} />
-        </div>
-
         <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-2">
           <div className="flex justify-between"><span className="text-slate-500 font-medium">Plan Start:</span> <span className="font-semibold text-slate-700">{historyEntry?.plan_start_date ? new Date(historyEntry.plan_start_date).toLocaleDateString() : '-'}</span></div>
           <div className="flex justify-between"><span className="text-slate-500 font-medium">Plan End:</span> <span className="font-semibold text-slate-700">{historyEntry?.plan_end_date ? new Date(historyEntry.plan_end_date).toLocaleDateString() : '-'}</span></div>
@@ -405,7 +368,6 @@ const StageUpdateModal: React.FC<{
             </div>
           </div>
 
-          {/* General Notes Diperlebar dan Rich Content Dihapus */}
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-2 uppercase tracking-wide">General Notes</label>
             <textarea 
@@ -578,6 +540,7 @@ export default function ProjectManagementPage() {
           }
         }
       } else {
+        // Jika status diubah dari Completed ke status lain, hapus completed_at
         stageHistory[editingStage].completed_at = null;
         newCurrentStage = editingStage; 
         if (!stageHistory[editingStage].entered_at) {
@@ -662,7 +625,6 @@ export default function ProjectManagementPage() {
         <button onClick={() => setIsNewProjectModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-bold shadow-md transition-all hover:shadow-lg"><Plus size={18} /> New Project</button>
       </div>
 
-      {/* PERBAIKAN: Menghapus max-w-[1600px] dan mx-auto agar menjadi full width */}
       <div className="p-8 space-y-8 w-full">
         
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -775,13 +737,10 @@ export default function ProjectManagementPage() {
                 {PROJECT_STAGES.map((stage) => {
                   const stageData = selectedProject.stage_notes[stage.id];
                   const historyEntry = selectedProject.stage_history[stage.id];
-                  const category = getStageCategory(historyEntry);
-                  const daysActive = historyEntry && !historyEntry.completed_at ? daysBetween(new Date(historyEntry.entered_at!), new Date()) : undefined;
 
                   return (
                     <StageDetailsCard
                       key={stage.id} stage={stage.id} stageData={stageData} historyEntry={historyEntry}
-                      category={category} daysActive={daysActive}
                       onEdit={() => { setEditingStage(stage.id); setIsModalOpen(true); }}
                     />
                   );

@@ -33,15 +33,15 @@ interface MaterialFormData {
 
 // Icon Components
 const MaterialIcon = () => (
-  <div className="flex items-center justify-center w-10 h-10 bg-teal-500/10 border border-teal-500/20 rounded">
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <div className="flex items-center justify-center w-10 h-10 bg-teal-50 border border-teal-200 rounded">
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
     </svg>
   </div>
 );
 
 const SearchIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
 );
@@ -176,7 +176,7 @@ export default function MasterMaterialPage() {
             target="_blank"
             rel="noopener noreferrer"
             title={supplierStr}
-            className="inline-flex items-center gap-1 text-teal-400 hover:text-teal-300 underline underline-offset-2 font-mono text-[11px]"
+            className="inline-flex items-center gap-1 text-teal-600 hover:text-teal-700 underline underline-offset-2 font-mono text-[11px]"
           >
             <span>{displayLabel}</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -302,21 +302,21 @@ export default function MasterMaterialPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-teal-500/30 p-3 md:p-6 flex flex-col gap-4 md:gap-6 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-teal-500/30 p-3 md:p-6 flex flex-col gap-4 md:gap-6 animate-in fade-in duration-500">
       
       {/* HEADER */}
-      <header className="bg-slate-900 border border-slate-800 rounded shadow-xl px-4 md:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="bg-white border border-slate-200 rounded shadow-sm px-4 md:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <MaterialIcon />
           <div>
-            <h1 className="text-sm md:text-md font-bold tracking-wider text-slate-200 uppercase">Master Material Management</h1>
+            <h1 className="text-sm md:text-md font-bold tracking-wider text-slate-800 uppercase">Master Material Management</h1>
             <p className="text-[11px] md:text-xs font-mono text-slate-500 mt-0.5">Kelola inventaris suku cadang dan material produksi</p>
           </div>
         </div>
 
         <button
           onClick={handleOpenAddModal}
-          className="flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold font-mono text-xs uppercase px-4 py-2.5 rounded transition-colors shadow-lg shadow-teal-500/10 w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold font-mono text-xs uppercase px-4 py-2.5 rounded transition-colors shadow-md shadow-teal-500/20 w-full sm:w-auto"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
@@ -326,7 +326,7 @@ export default function MasterMaterialPage() {
       </header>
 
       {/* FILTER & SEARCH BAR */}
-      <div className="bg-slate-900 border border-slate-800 rounded shadow-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="bg-white border border-slate-200 rounded shadow-sm p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="relative w-full sm:w-96">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <SearchIcon />
@@ -336,25 +336,25 @@ export default function MasterMaterialPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by Part Number / Description..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded font-mono text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded font-mono text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors"
           />
         </div>
-        <div className="text-xs font-mono text-slate-400 w-full sm:w-auto text-right">
-          Total Items: <span className="text-teal-400 font-bold">{materials.length}</span>
+        <div className="text-xs font-mono text-slate-500 w-full sm:w-auto text-right">
+          Total Items: <span className="text-teal-600 font-bold">{materials.length}</span>
         </div>
       </div>
 
       {/* MAIN TABLE SECTION */}
-      <div className="bg-slate-900 border border-slate-800 rounded shadow-xl overflow-hidden">
-        <div className="md:hidden bg-slate-950/80 px-4 py-1.5 border-b border-slate-800 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+      <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden">
+        <div className="md:hidden bg-slate-50/80 px-4 py-1.5 border-b border-slate-200 flex items-center justify-between text-[10px] text-slate-500 font-mono">
           <span>← Geser tabel ke kanan/kiri →</span>
-          <span className="text-teal-400 font-semibold">Mobile Scroll</span>
+          <span className="text-teal-600 font-semibold">Mobile Scroll</span>
         </div>
 
         <div className="overflow-x-auto touch-pan-x w-full">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="bg-slate-950/80 border-b border-slate-800 text-[10px] font-mono uppercase font-bold text-slate-400 tracking-wider">
+              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-mono uppercase font-bold text-slate-600 tracking-wider">
                 <th className="p-3">Part Number</th>
                 <th className="p-3">Description</th>
                 <th className="p-3">Tech Spec</th>
@@ -366,12 +366,12 @@ export default function MasterMaterialPage() {
                 <th className="p-3 text-right">Markup</th>
                 <th className="p-3 max-w-[120px]">Supplier</th>
                 <th className="p-3">Updated</th>
-                <th className="p-3 text-center sticky right-0 bg-slate-950/95 backdrop-blur-md shadow-l border-l border-slate-800/80 z-10 w-[90px]">
+                <th className="p-3 text-center sticky right-0 bg-slate-50/95 backdrop-blur-md shadow-l border-l border-slate-200 z-10 w-[90px]">
                   Action
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 font-mono text-xs">
+            <tbody className="divide-y divide-slate-200 font-mono text-xs">
               {loading ? (
                 <tr>
                   <td colSpan={12} className="text-center py-8 text-slate-500 font-mono">
@@ -388,44 +388,44 @@ export default function MasterMaterialPage() {
                 materials.map((mat) => {
                   const calculatedPriceMargin = mat.price_margin ?? (mat.price + (mat.price * mat.margin) / 100);
                   return (
-                    <tr key={mat.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="p-3 font-bold text-teal-400 whitespace-nowrap">{mat.part_number}</td>
-                      <td className="p-3 text-slate-200 min-w-[140px] max-w-[200px] truncate" title={mat.description}>
+                    <tr key={mat.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-3 font-bold text-teal-600 whitespace-nowrap">{mat.part_number}</td>
+                      <td className="p-3 text-slate-800 min-w-[140px] max-w-[200px] truncate" title={mat.description}>
                         {mat.description || "-"}
                       </td>
-                      <td className="p-3 text-slate-400 text-[11px] max-w-[180px] truncate" title={mat.technical_specification}>
+                      <td className="p-3 text-slate-500 text-[11px] max-w-[180px] truncate" title={mat.technical_specification}>
                         {mat.technical_specification || "-"}
                       </td>
-                      <td className="p-3 text-right text-slate-200">{mat.qty}</td>
-                      <td className="p-3 text-slate-400">{mat.unit || "-"}</td>
-                      <td className="p-3 text-right text-slate-200 whitespace-nowrap">
+                      <td className="p-3 text-right text-slate-800">{mat.qty}</td>
+                      <td className="p-3 text-slate-600">{mat.unit || "-"}</td>
+                      <td className="p-3 text-right text-slate-800 whitespace-nowrap">
                         {mat.price.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })}
                       </td>
-                      <td className="p-3 text-right text-amber-400">{mat.margin}%</td>
-                      <td className="p-3 text-right text-teal-300 font-semibold whitespace-nowrap">
+                      <td className="p-3 text-right text-amber-600">{mat.margin}%</td>
+                      <td className="p-3 text-right text-teal-600 font-semibold whitespace-nowrap">
                         {calculatedPriceMargin.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })}
                       </td>
-                      <td className="p-3 text-right text-slate-300 whitespace-nowrap">
+                      <td className="p-3 text-right text-slate-700 whitespace-nowrap">
                         {mat.markup.toLocaleString("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 })}
                       </td>
-                      <td className="p-3 text-slate-300 whitespace-nowrap max-w-[120px] truncate">
+                      <td className="p-3 text-slate-700 whitespace-nowrap max-w-[120px] truncate">
                         {renderSupplierCell(mat.supplier)}
                       </td>
                       <td className="p-3 text-[10px] text-slate-500 whitespace-nowrap">
                         {mat.date_updated ? new Date(mat.date_updated).toLocaleDateString("id-ID") : "-"}
                       </td>
-                      <td className="p-3 text-center sticky right-0 bg-slate-900/95 backdrop-blur-md border-l border-slate-800/80 z-10">
+                      <td className="p-3 text-center sticky right-0 bg-white/95 backdrop-blur-md border-l border-slate-200 z-10">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => handleOpenEditModal(mat)}
-                            className="p-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded hover:bg-amber-500/20 transition-colors"
+                            className="p-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded hover:bg-amber-100 transition-colors"
                             title="Edit Material"
                           >
                             <EditIcon />
                           </button>
                           <button
                             onClick={() => setDeletingId(mat.id)}
-                            className="p-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded hover:bg-rose-500/20 transition-colors"
+                            className="p-1.5 bg-rose-50 text-rose-600 border border-rose-200 rounded hover:bg-rose-100 transition-colors"
                             title="Delete Material"
                           >
                             <TrashIcon />
@@ -443,16 +443,16 @@ export default function MasterMaterialPage() {
 
       {/* MODAL ADD / EDIT MATERIAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center sticky top-0 bg-slate-900 z-20">
-              <h3 className="text-sm font-bold font-mono text-teal-400 uppercase tracking-wider">
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center sticky top-0 bg-white z-20">
+              <h3 className="text-sm font-bold font-mono text-teal-600 uppercase tracking-wider">
                 {editingId !== null ? "Edit Material" : "Add New Material"}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-500 hover:text-slate-300 font-mono text-lg"
+                className="text-slate-400 hover:text-slate-600 font-mono text-lg"
               >
                 ✕
               </button>
@@ -461,21 +461,21 @@ export default function MasterMaterialPage() {
             {/* Modal Form */}
             <form onSubmit={handleSubmit} className="p-6 space-y-6 font-mono text-xs">
               {errorMessage && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded">
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded">
                   {errorMessage}
                 </div>
               )}
 
               {/* CARD 1: Material Details */}
-              <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4 space-y-4">
-                <h4 className="text-teal-500 font-bold uppercase tracking-wider border-b border-slate-800 pb-2 mb-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <h4 className="text-teal-600 font-bold uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">
                   1. Material Details
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   
                   {/* Description (Searchable Dropdown) */}
                   <div className="space-y-1 relative md:col-span-2">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Description *</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Description *</label>
                     <input
                       type="text"
                       required
@@ -484,18 +484,18 @@ export default function MasterMaterialPage() {
                       onFocus={() => setShowDescDropdown(true)}
                       onBlur={() => setTimeout(() => setShowDescDropdown(false), 200)}
                       placeholder="Ketik atau pilih description..."
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                     {/* Dropdown List */}
                     {showDescDropdown && (
-                      <ul className="absolute z-30 w-full mt-1 max-h-40 overflow-y-auto bg-slate-800 border border-slate-700 rounded shadow-xl">
+                      <ul className="absolute z-30 w-full mt-1 max-h-40 overflow-y-auto bg-white border border-slate-200 rounded shadow-xl">
                         {uniqueDescriptions
                           .filter((d) => d.toLowerCase().includes(formData.description.toLowerCase()))
                           .map((desc, idx) => (
                             <li
                               key={idx}
                               onClick={() => handleDescriptionChange(desc)}
-                              className="px-3 py-2 hover:bg-teal-500/20 cursor-pointer text-slate-200 transition-colors"
+                              className="px-3 py-2 hover:bg-teal-50 cursor-pointer text-slate-700 transition-colors"
                             >
                               {desc}
                             </li>
@@ -509,7 +509,7 @@ export default function MasterMaterialPage() {
 
                   {/* Part Number */}
                   <div className="space-y-1">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Part Number *</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Part Number *</label>
                     <input
                       type="text"
                       name="part_number"
@@ -517,59 +517,59 @@ export default function MasterMaterialPage() {
                       value={formData.part_number}
                       onChange={handleInputChange}
                       placeholder="Auto-generated..."
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-teal-400 font-bold focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-teal-600 font-bold focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                   </div>
 
                   {/* Supplier */}
                   <div className="space-y-1">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Supplier / URL</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Supplier / URL</label>
                     <input
                       type="text"
                       name="supplier"
                       value={formData.supplier}
                       onChange={handleInputChange}
                       placeholder="Nama Toko atau Paste URL Link..."
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                   </div>
 
                   {/* Technical Specification */}
                   <div className="space-y-1 md:col-span-2">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Technical Specification</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Technical Specification</label>
                     <textarea
                       name="technical_specification"
                       rows={2}
                       value={formData.technical_specification}
                       onChange={handleInputChange}
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                   </div>
                 </div>
               </div>
 
               {/* CARD 2: Inventory */}
-              <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4 space-y-4">
-                <h4 className="text-teal-500 font-bold uppercase tracking-wider border-b border-slate-800 pb-2 mb-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <h4 className="text-teal-600 font-bold uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">
                   2. Inventory
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Qty */}
                   <div className="space-y-1">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Qty</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Qty</label>
                     <input
                       type="number"
                       name="qty"
                       value={formData.qty}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                   </div>
 
                   {/* Unit (Searchable Dropdown) */}
                   <div className="space-y-1 relative">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Unit</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Unit</label>
                     <input
                       type="text"
                       name="unit"
@@ -578,18 +578,18 @@ export default function MasterMaterialPage() {
                       onFocus={() => setShowUnitDropdown(true)}
                       onBlur={() => setTimeout(() => setShowUnitDropdown(false), 200)}
                       placeholder="Pcs, Box, Meter, dll."
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                     {/* Dropdown List */}
                     {showUnitDropdown && (
-                      <ul className="absolute z-30 w-full mt-1 max-h-40 overflow-y-auto bg-slate-800 border border-slate-700 rounded shadow-xl">
+                      <ul className="absolute z-30 w-full mt-1 max-h-40 overflow-y-auto bg-white border border-slate-200 rounded shadow-xl">
                         {uniqueUnits
                           .filter((u) => u.toLowerCase().includes(formData.unit.toLowerCase()))
                           .map((u, idx) => (
                             <li
                               key={idx}
                               onClick={() => setFormData((prev) => ({ ...prev, unit: u }))}
-                              className="px-3 py-2 hover:bg-teal-500/20 cursor-pointer text-slate-200 transition-colors"
+                              className="px-3 py-2 hover:bg-teal-50 cursor-pointer text-slate-700 transition-colors"
                             >
                               {u}
                             </li>
@@ -604,27 +604,27 @@ export default function MasterMaterialPage() {
               </div>
 
               {/* CARD 3: Pricing */}
-              <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4 space-y-4">
-                <h4 className="text-teal-500 font-bold uppercase tracking-wider border-b border-slate-800 pb-2 mb-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-4">
+                <h4 className="text-teal-600 font-bold uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">
                   3. Pricing & Commercials
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Price */}
                   <div className="space-y-1">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Base Price (Rp)</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Base Price (Rp)</label>
                     <input
                       type="number"
                       name="price"
                       value={formData.price}
                       onChange={handleInputChange}
                       placeholder="Masukkan harga..."
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                   </div>
 
                   {/* Margin */}
                   <div className="space-y-1">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Margin (%)</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Margin (%)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -632,20 +632,20 @@ export default function MasterMaterialPage() {
                       value={formData.margin}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-teal-500/50"
+                      className="w-full p-2 bg-white border border-slate-300 rounded text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                     />
                   </div>
 
                   {/* Markup (Auto Calculated) */}
                   <div className="space-y-1">
-                    <label className="text-slate-400 text-[10px] uppercase font-bold">Markup (Rp) - Auto</label>
+                    <label className="text-slate-600 text-[10px] uppercase font-bold">Markup (Rp) - Auto</label>
                     <input
                       type="number"
                       name="markup"
                       readOnly
                       value={formData.markup}
                       placeholder="Otomatis..."
-                      className="w-full p-2 bg-slate-900 border border-slate-800 rounded text-teal-400 font-bold focus:outline-none cursor-not-allowed"
+                      className="w-full p-2 bg-slate-100 border border-slate-200 rounded text-teal-700 font-bold focus:outline-none cursor-not-allowed"
                       title="Dihitung otomatis: Base Price + (Base Price x Margin %)"
                     />
                   </div>
@@ -653,18 +653,18 @@ export default function MasterMaterialPage() {
               </div>
 
               {/* Form Actions */}
-              <div className="pt-4 border-t border-slate-800 flex justify-end gap-3 sticky bottom-0 bg-slate-900 py-2">
+              <div className="pt-4 border-t border-slate-200 flex justify-end gap-3 sticky bottom-0 bg-white py-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded transition-colors"
+                  className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold rounded transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold rounded transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded transition-colors disabled:opacity-50"
                 >
                   {isSubmitting ? "Saving..." : "Save Material"}
                 </button>
@@ -676,22 +676,22 @@ export default function MasterMaterialPage() {
 
       {/* CONFIRM DELETE MODAL */}
       {deletingId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-lg shadow-2xl w-full max-w-md p-6 space-y-4 font-mono">
-            <h3 className="text-sm font-bold text-rose-400 uppercase tracking-wider">Confirm Delete</h3>
-            <p className="text-xs text-slate-300">
-              Apakah Anda yakin ingin menghapus material dengan ID: <span className="text-amber-400 font-bold">#{deletingId}</span>? Actions ini tidak dapat dibatalkan.
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 rounded-lg shadow-2xl w-full max-w-md p-6 space-y-4 font-mono">
+            <h3 className="text-sm font-bold text-rose-600 uppercase tracking-wider">Confirm Delete</h3>
+            <p className="text-xs text-slate-600">
+              Apakah Anda yakin ingin menghapus material dengan ID: <span className="text-amber-600 font-bold">#{deletingId}</span>? Actions ini tidak dapat dibatalkan.
             </p>
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setDeletingId(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded transition-colors"
+                className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-400 text-slate-950 font-bold text-xs rounded transition-colors"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded transition-colors"
               >
                 Delete
               </button>
