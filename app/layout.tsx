@@ -97,31 +97,24 @@ const menuData: Record<string, MenuItem[]> = {
   ],
   Management: [
     { 
-      label: "Material", status: "fullstack",
+      label: "Material",
       subItems: [
-        { label: "Master Material", href: "/management/material/1_master_material", status: "fullstack" },
-        { label: "Create BOM", href: "/management/material/2_create_bom", status: "fullstack" },
-        { label: "Document PT. TERIOT", href: "/management/material/3_create_qo", status: "fullstack" },
-        { label: "Document PT. TMI", href: "/management/material/3_create_qo_TMI", status: "fullstack" },
-        { label: "Cost Analysis", href: "/management/material/4_cost_analysis", status: "fullstack" },
+        { label: "Master Material", href: "/management/material/1_master_material" },
+        { label: "Create BOM", href: "/management/material/2_create_bom" },
+        { label: "Document PT. TERIOT", href: "/management/material/3_create_qo" },
+        { label: "Document PT. TMI", href: "/management/material/3_create_qo_TMI" },
+        { label: "Cost Analysis", href: "/management/material/4_cost_analysis" },
       ]
     },
-    { label: "Project Management", href: "/management/project", status: "fullstack" },
+    { label: "Project Management", href: "/management/project"},
     { 
       label: "Finance Management",
       subItems: [
-        { label: "Invoice", href: "/management/finance/1_invoice", status: "fullstack" },
-        { label: "Form Finance", href: "/management/finance/2_form_finance", status: "fullstack" },
-        { label: "Datapack", href: "/management/finance/3_datapack", status: "fullstack" },
+        { label: "Form Finance", href: "/management/finance/2_form_finance" },
+        { label: "Datapack", href: "/management/finance/3_datapack" },
       ]
     },
-    { 
-      label: "R&D Management",
-      subItems: [
-        { label: "Development Product", href: "/management/rd/1_development_product", status: "fullstack" },
-        { label: "Testing Product", href: "/management/rd/2_testing_product", status: "fullstack" },
-      ]
-    },
+     { label: "R&D Management", href: "/management/rd" },
     { label: "List Supplier", href: "/management/supplier/list" },
   ],
 };
