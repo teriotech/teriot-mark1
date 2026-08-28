@@ -114,7 +114,7 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Datapack", href: "/management/finance/3_datapack" },
       ]
     },
-     { label: "R&D Management", href: "/management/rd" },
+     { label: "", href: "/management/supplier/list" },
     { label: "List Supplier", href: "/management/supplier/list" },
   ],
 };
