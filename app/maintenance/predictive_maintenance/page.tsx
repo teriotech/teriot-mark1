@@ -157,23 +157,23 @@ export default function PredictiveMaintenancePage() {
   const getEventBadgeClass = (type: "electrical" | "production" | "mechanical") => {
     switch (type) {
       case "electrical":
-        return "bg-teal-600/80 text-white border-teal-500";
+        return "bg-teal-50 text-teal-700 border-teal-200";
       case "production":
-        return "bg-emerald-600/80 text-white border-emerald-500";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "mechanical":
       default:
-        return "bg-sky-700/80 text-white border-sky-600";
+        return "bg-sky-50 text-sky-700 border-sky-200";
     }
   };
 
   const getTagClass = (tag: string) => {
     switch (tag) {
-      case "Active": return "bg-green-500/10 text-green-400 border-green-500/30";
-      case "Weekly": return "bg-teal-500/10 text-teal-400 border-teal-500/30";
-      case "Monthly": return "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
-      case "Electrical": return "bg-orange-500/10 text-orange-400 border-orange-500/20";
-      case "Production": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-      default: return "bg-slate-700/20 text-slate-400 border-slate-600/30";
+      case "Active": return "bg-green-50 text-green-700 border-green-200";
+      case "Weekly": return "bg-teal-50 text-teal-700 border-teal-200";
+      case "Monthly": return "bg-cyan-50 text-cyan-700 border-cyan-200";
+      case "Electrical": return "bg-orange-50 text-orange-700 border-orange-200";
+      case "Production": return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      default: return "bg-slate-100 text-slate-600 border-slate-300";
     }
   };
 
@@ -184,45 +184,45 @@ export default function PredictiveMaintenancePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-teal-500/25 px-4 py-6">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-teal-500/20 px-4 py-6">
       <div className="max-w-full mx-auto space-y-6">
         
         {/* HEADER BAR */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl shadow-slate-950/40">
-          <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between border-b border-slate-800">
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-teal-400" />
+              <Calendar className="w-5 h-5 text-teal-600" />
               <div>
-                <h1 className="text-lg font-semibold tracking-wide text-slate-100">Predictive Maintenance Schedule</h1>
+                <h1 className="text-lg font-semibold tracking-wide text-slate-800">Predictive Maintenance Schedule</h1>
                 <p className="text-xs text-slate-500 mt-1">90006(Atikom Imsap)</p>
               </div>
             </div>
           </div>
 
           {/* UI CALENDAR SCHEDULE */}
-          <div className="p-4 border-b border-slate-800">
+          <div className="p-4 border-b border-slate-100">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-extrabold text-slate-100 tracking-wide font-mono">{currentMonth}</h3>
+              <h3 className="text-lg font-extrabold text-slate-800 tracking-wide font-mono">{currentMonth}</h3>
               <div className="flex items-center gap-1">
-                <button className="bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-teal-500 text-slate-300 text-xs px-3 py-1 rounded transition-all font-medium">today</button>
-                <button className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-2 py-1 rounded font-bold">{"<"}</button>
-                <button className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs px-2 py-1 rounded font-bold">{">"}</button>
+                <button className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs px-3 py-1 rounded transition-all font-medium shadow-sm">today</button>
+                <button className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs px-2 py-1 rounded font-bold shadow-sm">{"<"}</button>
+                <button className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs px-2 py-1 rounded font-bold shadow-sm">{">"}</button>
               </div>
             </div>
 
             <div className="w-full overflow-x-auto">
-              <div className="min-w-[1000px] border border-slate-800 rounded-lg overflow-hidden">
-                <div className="grid grid-cols-7 bg-slate-800/50 text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 py-2">
+              <div className="min-w-[1000px] border border-slate-200 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-7 bg-slate-50 text-center text-[11px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-200 py-2">
                   <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                 </div>
 
-                <div className="grid grid-cols-7 bg-slate-950/30 divide-x divide-y divide-slate-800/50 border-b border-slate-800">
-                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-600 font-mono p-1">5</span></div>
-                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-600 font-mono p-1">6</span></div>
-                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-600 font-mono p-1">7</span></div>
+                <div className="grid grid-cols-7 bg-white divide-x divide-y divide-slate-200 border-b border-slate-200">
+                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-400 font-mono p-1">5</span></div>
+                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-400 font-mono p-1">6</span></div>
+                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-400 font-mono p-1">7</span></div>
                   
-                  <div className="min-h-[140px] p-1 bg-teal-500/[0.02]">
-                    <span className="text-xs text-slate-300 font-mono p-1 block font-bold">8</span>
+                  <div className="min-h-[140px] p-1 bg-teal-50/30">
+                    <span className="text-xs text-slate-700 font-mono p-1 block font-bold">8</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[8]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`} title={ev.label}>
@@ -232,8 +232,8 @@ export default function PredictiveMaintenancePage() {
                     </div>
                   </div>
 
-                  <div className="min-h-[140px] p-1 bg-teal-500/[0.02]">
-                    <span className="text-xs text-slate-300 font-mono p-1 block font-bold">9</span>
+                  <div className="min-h-[140px] p-1 bg-teal-50/30">
+                    <span className="text-xs text-slate-700 font-mono p-1 block font-bold">9</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[9]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`} title={ev.label}>
@@ -244,7 +244,7 @@ export default function PredictiveMaintenancePage() {
                   </div>
 
                   <div className="min-h-[140px] p-1">
-                    <span className="text-xs text-slate-300 font-mono p-1 block font-bold">10</span>
+                    <span className="text-xs text-slate-700 font-mono p-1 block font-bold">10</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[10]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`} title={ev.label}>
@@ -253,10 +253,10 @@ export default function PredictiveMaintenancePage() {
                       ))}
                     </div>
                   </div>
-                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-600 font-mono p-1">11</span></div>
+                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-400 font-mono p-1">11</span></div>
 
                   <div className="min-h-[140px] p-1">
-                    <span className="text-xs text-slate-300 font-mono p-1 block">12</span>
+                    <span className="text-xs text-slate-700 font-mono p-1 block">12</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[12]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`}>{ev.label}</div>
@@ -265,7 +265,7 @@ export default function PredictiveMaintenancePage() {
                   </div>
 
                   <div className="min-h-[140px] p-1">
-                    <span className="text-xs text-slate-300 font-mono p-1 block">13</span>
+                    <span className="text-xs text-slate-700 font-mono p-1 block">13</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[13]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`}>{ev.label}</div>
@@ -274,7 +274,7 @@ export default function PredictiveMaintenancePage() {
                   </div>
 
                   <div className="min-h-[140px] p-1">
-                    <span className="text-xs text-slate-300 font-mono p-1 block font-bold">14</span>
+                    <span className="text-xs text-slate-700 font-mono p-1 block font-bold">14</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[14]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`}>{ev.label}</div>
@@ -283,7 +283,7 @@ export default function PredictiveMaintenancePage() {
                   </div>
 
                   <div className="min-h-[140px] p-1">
-                    <span className="text-xs text-slate-300 font-mono p-1 block font-bold">15</span>
+                    <span className="text-xs text-slate-700 font-mono p-1 block font-bold">15</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[15]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`}>{ev.label}</div>
@@ -292,15 +292,15 @@ export default function PredictiveMaintenancePage() {
                   </div>
 
                   <div className="min-h-[140px] p-1">
-                    <span className="text-xs text-slate-300 font-mono p-1 block">16</span>
+                    <span className="text-xs text-slate-700 font-mono p-1 block">16</span>
                     <div className="space-y-0.5 mt-1">
                       {calendarEvents[16]?.map((ev, i) => (
                         <div key={i} className={`text-[9px] px-1.5 py-0.5 rounded border leading-tight truncate font-mono ${getEventBadgeClass(ev.type)}`}>{ev.label}</div>
                       ))}
                     </div>
                   </div>
-                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-600 font-mono p-1">17</span></div>
-                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-600 font-mono p-1">18</span></div>
+                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-400 font-mono p-1">17</span></div>
+                  <div className="min-h-[140px] p-1"><span className="text-xs text-slate-400 font-mono p-1">18</span></div>
                 </div>
               </div>
             </div>
@@ -308,30 +308,30 @@ export default function PredictiveMaintenancePage() {
         </div>
 
         {/* SCHEDULE CONFIGURATION SETTING & LIST */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
-          <div className="bg-teal-950/40 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center">
-            <h3 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono">Schedule List</h3>
-            <button className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-3 py-1 rounded flex items-center gap-1 text-[11px] transition-colors">
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="bg-teal-50 border-b border-slate-200 px-4 py-2.5 flex justify-between items-center">
+            <h3 className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">Schedule List</h3>
+            <button className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-3 py-1 rounded flex items-center gap-1 text-[11px] transition-colors">
               <Plus className="w-3 h-3" /> New Schedule
             </button>
           </div>
 
           {/* FILTER CONTROLLERS ROW */}
-          <div className="bg-slate-950/40 border-b border-slate-800 px-4 py-3 grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="bg-white border-b border-slate-200 px-4 py-3 grid grid-cols-1 md:grid-cols-5 gap-3">
             <input
               type="date"
               placeholder="from Date"
-              className="bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-teal-500"
+              className="bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-teal-500 shadow-sm"
             />
             <input
               type="date"
               placeholder="to Date"
-              className="bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-teal-500"
+              className="bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-teal-500 shadow-sm"
             />
             <select
               value={filterArea}
               onChange={(e) => setFilterArea(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-teal-500"
+              className="bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-teal-500 shadow-sm"
             >
               <option>All Area</option>
               <option>Rawmat</option>
@@ -340,7 +340,7 @@ export default function PredictiveMaintenancePage() {
             <select
               value={filterTag}
               onChange={(e) => setFilterTag(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-teal-500"
+              className="bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-teal-500 shadow-sm"
             >
               <option>All Tag</option>
               <option>Electrical</option>
@@ -349,7 +349,7 @@ export default function PredictiveMaintenancePage() {
             <select
               value={filterFrequency}
               onChange={(e) => setFilterFrequency(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-teal-500"
+              className="bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:border-teal-500 shadow-sm"
             >
               <option>All Frequency</option>
               <option>Weekly</option>
@@ -358,38 +358,38 @@ export default function PredictiveMaintenancePage() {
           </div>
 
           {/* SEARCH BAR ROW */}
-          <div className="bg-slate-950/40 border-b border-slate-800 px-4 py-3 flex gap-2">
+          <div className="bg-white border-b border-slate-200 px-4 py-3 flex gap-2">
             <div className="flex-1 flex items-center gap-2">
-              <Search className="w-4 h-4 text-slate-500" />
+              <Search className="w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search job name or description..."
-                className="flex-1 bg-slate-950 border border-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-teal-500"
+                className="flex-1 bg-white border border-slate-300 rounded px-3 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-teal-500 shadow-sm"
               />
             </div>
-            <button className="bg-teal-600 hover:bg-teal-500 text-white px-4 py-1.5 rounded text-xs font-semibold transition-colors">
+            <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded text-xs font-semibold transition-colors">
               Search
             </button>
           </div>
 
-          <div className="px-4 py-2 text-xs text-slate-500 font-mono italic bg-slate-950/20">found 9618 data.</div>
+          <div className="px-4 py-2 text-xs text-slate-500 font-mono italic bg-slate-50">found 9618 data.</div>
 
           {/* DATA LIST TABLE */}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-800/50 border-b border-slate-800">
-                  <th className="px-4 py-3 text-left text-slate-400 font-mono">Job Name</th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-mono">Info</th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-mono">Area/Execution</th>
-                  <th className="px-4 py-3 text-center text-slate-400 font-mono">Action</th>
+                <tr className="bg-slate-100 border-b border-slate-200">
+                  <th className="px-4 py-3 text-left text-slate-600 font-mono">Job Name</th>
+                  <th className="px-4 py-3 text-left text-slate-600 font-mono">Info</th>
+                  <th className="px-4 py-3 text-left text-slate-600 font-mono">Area/Execution</th>
+                  <th className="px-4 py-3 text-center text-slate-600 font-mono">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {scheduleItems.map((item, idx) => (
-                  <tr key={item.id} className={`border-b border-slate-800/50 ${idx % 2 === 0 ? 'bg-slate-950/20' : 'bg-transparent'} hover:bg-slate-800/30 transition-colors`}>
+                  <tr key={item.id} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors`}>
                     
                     {/* KOLOM 1: JOB NAME & BADGES */}
                     <td className="px-4 py-3 space-y-2">
@@ -400,23 +400,23 @@ export default function PredictiveMaintenancePage() {
                           </span>
                         ))}
                       </div>
-                      <div className="text-slate-100 font-semibold">{item.jobName}</div>
-                      <p className="text-slate-400 text-[11px] leading-relaxed">{item.description}</p>
+                      <div className="text-slate-800 font-semibold">{item.jobName}</div>
+                      <p className="text-slate-600 text-[11px] leading-relaxed">{item.description}</p>
                       <div className="text-[10px] text-slate-500 font-mono">
-                        <span className="text-slate-400 font-semibold">Form:</span> {item.formCode}{item.formName}
+                        <span className="text-slate-600 font-semibold">Form:</span> {item.formCode}{item.formName}
                       </div>
                     </td>
 
                     {/* KOLOM 2: INFO */}
-                    <td className="px-4 py-3 text-[11px] text-slate-400 space-y-1">
+                    <td className="px-4 py-3 text-[11px] text-slate-600 space-y-1">
                       <div><span className="text-slate-500 font-semibold">PIC:</span> {item.pic}</div>
                       <div><span className="text-slate-500 font-semibold">Sparepart:</span> {item.spareparts}</div>
                       <div className="leading-snug"><span className="text-slate-500 font-semibold">Tool:</span> {item.tools}</div>
                     </td>
 
                     {/* KOLOM 3: AREA / EXECUTION */}
-                    <td className="px-4 py-3 text-[11px] text-slate-400 space-y-0.5 font-mono">
-                      <div className="text-slate-100 font-semibold">{item.area}</div>
+                    <td className="px-4 py-3 text-[11px] text-slate-600 space-y-0.5 font-mono">
+                      <div className="text-slate-800 font-semibold">{item.area}</div>
                       <div>{item.executionDate}</div>
                       <div><span className="text-slate-500 font-semibold">Repeater:</span> {item.repeaterDays} days</div>
                     </td>
@@ -426,19 +426,19 @@ export default function PredictiveMaintenancePage() {
                       <div className="flex justify-center gap-2">
                         <button 
                           onClick={() => handleEditClick(item)}
-                          className="bg-teal-600/20 hover:bg-teal-600/40 text-teal-400 p-1.5 rounded border border-teal-600/30 transition-colors"
+                          className="bg-teal-50 hover:bg-teal-100 text-teal-600 p-1.5 rounded border border-teal-200 transition-colors"
                           title="Edit"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button 
-                          className="bg-amber-600/20 hover:bg-amber-600/40 text-amber-400 p-1.5 rounded border border-amber-600/30 transition-colors"
+                          className="bg-amber-50 hover:bg-amber-100 text-amber-600 p-1.5 rounded border border-amber-200 transition-colors"
                           title="Settings"
                         >
                           <Search className="w-3.5 h-3.5" />
                         </button>
                         <button 
-                          className="bg-red-600/20 hover:bg-red-600/40 text-red-400 p-1.5 rounded border border-red-600/30 transition-colors"
+                          className="bg-red-50 hover:bg-red-100 text-red-600 p-1.5 rounded border border-red-200 transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -452,68 +452,68 @@ export default function PredictiveMaintenancePage() {
           </div>
 
           {/* BOTTOM PAGINATION CONTROLLER */}
-          <div className="px-4 py-3 border-t border-slate-800 flex justify-start items-center gap-1 font-mono text-[10px]">
+          <div className="px-4 py-3 border-t border-slate-200 flex justify-start items-center gap-1 font-mono text-[10px]">
             <button className="px-2 py-1 bg-teal-600 text-white font-bold rounded">1</button>
-            <button className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-400">2</button>
-            <button className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-400">3</button>
-            <button className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-400">4</button>
-            <button className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-400">5</button>
-            <button className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-400">Next</button>
-            <button className="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-400">Last</button>
+            <button className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-600">2</button>
+            <button className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-600">3</button>
+            <button className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-600">4</button>
+            <button className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-600">5</button>
+            <button className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-600">Next</button>
+            <button className="px-2 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded text-slate-600">Last</button>
           </div>
         </div>
       </div>
 
       {/* POP-UP MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
-              <h2 className="text-sm font-bold text-slate-200">PM Result Approval</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
+              <h2 className="text-sm font-bold text-slate-800">PM Result Approval</h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-500 hover:text-slate-300 transition-colors"
+                className="text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4 bg-slate-950/40 p-4 rounded border border-slate-800">
+              <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded border border-slate-200">
                 <div>
                   <p className="text-xs font-mono text-slate-500">Area:</p>
-                  <p className="text-sm text-teal-400 font-semibold">{selectedJob?.area || "All Area"}</p>
+                  <p className="text-sm text-teal-700 font-semibold">{selectedJob?.area || "All Area"}</p>
                 </div>
                 <div>
                   <p className="text-xs font-mono text-slate-500">Execution:</p>
-                  <p className="text-sm text-teal-400 font-semibold">{selectedJob?.executionDate}</p>
+                  <p className="text-sm text-teal-700 font-semibold">{selectedJob?.executionDate}</p>
                 </div>
                 <div>
                   <p className="text-xs font-mono text-slate-500">Frequency:</p>
-                  <p className="text-sm text-teal-400 font-semibold">{selectedJob?.repeaterDays} days</p>
+                  <p className="text-sm text-teal-700 font-semibold">{selectedJob?.repeaterDays} days</p>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-mono text-slate-500">Job Name</label>
-                <p className="text-sm text-slate-300 font-medium">{selectedJob?.jobName}</p>
+                <p className="text-sm text-slate-800 font-medium">{selectedJob?.jobName}</p>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-mono text-slate-500">Description</label>
-                <p className="text-sm text-slate-400">{selectedJob?.description}</p>
+                <p className="text-sm text-slate-600">{selectedJob?.description}</p>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
                 <button 
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-colors font-medium"
+                  className="px-4 py-2 text-xs bg-white hover:bg-slate-50 text-slate-700 rounded border border-slate-300 transition-colors font-medium shadow-sm"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs bg-teal-600 hover:bg-teal-500 text-white rounded transition-colors font-medium"
+                  className="px-4 py-2 text-xs bg-teal-600 hover:bg-teal-700 text-white rounded transition-colors font-medium shadow-sm"
                 >
                   Save Changes
                 </button>
