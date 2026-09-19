@@ -212,14 +212,14 @@ export default function MachinePressPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-teal-500/30 p-4 md:p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-teal-500/20 p-4 md:p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       {/* HEADER & ACTION SECTION */}
-      <header className="bg-slate-900 border border-slate-800 rounded shadow-xl px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <header className="bg-white border border-slate-200 rounded shadow-sm px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-md font-bold tracking-wider text-slate-200 flex items-center gap-2">
-              Machine Press <span className="text-teal-400">Logger</span>
+            <h1 className="text-md font-bold tracking-wider text-slate-800 flex items-center gap-2">
+              Machine Press <span className="text-teal-700">Logger</span>
             </h1>
             <p className="text-xs font-mono text-slate-500 mt-0.5">
               Log aktivitas mesin press secara real-time.
@@ -232,8 +232,8 @@ export default function MachinePressPage() {
             onClick={() => setIsAutoMode(!isAutoMode)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-all shrink-0 ${
               isAutoMode 
-                ? "bg-rose-900/30 hover:bg-rose-900/50 border border-rose-500/50 text-rose-400" 
-                : "bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300"
+                ? "bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600" 
+                : "bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600"
             }`}
           >
             {isAutoMode ? (
@@ -254,7 +254,7 @@ export default function MachinePressPage() {
           <button
             onClick={handleSimulateTrigger}
             disabled={isSimulating || isLoading || isAutoMode}
-            className="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
             {isSimulating ? (
               <>
@@ -277,34 +277,34 @@ export default function MachinePressPage() {
       </header>
 
       {/* FILTER & SEARCH SECTION */}
-      <div className="flex flex-col lg:flex-row gap-4 bg-slate-900 border border-slate-800 p-4 rounded shadow-xl">
+      <div className="flex flex-col lg:flex-row gap-4 bg-white border border-slate-200 p-4 rounded shadow-sm">
         <div className="flex-1">
-          <label className="text-[10px] font-bold text-teal-400 uppercase tracking-wider font-mono mb-1.5 block">Pencarian</label>
+          <label className="text-[10px] font-bold text-teal-700 uppercase tracking-wider font-mono mb-1.5 block">Pencarian</label>
           <input 
             type="text" 
             placeholder="Cari ID, Mesin, Produk, Operator..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-mono transition-colors"
+            className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
           />
         </div>
         <div className="flex gap-4 flex-1">
           <div className="flex-1">
-            <label className="text-[10px] font-bold text-teal-400 uppercase tracking-wider font-mono mb-1.5 block">Dari Tanggal</label>
+            <label className="text-[10px] font-bold text-teal-700 uppercase tracking-wider font-mono mb-1.5 block">Dari Tanggal</label>
             <input 
               type="date" 
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-mono transition-colors [color-scheme:dark]"
+              className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
             />
           </div>
           <div className="flex-1">
-            <label className="text-[10px] font-bold text-teal-400 uppercase tracking-wider font-mono mb-1.5 block">Sampai Tanggal</label>
+            <label className="text-[10px] font-bold text-teal-700 uppercase tracking-wider font-mono mb-1.5 block">Sampai Tanggal</label>
             <input 
               type="date" 
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-mono transition-colors [color-scheme:dark]"
+              className="w-full bg-white border border-slate-300 rounded px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
             />
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function MachinePressPage() {
           <button
             onClick={handleExportExcel}
             disabled={filteredRecords.length === 0}
-            className="w-full lg:w-auto flex items-center justify-center gap-1.5 bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 hover:border-blue-400 text-blue-400 hover:text-white px-4 py-2 rounded text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full lg:w-auto flex items-center justify-center gap-1.5 bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 text-blue-600 hover:text-white px-4 py-2 rounded text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -324,7 +324,7 @@ export default function MachinePressPage() {
 
       {/* ERROR ALERT */}
       {error && (
-        <div className="bg-rose-950/40 border-l-2 border-l-rose-500 border-y border-r border-slate-800 p-4 rounded text-xs text-rose-400 flex items-center gap-3 font-mono">
+        <div className="bg-rose-50 border-l-2 border-l-rose-500 border-y border-r border-slate-200 p-4 rounded text-xs text-rose-700 flex items-center gap-3 font-mono">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
@@ -333,10 +333,10 @@ export default function MachinePressPage() {
       )}
 
       {/* TABLE SECTION */}
-      <div className="bg-slate-900 border border-slate-800 rounded shadow-xl overflow-hidden flex flex-col">
-        <div className="bg-teal-950/40 border-b border-slate-800 px-4 py-2.5 flex justify-between items-center">
-          <h2 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+      <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-teal-50 border-b border-slate-200 px-4 py-2.5 flex justify-between items-center">
+          <h2 className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
             Live Data Log
           </h2>
           <span className="text-[10px] font-mono text-slate-500">
@@ -346,8 +346,8 @@ export default function MachinePressPage() {
         
         <div ref={tableContainerRef} className="overflow-auto h-[500px] relative">
           <table className="w-full text-left border-collapse font-mono text-xs">
-            <thead className="sticky top-0 z-10 bg-slate-950/90 backdrop-blur-sm shadow-md">
-              <tr className="text-slate-400 border-b border-slate-800 bg-slate-950/30">
+            <thead className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm shadow-sm">
+              <tr className="text-slate-500 border-b border-slate-200 bg-slate-50">
                 <th className="p-3 font-medium w-20">ID</th>
                 <th className="p-3 font-medium">No. Mesin</th>
                 <th className="p-3 font-medium w-24">Count</th>
@@ -356,12 +356,12 @@ export default function MachinePressPage() {
                 <th className="p-3 font-medium">Waktu (Timestamp)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50 text-slate-300">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {isLoading && records.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-5 w-5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -388,18 +388,18 @@ export default function MachinePressPage() {
                         key={item.id} 
                         ref={rowVirtualizer.measureElement}
                         data-index={virtualRow.index}
-                        className="hover:bg-slate-950/30 transition-colors"
+                        className="hover:bg-slate-50 transition-colors"
                       >
                         <td className="p-3 text-slate-500 font-bold">#{item.id}</td>
-                        <td className="p-3 font-semibold text-teal-400">{item.machine_no}</td>
+                        <td className="p-3 font-semibold text-teal-600">{item.machine_no}</td>
                         <td className="p-3">
-                          <span className="bg-slate-950 border border-slate-800 px-2 py-1 rounded text-[10px]">
+                          <span className="bg-slate-50 border border-slate-200 px-2 py-1 rounded text-[10px]">
                             {String(item.count_no).padStart(4, '0')}
                           </span>
                         </td>
-                        <td className="p-3 text-slate-200">{item.product_name}</td>
+                        <td className="p-3 text-slate-800">{item.product_name}</td>
                         <td className="p-3 flex items-center gap-2">
-                          <div className="w-5 h-5 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-300 uppercase shrink-0">
+                          <div className="w-5 h-5 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-500 uppercase shrink-0">
                             {item.user ? item.user.charAt(0) : "?"}
                           </div>
                           {item.user}

@@ -36,21 +36,29 @@ const getMenuTextColor = (status?: DevStatus, isSubMenu: boolean = false) => {
 // Struktur data untuk menu dan sub-menu
 const menuData: Record<string, MenuItem[]> = {
   Dashboard: [
-    { label: "Production Monitoring", href: "/dashboard/production_monitoring", status: "frontend" },
-    { label: "Equipment Monitoring", href: "/dashboard/equipment_monitoring", status: "frontend" },
-    { label: "Quality", href: "/dashboard/quality", status: "frontend" },
-    { label: "Management", href: "/dashboard/management", status: "frontend" },
+    { label: "Production Monitoring", href: "/dashboard/production_monitoring"},
+    { label: "Equipment Monitoring", href: "/dashboard/equipment_monitoring" },
+    { label: "Quality", href: "/dashboard/quality"},
+    { label: "Management", href: "/dashboard/management"},
   ],
   IOT: [
     { 
-      label: "Machine Press", status: "fullstack",
+      label: "Machine Production",
       subItems: [
-        { label: "Overview", href: "/iot/machine_press/overview", status: "fullstack" },
-        { label: "Logger", href: "/iot/machine_press/logger", status: "fullstack" },
+        { label: "Overview", href: "/iot/machine_press/overview"},
+        { label: "Logger", href: "/iot/machine_press/logger"},
       ]
     },
-    { label: "HMI", href: "/iot/hmi", status: "fullstack" },
-    { label: "Power Monitoring", href: "/iot/power_monitoring", status: "frontend" },
+    { 
+      label: "Machine Unipress",
+      subItems: [
+        { label: "Overview", href: "/iot_upin/logger"},
+        { label: "Logger", href: "/iot_upin/overview"},
+         { label: "Lifetime Monitoring", href: "/iot_upin/lifetime_monitoring"},
+      ]
+    },
+    { label: "HMI", href: "/iot/hmi" },
+    { label: "Power Monitoring", href: "/iot/power_monitoring" },
   ],
   OQC: [
     { label: "Pressure", href: "/production/dummy" },
@@ -58,7 +66,7 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Reject Sample", href: "/production/dummy" },
   ],
   Stockpile: [
-    { label: "Production Plan", href: "/stockpile/production_plan", status: "fullstack" },
+    { label: "Production Plan", href: "/stockpile/production_plan"},
     { label: "Store", href: "/production/dummy" },
     { label: "Warehouse", href: "/production/dummy" },
     { label: "Truckscale", href: "/production/dummy" },
@@ -66,24 +74,15 @@ const menuData: Record<string, MenuItem[]> = {
     { label: "Stockyard", href: "/production/dummy" },
   ],
   Maintenance: [
-    { label: "Overview Machine", href: "/maintenance/overview_machine", status: "frontend" },
-    { label: "My Task Today", href: "/maintenance/myjob_today", status: "frontend" },
-    { label: "Predictive Maintenance", href: "/maintenance/predictive_maintenance", status: "frontend" },
-    { label: "Corrective Maintenance", href: "/maintenance/corrective_maintenance", status: "frontend" },
-    { label: "Time Based Maintenance", href: "/maintenance/timebased_maintenance", status: "frontend" },
-    { label: "Lifetime Monitoring", href: "/maintenance/lifetime_monitoring", status: "frontend" },
-    { label: "RTU Device", href: "/maintenance/rtu_device", status: "frontend" },
-    { label: "Sparepart", href: "/maintenance/sparepart", status: "frontend" },
-    { label: "Maintenance Cost", href: "/maintenance/maintenance_cost", status: "frontend" },
-    { 
-      label: "Machine", status: "fullstack",
-      subItems: [
-        { label: "Machine Press", href: "/production/iot/mold/overview", status: "fullstack" },
-        { label: "Machine Injection", href: "/production/iot/mold/logger"},
-        { label: "Machine Role", href: "/production/iot/mold/operator-data" },
-        { label: "Machine Mold", href: "/production/iot/mold/operator-data" },
-      ]
-    },
+    { label: "Overview Machine", href: "/maintenance/overview_machine"},
+    { label: "My Task Today", href: "/maintenance/myjob_today"},
+    { label: "Predictive Maintenance", href: "/maintenance/predictive_maintenance"},
+    { label: "Corrective Maintenance", href: "/maintenance/corrective_maintenance"},
+    { label: "Time Based Maintenance", href: "/maintenance/timebased_maintenance"},
+    { label: "Lifetime Monitoring", href: "/maintenance/lifetime_monitoring"},
+    { label: "RTU Device", href: "/maintenance/rtu_device"},
+    { label: "Sparepart", href: "/maintenance/sparepart" },
+    { label: "Maintenance Cost", href: "/maintenance/maintenance_cost" },
   ],
   HSE: [
     { label: "Create Permit", href: "/production/dummy" },
@@ -114,7 +113,6 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Datapack", href: "/management/finance/3_datapack" },
       ]
     },
-     { label: "", href: "/management/supplier/list" },
     { label: "List Supplier", href: "/management/supplier/list" },
   ],
 };

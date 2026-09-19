@@ -228,8 +228,8 @@ export default function PPICDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-teal-500 font-mono font-bold tracking-widest uppercase text-xs">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-teal-600 font-mono font-bold tracking-widest uppercase text-xs">
           <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -241,19 +241,19 @@ export default function PPICDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-teal-500/30 p-4 md:p-6 flex flex-col gap-6 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-teal-500/20 p-4 md:p-6 flex flex-col gap-6 animate-in fade-in duration-500">
       
       {/* Header */}
-      <header className="bg-slate-900 border border-slate-800 rounded shadow-xl px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="bg-white border border-slate-200 rounded shadow-sm px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div>
-            <h2 className="text-md font-bold tracking-wider text-slate-200 uppercase">PPIC Production Plan</h2>
+            <h2 className="text-md font-bold tracking-wider text-slate-800 uppercase">PPIC Production Plan</h2>
             <p className="text-xs font-mono text-slate-500 mt-0.5">
               Manage and monitor production targets vs actual output.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-950 border border-slate-800 px-3 py-1.5 rounded">
+        <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-50 border border-slate-200 px-3 py-1.5 rounded">
           <span className="relative flex h-2 w-2">
             {syncing ? (
               <>
@@ -261,18 +261,18 @@ export default function PPICDashboardPage() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
               </>
             ) : (
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
             )}
           </span>
-          <span className={syncing ? "text-teal-400" : "text-slate-500"}>
+          <span className={syncing ? "text-teal-600" : "text-slate-500"}>
             {syncing ? "Syncing Actual Data..." : "Auto-sync Active (10s)"}
           </span>
         </div>
       </header>
 
       {/* Form Section */}
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded shadow-xl">
-        <h3 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono border-b border-slate-800 pb-3 mb-4">
+      <div className="bg-white border border-slate-200 p-6 rounded shadow-sm">
+        <h3 className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono border-b border-slate-100 pb-3 mb-4">
           {isEditing ? "Edit Production Plan" : "Create New Production Plan"}
         </h3>
         
@@ -281,13 +281,13 @@ export default function PPICDashboardPage() {
             
             {/* Machine No */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Machine No</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">Machine No</label>
               <select 
                 name="machine_no" 
                 value={formData.machine_no} 
                 onChange={handleInputChange}
                 required
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-700 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
               >
                 {DUMMY_MACHINES.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
@@ -295,7 +295,7 @@ export default function PPICDashboardPage() {
 
             {/* Product Name */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Product Name</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">Product Name</label>
               <input 
                 type="text" 
                 name="product_name" 
@@ -304,7 +304,7 @@ export default function PPICDashboardPage() {
                 onChange={handleInputChange}
                 placeholder="Search or type product..."
                 required
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-700 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
               />
               <datalist id="product-list">
                 {DUMMY_PRODUCTS.map(p => <option key={p} value={p} />)}
@@ -313,26 +313,26 @@ export default function PPICDashboardPage() {
 
             {/* Production Date */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Production Date</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">Production Date</label>
               <input 
                 type="date" 
                 name="production_date" 
                 value={formData.production_date} 
                 onChange={handleInputChange}
                 required
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors [color-scheme:dark]"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-700 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
               />
             </div>
 
             {/* User (PPIC/PIC) */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">PIC / User</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">PIC / User</label>
               <select 
                 name="user" 
                 value={formData.user} 
                 onChange={handleInputChange}
                 required
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-700 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
               >
                 {users.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
@@ -340,7 +340,7 @@ export default function PPICDashboardPage() {
 
             {/* Demand Sales Qty */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Demand Sales Qty</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">Demand Sales Qty</label>
               <input 
                 type="number" 
                 name="demand_sales_qty" 
@@ -348,13 +348,13 @@ export default function PPICDashboardPage() {
                 onChange={handleInputChange}
                 min="0"
                 required
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-700 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
               />
             </div>
 
             {/* Production Target Qty */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Target Qty</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">Target Qty</label>
               <input 
                 type="number" 
                 name="production_qty_target" 
@@ -362,18 +362,18 @@ export default function PPICDashboardPage() {
                 onChange={handleInputChange}
                 min="0"
                 required
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-700 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
               />
             </div>
 
             {/* Status */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Status</label>
+              <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wider font-mono">Status</label>
               <select 
                 name="status" 
                 value={formData.status} 
                 onChange={handleInputChange}
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-700 rounded px-3 py-2 focus:outline-none focus:border-teal-500 font-mono transition-colors shadow-sm"
               >
                 <option value="Planned">Planned</option>
                 <option value="In Progress">In Progress</option>
@@ -383,19 +383,19 @@ export default function PPICDashboardPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800 mt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-4">
             {isEditing && (
               <button 
                 type="button" 
                 onClick={resetForm}
-                className="px-4 py-1.5 text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 rounded hover:bg-slate-800 hover:text-slate-200 transition-colors font-mono uppercase tracking-wider"
+                className="px-4 py-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-50 hover:text-slate-800 transition-colors font-mono uppercase tracking-wider"
               >
                 Cancel
               </button>
             )}
             <button 
               type="submit"
-              className="px-6 py-1.5 text-xs font-bold text-white bg-teal-600 rounded hover:bg-teal-500 transition-colors font-mono uppercase tracking-wider"
+              className="px-6 py-1.5 text-xs font-bold text-white bg-teal-600 rounded hover:bg-teal-700 transition-colors font-mono uppercase tracking-wider"
             >
               {isEditing ? "Update Plan" : "Save Plan"}
             </button>
@@ -404,10 +404,10 @@ export default function PPICDashboardPage() {
       </div>
 
       {/* Table Section */}
-      <div className="bg-slate-900 border border-slate-800 rounded shadow-xl overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/20">
-          <h3 className="text-xs font-bold text-teal-400 uppercase tracking-wider font-mono">Production Plan List</h3>
-          <button onClick={fetchPlans} className="text-[10px] font-bold text-slate-400 hover:text-teal-400 transition-colors font-mono uppercase tracking-wider flex items-center gap-1.5">
+      <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+          <h3 className="text-xs font-bold text-teal-700 uppercase tracking-wider font-mono">Production Plan List</h3>
+          <button onClick={fetchPlans} className="text-[10px] font-bold text-slate-500 hover:text-teal-700 transition-colors font-mono uppercase tracking-wider flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             Refresh Data
           </button>
@@ -415,19 +415,19 @@ export default function PPICDashboardPage() {
         
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono whitespace-nowrap">
-            <thead className="bg-slate-950/50 text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+            <thead className="bg-slate-100 text-[10px] uppercase tracking-wider text-slate-600 border-b border-slate-200">
               <tr>
                 <th className="px-4 py-3 font-semibold">Date</th>
                 <th className="px-4 py-3 font-semibold">Machine</th>
                 <th className="px-4 py-3 font-semibold">Product</th>
                 <th className="px-4 py-3 font-semibold text-right">Demand</th>
                 <th className="px-4 py-3 font-semibold text-right">Target</th>
-                <th className="px-4 py-3 font-semibold text-right text-teal-400">Actual</th>
+                <th className="px-4 py-3 font-semibold text-right text-teal-700">Actual</th>
                 <th className="px-4 py-3 font-semibold text-center">Status</th>
                 <th className="px-4 py-3 font-semibold text-center">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50 text-slate-300">
+            <tbody className="divide-y divide-slate-200 text-slate-700">
               {plans.length > 0 ? (
                 plans.map((plan) => {
                   const progress = plan.production_qty_target > 0 
@@ -435,15 +435,15 @@ export default function PPICDashboardPage() {
                     : 0;
 
                   return (
-                    <tr key={plan.id} className="hover:bg-slate-950/30 transition-colors">
-                      <td className="px-4 py-3 text-slate-400">{plan.production_date}</td>
-                      <td className="px-4 py-3 font-semibold text-slate-200">{plan.machine_no}</td>
+                    <tr key={plan.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3 text-slate-500">{plan.production_date}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-800">{plan.machine_no}</td>
                       <td className="px-4 py-3">{plan.product_name}</td>
                       <td className="px-4 py-3 text-right">{plan.demand_sales_qty}</td>
                       <td className="px-4 py-3 text-right">{plan.production_qty_target}</td>
-                      <td className="px-4 py-3 text-right font-bold text-teal-400">
+                      <td className="px-4 py-3 text-right font-bold text-teal-600">
                         {plan.production_qty_actual}
-                        <div className="w-full bg-slate-800 h-1 mt-1.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-200 h-1 mt-1.5 rounded-full overflow-hidden">
                           <div 
                             className={`h-full ${progress >= 100 ? 'bg-teal-500' : 'bg-teal-400'}`} 
                             style={{ width: `${progress}%` }}
@@ -452,9 +452,9 @@ export default function PPICDashboardPage() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`px-2 py-1 text-[9px] font-bold uppercase tracking-wider rounded ${
-                          plan.status === 'Completed' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' :
-                          plan.status === 'In Progress' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                          'bg-slate-800/50 text-slate-400 border border-slate-700'
+                          plan.status === 'Completed' ? 'bg-teal-50 text-teal-700 border border-teal-200' :
+                          plan.status === 'In Progress' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                          'bg-slate-100 text-slate-600 border border-slate-300'
                         }`}>
                           {plan.status}
                         </span>
@@ -462,14 +462,14 @@ export default function PPICDashboardPage() {
                       <td className="px-4 py-3 text-center space-x-1">
                         <button 
                           onClick={() => handleEdit(plan)}
-                          className="text-slate-400 hover:text-teal-400 transition-colors p-1.5 hover:bg-slate-800 rounded"
+                          className="text-slate-500 hover:text-teal-600 transition-colors p-1.5 hover:bg-slate-100 rounded"
                           title="Edit"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                         </button>
                         <button 
                           onClick={() => handleDelete(plan.id!)}
-                          className="text-slate-400 hover:text-rose-500 transition-colors p-1.5 hover:bg-slate-800 rounded"
+                          className="text-slate-500 hover:text-rose-600 transition-colors p-1.5 hover:bg-slate-100 rounded"
                           title="Delete"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
