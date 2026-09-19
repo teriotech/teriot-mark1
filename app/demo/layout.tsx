@@ -406,13 +406,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </button>
                   )}
 
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() => setIsRegisterModalOpen(true)}
                     className="w-full rounded-lg bg-white border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all flex justify-center items-center shadow-sm"
                   >
                     Belum punya akun? Daftar Sekarang
-                  </button>
+                  </button> */}
+
+                  <a
+  href="https://transindomu.com/production/contact"
+  className="w-full rounded-lg bg-white border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all flex justify-center items-center shadow-sm"
+>
+  Belum punya akun? Daftar Sekarang
+</a>
+                  
                 </div>
               </form>
             </div>
