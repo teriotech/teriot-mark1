@@ -325,8 +325,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="icon" 
           href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌌</text></svg>' 
         />
+        {/* CSS HARDCODED - Efek Zoom Out 75% khusus untuk Mobile Phone */}
+        <style>{`
+          @media screen and (max-width: 768px) {
+            .mobile-zoom {
+              zoom: 0.75;
+            }
+          }
+        `}</style>
       </head>
-      <body className="bg-slate-50 text-slate-900 font-sans">
+      <body className="bg-slate-50 text-slate-900 font-sans mobile-zoom">
         {!isMounted ? (
           <div className="min-h-screen flex items-center justify-center bg-slate-50">
             <span className="text-indigo-600 animate-pulse text-sm font-bold tracking-widest uppercase">Memuat Sistem...</span>
@@ -406,20 +414,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </button>
                   )}
 
-                  {/* <button
-                    type="button"
-                    onClick={() => setIsRegisterModalOpen(true)}
+                  <a
+                    href="https://transindomu.com/production/contact"
                     className="w-full rounded-lg bg-white border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all flex justify-center items-center shadow-sm"
                   >
                     Belum punya akun? Daftar Sekarang
-                  </button> */}
-
-                  <a
-  href="https://transindomu.com/production/contact"
-  className="w-full rounded-lg bg-white border border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all flex justify-center items-center shadow-sm"
->
-  Belum punya akun? Daftar Sekarang
-</a>
+                  </a>
                   
                 </div>
               </form>

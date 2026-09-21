@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function MaintenanceSmartSystem() {
   return (
-    <main className="overflow-hidden bg-white">
+    <main className="overflow-hidden bg-white mobile-zoom">
       {/* CSS HARDCODED - Aman untuk Server Component */}
       <style>{`
         @keyframes floating {
@@ -24,6 +24,13 @@ export default function MaintenanceSmartSystem() {
         .section-bridge {
           height: 100px;
           background: linear-gradient(to bottom, #0f172a, #ffffff);
+        }
+        
+        /* Efek Zoom Out 75% khusus untuk Mobile Phone */
+        @media screen and (max-width: 768px) {
+          .mobile-zoom {
+            zoom: 0.75;
+          }
         }
       `}</style>
 
@@ -63,7 +70,7 @@ export default function MaintenanceSmartSystem() {
 
               <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0 font-light px-2">
                 Partner aplikasi powerful untuk membantu Anda melakukan{" "}
-                <span className="font-semibold text-white text-blue-300">Pengelolaan Sistem Maintenance</span>, 
+                <span className="font-semibold text-blue-300">Pengelolaan Sistem Maintenance</span>, 
                 perancangan biaya, dan <span className="font-semibold text-white">Pengaturan Jadwal Otomatis</span>.
               </p> 
 
@@ -137,7 +144,7 @@ export default function MaintenanceSmartSystem() {
                   alt={item.title}
                   width={500}
                   height={380}
-                  className="rounded-3xl shadow-2xl touch-card border border-slate-100"
+                  className="rounded-3xl shadow-2xl touch-card border border-slate-100 w-full max-w-[500px] h-auto"
                 />
               </div>
               <div className="space-y-6 text-center lg:text-left">
@@ -179,8 +186,8 @@ export default function MaintenanceSmartSystem() {
               <Image 
                 src="/assets/img/iot1-transformed.png" 
                 alt="Benefit IoT" 
-                layout="fill" 
-                objectFit="cover"
+                fill
+                style={{ objectFit: "cover" }}
                 className="hover:scale-110 transition-transform duration-700"
               />
             </div>
@@ -193,13 +200,11 @@ export default function MaintenanceSmartSystem() {
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold mb-12">OVERVIEW & ARSITEKTUR</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Image src="/assets/img/arsitektur_iot.png" alt="Arsitektur" width={600} height={400} className="rounded-2xl shadow-lg mx-auto" />
-            <Image src="/assets/img/overview2_iot.png" alt="Overview" width={600} height={400} className="rounded-2xl shadow-lg mx-auto" />
+            <Image src="/assets/img/arsitektur_iot.png" alt="Arsitektur" width={600} height={400} className="rounded-2xl shadow-lg mx-auto w-full h-auto" />
+            <Image src="/assets/img/overview2_iot.png" alt="Overview" width={600} height={400} className="rounded-2xl shadow-lg mx-auto w-full h-auto" />
           </div>
         </div>
       </section>
-
-     
 
       {/* ======= CTA Section ======= */}
       <section

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function ProductGERPPage() {
   return (
-    <main className="overflow-hidden bg-white">
+    <main className="overflow-hidden bg-white mobile-zoom">
       {/* CSS HARDCODED - Aman untuk Server Component */}
       <style>{`
         @keyframes floating {
@@ -24,6 +24,13 @@ export default function ProductGERPPage() {
         .section-bridge {
           height: 100px;
           background: linear-gradient(to bottom, #0f172a, #ffffff);
+        }
+        
+        /* Efek Zoom Out 75% khusus untuk Mobile Phone */
+        @media screen and (max-width: 768px) {
+          .mobile-zoom {
+            zoom: 0.75;
+          }
         }
       `}</style>
 
@@ -137,7 +144,7 @@ export default function ProductGERPPage() {
                   alt={item.title}
                   width={480}
                   height={380}
-                  className="rounded-3xl shadow-2xl touch-card border border-slate-100"
+                  className="rounded-3xl shadow-2xl touch-card border border-slate-100 w-full max-w-[480px] h-auto"
                 />
               </div>
               <div className="space-y-6 text-center lg:text-left">
@@ -179,8 +186,8 @@ export default function ProductGERPPage() {
               <Image 
                 src="/assets/img/iot1-transformed.png" 
                 alt="Benefit ERP" 
-                layout="fill" 
-                objectFit="cover"
+                fill
+                style={{ objectFit: "cover" }}
                 className="hover:scale-110 transition-transform duration-700"
               />
             </div>
@@ -193,8 +200,8 @@ export default function ProductGERPPage() {
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold mb-12">OVERVIEW & ARSITEKTUR</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Image src="/assets/img/arsitektur_iot.png" alt="Arsitektur" width={600} height={400} className="rounded-2xl shadow-lg mx-auto" />
-            <Image src="/assets/img/overview2_iot.png" alt="Overview" width={600} height={400} className="rounded-2xl shadow-lg mx-auto" />
+            <Image src="/assets/img/arsitektur_iot.png" alt="Arsitektur" width={600} height={400} className="rounded-2xl shadow-lg mx-auto w-full h-auto" />
+            <Image src="/assets/img/overview2_iot.png" alt="Overview" width={600} height={400} className="rounded-2xl shadow-lg mx-auto w-full h-auto" />
           </div>
         </div>
       </section>
