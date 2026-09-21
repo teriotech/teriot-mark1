@@ -227,7 +227,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         localStorage.setItem("currentUser", JSON.stringify(foundUser));
         setTotalUsers(users.length); 
         
-        router.push("/dashboard/production_monitoring");
+        router.push("/demo/dashboard/production_monitoring");
       } else {
         setLoginError("Email atau kata sandi yang Anda masukkan salah.");
       }
@@ -253,7 +253,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     localStorage.setItem("currentUser", JSON.stringify(mockDevAdmin));
     setTotalUsers(1); 
     
-    router.push("/dashboard/production_monitoring");
+    router.push("/demo/dashboard/production_monitoring");
   };
 
   const handleLogout = () => {

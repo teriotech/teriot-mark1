@@ -704,7 +704,6 @@ const STYLES = `
 }
 .spine-dots--slow{animation-duration:7.5s;opacity:.45;stroke:#0EA5E9;}
 @keyframes spineFlow{to{stroke-dashoffset:-152.4}}
-@media (max-width:767px){.data-spine{width:22px;left:0;opacity:.45}}
 
 /* ---- jembatan antar stage ---- */
 .bridge-base{fill:none;stroke:rgba(37,99,235,.22);stroke-width:2;stroke-dasharray:7 9;animation:bridgeCrawl 12s linear infinite;}
@@ -805,14 +804,6 @@ const STYLES = `
 }
 
 html{scroll-behavior:smooth;}
-
-/* ===================== mobile ===================== */
-@media (max-width:767px){
-  .fx-rack,.fx-tower,.fx-holo,.fx-panel{display:none;}
-  .wl-plant,.wl-pid,.wl-control,.wl-net,.wl-data,.wl-neural,.wl-ops,.wl-auto{transform:none;}
-  .fx-mesh{background-size:42px 42px;}
-  .fx-sun{width:200px;height:200px;}
-}
 
 /* ===================== reduced motion ===================== */
 @media (prefers-reduced-motion: reduce){
@@ -2237,6 +2228,30 @@ export default function ProductIotPage() {
   const world = useRef<HTMLDivElement | null>(null);
   const reduced = useReducedMotion();
   const [mounted, setMounted] = useState(false);
+
+  // Memaksa tampilan desktop di perangkat mobile
+  useEffect(() => {
+    const setDesktopViewport = () => {
+      let viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (!viewportMeta) {
+        viewportMeta = document.createElement('meta');
+        viewportMeta.setAttribute('name', 'viewport');
+        document.head.appendChild(viewportMeta);
+      }
+      // Memaksa lebar 1200px agar browser mobile melakukan zoom-out (Situs Desktop)
+      viewportMeta.setAttribute('content', 'width=1200, initial-scale=1');
+    };
+
+    setDesktopViewport();
+
+    // Cleanup (opsional, jika berpindah ke halaman lain yang butuh mobile view)
+    return () => {
+      let viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (viewportMeta) {
+        viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1');
+      }
+    };
+  }, []);
 
   useStoryCamera(world, reduced);
   useEffect(() => setMounted(true), []);
