@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Receipt, X, Printer, Loader2, FileText } from "lucide-react";
 import { BomGroup } from "./types";
 import { asBlob } from "html-docx-js-typescript";
@@ -64,6 +64,40 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
     }
   }, [config]);
 
+  // LOGIC 1: Grouping berdasarkan Mother Part dan kalkulasi Subtotal, PPN, & Grand Total
+  const groupedData = useMemo(() => {
+    if (!config?.group?.items) return { groups: [], subTotal: 0, ppn: 0, grandTotal: 0 };
+
+    const groupsMap = config.group.items.reduce((acc, item) => {
+      const motherPart = item.mother_part || "General Part";
+      if (!acc[motherPart]) {
+        acc[motherPart] = { items: [], subTotal: 0 };
+      }
+      
+      const unitPriceWithMargin = (Number(item.price) || 0) + ((Number(item.price) || 0) * (Number(item.margin) || 0)) / 100;
+      const totalPrice = unitPriceWithMargin * (Number(item.qty) || 1);
+
+      acc[motherPart].items.push({ ...item, unitPriceWithMargin, totalPrice });
+      acc[motherPart].subTotal += totalPrice;
+      return acc;
+    }, {} as Record<string, { items: any[]; subTotal: number }>);
+
+    let globalSubTotal = 0;
+    let globalIdx = 1;
+    
+    const groups = Object.entries(groupsMap).map(([motherPart, data]) => {
+      globalSubTotal += data.subTotal;
+      // Tambahkan index global agar nomor urut tetap berlanjut antar grup
+      const itemsWithIndex = data.items.map((item) => ({ ...item, printIndex: globalIdx++ }));
+      return { motherPart, items: itemsWithIndex, subTotal: data.subTotal };
+    });
+
+    const ppn = globalSubTotal * 0.11;
+    const grandTotal = globalSubTotal + ppn;
+
+    return { groups, subTotal: globalSubTotal, ppn, grandTotal };
+  }, [config]);
+
   if (!config) return null;
 
   const saveToDatabase = async (): Promise<boolean> => {
@@ -113,12 +147,33 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
     setIsSaving(true);
     const success = await saveToDatabase();
     setIsSaving(false);
-    if (success) setTimeout(() => window.print(), 300);
+    
+    if (success) {
+      setTimeout(() => {
+        // LOGIC 2: Ubah document.title sementara untuk nama file PDF
+        const originalTitle = document.title;
+        
+        // Ambil nama project (fallback ke customer)
+        const projectName = (config.group as any).project_name || invoiceCustomer || "Project";
+        
+        // Format tanggal hari ini: YYYYMMDD
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
+        
+        // Set title baru: ProjectName_INVnumber_todaydate
+        const pdfFileName = `${projectName}_${invoiceNo}_${dateStr}`.replace(/\s+/g, '_');
+        document.title = pdfFileName;
+
+        window.print();
+
+        // Kembalikan title asli setelah dialog print muncul
+        setTimeout(() => {
+          document.title = originalTitle;
+        }, 2000);
+      }, 300);
+    }
   };
 
-  // Helper untuk mengubah Image URL ke Base64 + menghitung ukuran tampil
-  // agar proporsinya sama persis dengan kotak logo pada layout PDF (object-contain,
-  // w-48 h-12 = 192x48px), sehingga logo tidak gepeng/stretch saat dibuka di MS Word.
   const getBase64ImageWithSize = async (
     imageUrl: string,
     maxWidth: number,
@@ -143,7 +198,6 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
         img.onerror = () => resolve({ naturalWidth: maxWidth, naturalHeight: maxHeight });
         img.src = dataUrl;
       });
-      // object-contain: fit inside the box without upscaling beyond original size
       const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight, 1);
       return {
         src: dataUrl,
@@ -162,39 +216,46 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
     
     if (success) {
       try {
-        // Kotak logo sama seperti layout PDF (w-48 h-12 = 192x48px, object-contain)
         const logo = await getBase64ImageWithSize("/image/transindo.png", 192, 48);
-
-        // Ikuti kepadatan tabel yang sama seperti pada layout PDF (isCompact)
-        // supaya dokumen Word dan PDF terlihat konsisten untuk item invoice yang banyak
         const wordItemCount = config.group.items?.length || 0;
         const wordIsCompact = wordItemCount > 5;
         const cellPad = wordIsCompact ? "4px" : "6px";
         const cellFont = wordIsCompact ? "9pt" : "9.5pt";
 
-        const sortedItems = [...config.group.items].sort((a, b) => {
-          const totalA = (Number(a.qty) || 1) * ((Number(a.price) || 0) + ((Number(a.price) || 0) * (Number(a.margin) || 0) / 100));
-          const totalB = (Number(b.qty) || 1) * ((Number(b.price) || 0) + ((Number(b.price) || 0) * (Number(b.margin) || 0) / 100));
-          return totalB - totalA;
-        });
-
-        const itemsRows = sortedItems.map((item, idx) => {
-          const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100);
-          const totalPrice = unitPriceWithMargin * item.qty;
-          return `
+        // Format items table berdasarkan Grouping
+        let itemsRows = "";
+        groupedData.groups.forEach((group) => {
+          // Header Mother Part
+          itemsRows += `
             <tr>
-              <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${idx + 1}</td>
-              <td style="padding: ${cellPad}; border: 1px solid #000;"><b>${item.description || item.mother_part || "General Part"}</b> - ${item.technical_specification || "-"}</td>
-              <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${item.qty} ${item.unit || "EA"}</td>
-              <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;">Rp${unitPriceWithMargin.toLocaleString("id-ID")}</td>
-              <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;"><b>Rp${totalPrice.toLocaleString("id-ID")}</b></td>
+              <td colspan="5" style="padding: ${cellPad}; border: 1px solid #000; background-color: #f3f4f6;">
+                <b>${group.motherPart}</b>
+              </td>
             </tr>
           `;
-        }).join("");
 
-        const subTotal = config.group.total_cost;
-        const ppn = subTotal * 0.11;
-        const grandTotal = subTotal + ppn;
+          // Items (Sub Part)
+          group.items.forEach((item) => {
+            itemsRows += `
+              <tr>
+                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${item.printIndex}</td>
+                <td style="padding: ${cellPad}; border: 1px solid #000;"><b>${item.description || "-"}</b> - ${item.technical_specification || "-"}</td>
+                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${item.qty} ${item.unit || "EA"}</td>
+                <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;">Rp${item.unitPriceWithMargin.toLocaleString("id-ID")}</td>
+                <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;"><b>Rp${item.totalPrice.toLocaleString("id-ID")}</b></td>
+              </tr>
+            `;
+          });
+
+          // Subtotal per Mother Part
+          itemsRows += `
+            <tr>
+              <td colspan="4" style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Total ${group.motherPart}</b></td>
+              <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Rp${group.subTotal.toLocaleString("id-ID")}</b></td>
+            </tr>
+          `;
+        });
+
         const formattedDate = invoiceDate ? new Date(invoiceDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : "-";
 
         const html = `
@@ -274,15 +335,15 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
             <table style="width:100%; margin-top: -13px; font-size: 10pt;">
               <tr>
                 <td colspan="4" style="text-align:right; background-color: #eff6ff; border: 1px solid #000;"><b>Sub Total :</b></td>
-                <td style="text-align:right; background-color: #eff6ff; border: 1px solid #000; width: 20%;">Rp${subTotal.toLocaleString("id-ID")}</td>
+                <td style="text-align:right; background-color: #eff6ff; border: 1px solid #000; width: 20%;">Rp${groupedData.subTotal.toLocaleString("id-ID")}</td>
               </tr>
               <tr>
                 <td colspan="4" style="text-align:right; background-color: #eff6ff; border: 1px solid #000;"><b>PPN 11% :</b></td>
-                <td style="text-align:right; background-color: #eff6ff; border: 1px solid #000;">Rp${ppn.toLocaleString("id-ID")}</td>
+                <td style="text-align:right; background-color: #eff6ff; border: 1px solid #000;">Rp${groupedData.ppn.toLocaleString("id-ID")}</td>
               </tr>
               <tr>
                 <td colspan="4" style="text-align:right; background-color: #dbeafe; border: 1px solid #000;"><b>Grand Total :</b></td>
-                <td style="text-align:right; background-color: #dbeafe; border: 1px solid #000;"><b>Rp${grandTotal.toLocaleString("id-ID")}</b></td>
+                <td style="text-align:right; background-color: #dbeafe; border: 1px solid #000;"><b>Rp${groupedData.grandTotal.toLocaleString("id-ID")}</b></td>
               </tr>
             </table>
 
@@ -314,7 +375,14 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
         `;
 
         const blob = await asBlob(html);
-        saveAs(blob as Blob, `${invoiceNo}.docx`);
+        
+        // Format nama file Word sama dengan PDF
+        const projectName = (config.group as any).project_name || invoiceCustomer || "Project";
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
+        const wordFileName = `${projectName}_${invoiceNo}_${dateStr}`.replace(/\s+/g, '_');
+        
+        saveAs(blob as Blob, `${wordFileName}.docx`);
       } catch (error) {
         console.error("Error generating Word document:", error);
         alert("Terjadi kesalahan saat membuat file Word.");
@@ -324,9 +392,6 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
 
   const itemCount = config.group?.items?.length || 0;
   const isCompact = itemCount > 5;
-  const subTotal = config.group.total_cost;
-  const ppn = subTotal * 0.11;
-  const grandTotal = subTotal + ppn;
 
   return (
     <>
@@ -381,6 +446,23 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
       </div>
 
       {/* HIDDEN PRINT LAYOUT */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
+          }
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            background: #fff !important;
+          }
+          #print-area-invoice {
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+          }
+        }
+      `}</style>
       <div id="print-area-invoice" className="hidden print:flex flex-col justify-start bg-white text-black font-sans w-full text-xs box-border">
         <div className="flex flex-col">
           <div className="flex justify-between items-center border-b-2 border-black pb-2 mb-3">
@@ -422,29 +504,39 @@ export default function ModalInvoice({ config, onClose }: ModalInvoiceProps) {
                 </tr>
               </thead>
               <tbody>
-                {[...config.group.items].sort((a, b) => {
-                  const totalA = (Number(a.qty) || 1) * ((Number(a.price) || 0) + ((Number(a.price) || 0) * (Number(a.margin) || 0) / 100));
-                  const totalB = (Number(b.qty) || 1) * ((Number(b.price) || 0) + ((Number(b.price) || 0) * (Number(b.margin) || 0) / 100));
-                  return totalB - totalA;
-                }).map((item, idx) => {
-                  const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100);
-                  const totalPrice = unitPriceWithMargin * item.qty;
-                  return (
-                    <tr key={item.id || idx} className="align-top">
-                      <td className={`border-x border-black text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>{idx + 1}</td>
-                      <td className={`border-x border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}><div className="leading-snug break-words"><span className="font-bold">{item.description || item.mother_part || "General Part"}</span> - {item.technical_specification || "-"}</div></td>
-                      <td className={`border-x border-black text-center whitespace-nowrap ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>{item.qty} {item.unit || "EA"}</td>
-                      <td className={`border-x border-black text-right whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Rp{unitPriceWithMargin.toLocaleString("id-ID")}</td>
-                      <td className={`border-x border-black text-right font-semibold whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Rp{totalPrice.toLocaleString("id-ID")}</td>
+                {groupedData.groups.map((group, groupIdx) => (
+                  <React.Fragment key={`group-${groupIdx}`}>
+                    {/* Header Mother Part */}
+                    <tr className="bg-gray-100/60 font-semibold">
+                      <td colSpan={5} className={`border border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>
+                        {group.motherPart}
+                      </td>
                     </tr>
-                  );
-                })}
+                    
+                    {/* Items (Sub Part) */}
+                    {group.items.map((item) => (
+                      <tr key={item.id || item.printIndex} className="align-top">
+                        <td className={`border-x border-black text-center ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>{item.printIndex}</td>
+                        <td className={`border-x border-black ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}><div className="leading-snug break-words"><span className="font-bold">{item.description || "-"}</span> - {item.technical_specification || "-"}</div></td>
+                        <td className={`border-x border-black text-center whitespace-nowrap ${isCompact ? 'py-1 px-1' : 'py-1.5 px-1.5'}`}>{item.qty} {item.unit || "EA"}</td>
+                        <td className={`border-x border-black text-right whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Rp{item.unitPriceWithMargin.toLocaleString("id-ID")}</td>
+                        <td className={`border-x border-black text-right font-semibold whitespace-nowrap ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Rp{item.totalPrice.toLocaleString("id-ID")}</td>
+                      </tr>
+                    ))}
+
+                    {/* Subtotal per Mother Part */}
+                    <tr className="bg-blue-50/50 font-semibold border-y border-black">
+                      <td colSpan={4} className={`border-x border-black text-right ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Total {group.motherPart}</td>
+                      <td className={`border-x border-black text-right ${isCompact ? 'py-1 px-1.5' : 'py-1.5 px-2'}`}>Rp{group.subTotal.toLocaleString("id-ID")}</td>
+                    </tr>
+                  </React.Fragment>
+                ))}
               </tbody>
             </table>
             <div className="border border-t-0 border-black mb-3">
-              <div className={`flex justify-between items-center bg-blue-50/50 border-t border-black font-semibold ${isCompact ? 'p-1 text-[9.5px]' : 'p-1.5 text-[10.5px]'}`}><span className="w-full text-right pr-4">Sub Total :</span><span className="w-32 text-right">Rp{subTotal.toLocaleString("id-ID")}</span></div>
-              <div className={`flex justify-between items-center bg-blue-50/50 border-t border-black font-semibold ${isCompact ? 'p-1 text-[9.5px]' : 'p-1.5 text-[10.5px]'}`}><span className="w-full text-right pr-4">PPN 11% :</span><span className="w-32 text-right">Rp{ppn.toLocaleString("id-ID")}</span></div>
-              <div className={`flex justify-between items-center bg-blue-100/50 border-t border-black font-bold ${isCompact ? 'p-1 text-[10.5px]' : 'p-1.5 text-[11.5px]'}`}><span className="w-full text-right pr-4">Grand Total :</span><span className="w-32 text-right">Rp{grandTotal.toLocaleString("id-ID")}</span></div>
+              <div className={`flex justify-between items-center bg-blue-50/50 border-t border-black font-semibold ${isCompact ? 'p-1 text-[9.5px]' : 'p-1.5 text-[10.5px]'}`}><span className="w-full text-right pr-4">Sub Total :</span><span className="w-32 text-right">Rp{groupedData.subTotal.toLocaleString("id-ID")}</span></div>
+              <div className={`flex justify-between items-center bg-blue-50/50 border-t border-black font-semibold ${isCompact ? 'p-1 text-[9.5px]' : 'p-1.5 text-[10.5px]'}`}><span className="w-full text-right pr-4">PPN 11% :</span><span className="w-32 text-right">Rp{groupedData.ppn.toLocaleString("id-ID")}</span></div>
+              <div className={`flex justify-between items-center bg-blue-100/50 border-t border-black font-bold ${isCompact ? 'p-1 text-[10.5px]' : 'p-1.5 text-[11.5px]'}`}><span className="w-full text-right pr-4">Grand Total :</span><span className="w-32 text-right">Rp{groupedData.grandTotal.toLocaleString("id-ID")}</span></div>
             </div>
           </div>
         </div>

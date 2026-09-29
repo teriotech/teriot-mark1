@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { X, Printer, Loader2, FileText } from "lucide-react";
 import { BomGroup, PrintType } from "./types";
 import { asBlob } from "html-docx-js-typescript";
@@ -71,6 +71,37 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
           .finally(() => setIsLoadingData(false));
       }
     }
+  }, [config]);
+
+  // LOGIC 1: Grouping berdasarkan Mother Part dan kalkulasi Subtotal & Grand Total
+  const groupedData = useMemo(() => {
+    if (!config?.group?.items) return { groups: [], grandTotal: 0 };
+
+    const groupsMap = config.group.items.reduce((acc, item) => {
+      const motherPart = item.mother_part || "General Part";
+      if (!acc[motherPart]) {
+        acc[motherPart] = { items: [], subTotal: 0 };
+      }
+      
+      const unitPriceWithMargin = (Number(item.price) || 0) + ((Number(item.price) || 0) * (Number(item.margin) || 0)) / 100;
+      const totalPrice = unitPriceWithMargin * (Number(item.qty) || 1);
+
+      acc[motherPart].items.push({ ...item, unitPriceWithMargin, totalPrice });
+      acc[motherPart].subTotal += totalPrice;
+      return acc;
+    }, {} as Record<string, { items: any[]; subTotal: number }>);
+
+    let grandTotal = 0;
+    let globalIdx = 1;
+    
+    const groups = Object.entries(groupsMap).map(([motherPart, data]) => {
+      grandTotal += data.subTotal;
+      // Tambahkan index global agar nomor urut tetap berlanjut antar grup
+      const itemsWithIndex = data.items.map((item) => ({ ...item, printIndex: globalIdx++ }));
+      return { motherPart, items: itemsWithIndex, subTotal: data.subTotal };
+    });
+
+    return { groups, grandTotal };
   }, [config]);
 
   if (!config) return null;
@@ -165,12 +196,33 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
     setIsSaving(true);
     const success = await saveToDatabase();
     setIsSaving(false);
-    if (success) setTimeout(() => window.print(), 300);
+    
+    if (success) {
+      setTimeout(() => {
+        // LOGIC 2: Ubah document.title sementara untuk nama file PDF
+        const originalTitle = document.title;
+        
+        // Ambil nama project (fallback ke subject atau customer)
+        const projectName = (config.group as any).project_name || printSubject || config.group.customer || "Project";
+        
+        // Format tanggal hari ini: YYYYMMDD
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
+        
+        // Set title baru: ProjectName_QOnumber_todaydate
+        const pdfFileName = `${projectName}_${printDocNumber}_${dateStr}`.replace(/\s+/g, '_');
+        document.title = pdfFileName;
+
+        window.print();
+
+        // Kembalikan title asli setelah dialog print muncul
+        setTimeout(() => {
+          document.title = originalTitle;
+        }, 2000);
+      }, 300);
+    }
   };
 
-  // Helper untuk mengubah Image URL ke Base64 + menghitung ukuran tampil
-  // agar proporsinya sama persis dengan kotak logo pada layout PDF (object-contain),
-  // sehingga logo tidak gepeng/stretch saat dibuka di MS Word.
   const getBase64ImageWithSize = async (
     imageUrl: string,
     maxWidth: number,
@@ -195,7 +247,6 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
         img.onerror = () => resolve({ naturalWidth: maxWidth, naturalHeight: maxHeight });
         img.src = dataUrl;
       });
-      // object-contain: fit inside the box without upscaling beyond original size
       const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight, 1);
       return {
         src: dataUrl,
@@ -214,73 +265,59 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
 
     if (success) {
       try {
-        // Fetch logo dan hitung ukurannya agar sama persis dengan kotak logo
-        // pada layout PDF (w-44 h-14 = 176x56px, object-contain)
         const logo = await getBase64ImageWithSize("/image/transindo.png", 176, 56);
-
-        // Ikuti kepadatan tabel yang sama seperti pada layout PDF (isCompact)
-        // supaya dokumen Word dan PDF terlihat konsisten untuk BOM panjang
         const wordItemCount = config.group.items?.length || 0;
         const wordIsCompact = wordItemCount > 5;
         const cellPad = wordIsCompact ? "4px" : "6px";
         const cellFont = wordIsCompact ? "9pt" : "9.5pt";
 
-        // Format items table
-        const sortedItems = [...config.group.items].sort((a, b) => {
-          const totalA =
-            (Number(a.qty) || 1) *
-            ((Number(a.price) || 0) +
-              ((Number(a.price) || 0) * (Number(a.margin) || 0)) / 100);
-          const totalB =
-            (Number(b.qty) || 1) *
-            ((Number(b.price) || 0) +
-              ((Number(b.price) || 0) * (Number(b.margin) || 0)) / 100);
-          return totalB - totalA;
-        });
-
-        const itemsRows = sortedItems
-          .map((item, idx) => {
-            const unitPriceWithMargin =
-              item.price + (item.price * (item.margin || 0)) / 100;
-            const totalPrice = unitPriceWithMargin * item.qty;
-
-            return `
+        // Format items table berdasarkan Grouping
+        let itemsRows = "";
+        groupedData.groups.forEach((group) => {
+          // Header Mother Part
+          itemsRows += `
             <tr>
-              <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${
-                idx + 1
-              }</td>
-              <td style="padding: ${cellPad}; border: 1px solid #000;"><b>${
-                item.description || item.mother_part || "General Part"
-              }</b></td>
-              <td style="padding: ${cellPad}; border: 1px solid #000;">${
-                item.technical_specification || "-"
-              }</td>
-              <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${
-                item.qty
-              } ${item.unit || "EA"}</td>
-              ${
-                config.type === "QO"
-                  ? `<td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;">Rp${unitPriceWithMargin.toLocaleString(
-                      "id-ID"
-                    )}</td>
-                     <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;"><b>Rp${totalPrice.toLocaleString(
-                       "id-ID"
-                     )}</b></td>`
-                  : ""
-              }
+              <td colspan="${config.type === "QO" ? 6 : 4}" style="padding: ${cellPad}; border: 1px solid #000; background-color: #f3f4f6;">
+                <b>${group.motherPart}</b>
+              </td>
             </tr>
           `;
-          })
-          .join("");
 
-        // Format Terms
+          // Items (Sub Part)
+          group.items.forEach((item) => {
+            itemsRows += `
+              <tr>
+                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${item.printIndex}</td>
+                <td style="padding: ${cellPad}; border: 1px solid #000;">${item.description || "-"}</td>
+                <td style="padding: ${cellPad}; border: 1px solid #000;">${item.technical_specification || "-"}</td>
+                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${item.qty} ${item.unit || "EA"}</td>
+                ${
+                  config.type === "QO"
+                    ? `<td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;">Rp${item.unitPriceWithMargin.toLocaleString("id-ID")}</td>
+                       <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;"><b>Rp${item.totalPrice.toLocaleString("id-ID")}</b></td>`
+                    : ""
+                }
+              </tr>
+            `;
+          });
+
+          // Subtotal per Mother Part
+          if (config.type === "QO") {
+            itemsRows += `
+              <tr>
+                <td colspan="5" style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Total ${group.motherPart}</b></td>
+                <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Rp${group.subTotal.toLocaleString("id-ID")}</b></td>
+              </tr>
+            `;
+          }
+        });
+
         const termsList = printTerms
           .split("\n")
           .filter((term) => term.trim() !== "")
           .map((term) => `<li>${term}</li>`)
           .join("");
 
-        // Menyusun HTML murni yang sesuai dengan standar Microsoft Word XML
         const html = `
           <!DOCTYPE html>
           <html>
@@ -380,19 +417,19 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
               <table style="width:100%; margin-top: -13px; font-size: 10pt;">
                 <tr>
                   <td colspan="4" style="text-align:right; background-color: #dbeafe; border: 1px solid #000;"><b>Sub Total</b></td>
-                  <td style="text-align:right; background-color: #dbeafe; border: 1px solid #000; width: 25%;"><b>Rp${config.group.total_cost.toLocaleString(
+                  <td style="text-align:right; background-color: #dbeafe; border: 1px solid #000; width: 25%;"><b>Rp${groupedData.grandTotal.toLocaleString(
                     "id-ID"
                   )}</b></td>
                 </tr>
                 <tr>
                   <td colspan="4" style="text-align:right; border: 1px solid #000;">Sub Total (Product, Material, Service) :</td>
-                  <td style="text-align:right; border: 1px solid #000;">Rp${config.group.total_cost.toLocaleString(
+                  <td style="text-align:right; border: 1px solid #000;">Rp${groupedData.grandTotal.toLocaleString(
                     "id-ID"
                   )}</td>
                 </tr>
                 <tr>
                   <td colspan="4" style="text-align:right; border: 1px solid #000;"><b>Grand Total :</b></td>
-                  <td style="text-align:right; border: 1px solid #000;"><b>Rp${config.group.total_cost.toLocaleString(
+                  <td style="text-align:right; border: 1px solid #000;"><b>Rp${groupedData.grandTotal.toLocaleString(
                     "id-ID"
                   )}</b></td>
                 </tr>
@@ -424,9 +461,15 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
           </html>
         `;
 
-        // Generate Blob & Download
         const blob = await asBlob(html);
-        saveAs(blob as Blob, `${config.type}_${printDocNumber}.docx`);
+        
+        // Format nama file Word sama dengan PDF
+        const projectName = (config.group as any).project_name || printSubject || config.group.customer || "Project";
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
+        const wordFileName = `${projectName}_${printDocNumber}_${dateStr}`.replace(/\s+/g, '_');
+        
+        saveAs(blob as Blob, `${wordFileName}.docx`);
       } catch (error) {
         console.error("Error generating Word document:", error);
         alert("Terjadi kesalahan saat membuat file Word.");
@@ -767,42 +810,37 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                 </tr>
               </thead>
               <tbody>
-                {[...config.group.items]
-                  .sort((a, b) => {
-                    const totalA =
-                      (Number(a.qty) || 1) *
-                      ((Number(a.price) || 0) +
-                        ((Number(a.price) || 0) * (Number(a.margin) || 0)) /
-                          100);
-                    const totalB =
-                      (Number(b.qty) || 1) *
-                      ((Number(b.price) || 0) +
-                        ((Number(b.price) || 0) * (Number(b.margin) || 0)) /
-                          100);
-                    return totalB - totalA;
-                  })
-                  .map((item, idx) => {
-                    const unitPriceWithMargin =
-                      item.price + (item.price * (item.margin || 0)) / 100;
-                    const totalPrice = unitPriceWithMargin * item.qty;
-                    return (
-                      <tr key={item.id || idx} className="align-top">
+                {groupedData.groups.map((group, groupIdx) => (
+                  <React.Fragment key={`group-${groupIdx}`}>
+                    {/* Header Mother Part */}
+                    <tr className="bg-gray-100/60 font-semibold">
+                      <td
+                        colSpan={config.type === "QO" ? 6 : 4}
+                        className={`border border-black ${
+                          isCompact ? "py-1 px-1.5" : "py-1.5 px-2"
+                        }`}
+                      >
+                        {group.motherPart}
+                      </td>
+                    </tr>
+                    
+                    {/* Items (Sub Part) */}
+                    {group.items.map((item) => (
+                      <tr key={item.id || item.printIndex} className="align-top">
                         <td
                           className={`border-x border-black text-center ${
                             isCompact ? "py-1 px-1" : "py-1.5 px-1.5"
                           }`}
                         >
-                          {idx + 1}
+                          {item.printIndex}
                         </td>
                         <td
                           className={`border-x border-black ${
                             isCompact ? "py-1 px-1.5" : "py-1.5 px-2"
                           }`}
                         >
-                          <div className="font-semibold leading-snug break-words">
-                            {item.description ||
-                              item.mother_part ||
-                              "General Part"}
+                          <div className="leading-snug break-words">
+                            {item.description || "-"}
                           </div>
                         </td>
                         <td
@@ -828,22 +866,46 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                                 isCompact ? "py-1 px-1.5" : "py-1.5 px-2"
                               }`}
                             >
-                              Rp{unitPriceWithMargin.toLocaleString("id-ID")}
+                              Rp{item.unitPriceWithMargin.toLocaleString("id-ID")}
                             </td>
                             <td
                               className={`border-x border-black text-right font-semibold whitespace-nowrap ${
                                 isCompact ? "py-1 px-1.5" : "py-1.5 px-2"
                               }`}
                             >
-                              Rp{totalPrice.toLocaleString("id-ID")}
+                              Rp{item.totalPrice.toLocaleString("id-ID")}
                             </td>
                           </>
                         )}
                       </tr>
-                    );
-                  })}
+                    ))}
+
+                    {/* Subtotal per Mother Part */}
+                    {config.type === "QO" && (
+                      <tr className="bg-blue-50/50 font-semibold border-y border-black">
+                        <td
+                          colSpan={5}
+                          className={`border-x border-black text-right ${
+                            isCompact ? "py-1 px-1.5" : "py-1.5 px-2"
+                          }`}
+                        >
+                          Total {group.motherPart}
+                        </td>
+                        <td
+                          className={`border-x border-black text-right ${
+                            isCompact ? "py-1 px-1.5" : "py-1.5 px-2"
+                          }`}
+                        >
+                          Rp{group.subTotal.toLocaleString("id-ID")}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
               </tbody>
             </table>
+            
+            {/* GRAND TOTAL */}
             {config.type === "QO" && (
               <div className="border border-t-0 border-black mb-3">
                 <div
@@ -853,7 +915,7 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                 >
                   <span className="w-full text-right pr-4">Sub Total</span>
                   <span className="w-32 text-right">
-                    Rp{config.group.total_cost.toLocaleString("id-ID")}
+                    Rp{groupedData.grandTotal.toLocaleString("id-ID")}
                   </span>
                 </div>
                 <div
@@ -866,7 +928,7 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                       Sub Total (Product, Material, Service) :
                     </span>
                     <span className="w-32 text-right">
-                      Rp{config.group.total_cost.toLocaleString("id-ID")}
+                      Rp{groupedData.grandTotal.toLocaleString("id-ID")}
                     </span>
                   </div>
                   <div className="flex justify-between font-bold text-[10.5px] pt-0.5 border-t border-gray-300">
@@ -874,7 +936,7 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                       Grand Total :
                     </span>
                     <span className="w-32 text-right">
-                      Rp{config.group.total_cost.toLocaleString("id-ID")}
+                      Rp{groupedData.grandTotal.toLocaleString("id-ID")}
                     </span>
                   </div>
                 </div>
