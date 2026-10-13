@@ -16,7 +16,8 @@ type ProjectStage =
   | "opportunity_crm" | "presales" | "inspection" | "bom_design" | "quotation_po"
   | "project_planning" | "project_running" | "commissioning" | "invoicing" | "payment";
 
-type ProjectStatus = "In Progress" | "Completed" | "On Hold" | "Delayed";
+// Status diubah menjadi "Drop"
+type ProjectStatus = "In Progress" | "Completed" | "On Hold" | "Delayed" | "Drop";
 type StageStatus = "Pending" | "In Progress" | "Completed" | "Issue";
 
 interface StageHistoryEntry {
@@ -96,24 +97,11 @@ function getStartOfDayTime(dateValue: string | number | Date | null | undefined)
   return d.getTime();
 }
 
+const getStageIndex = (stageId: ProjectStage) => PROJECT_STAGES.findIndex(s => s.id === stageId);
+
 // ============================================================================
 // UI Components
 // ============================================================================
-
-const StatusBadge: React.FC<{ status: ProjectStatus }> = ({ status }) => {
-  const config = {
-    "In Progress": { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200", icon: Clock },
-    Completed: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: CheckCircle2 },
-    "On Hold": { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: AlertTriangle },
-    Delayed: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", icon: AlertCircle },
-  }[status];
-  const Icon = config.icon;
-  return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${config.bg} ${config.text} ${config.border}`}>
-      <Icon size={14} /><span>{status}</span>
-    </div>
-  );
-};
 
 const StageStatusBadge: React.FC<{ status: StageStatus }> = ({ status }) => {
   const config = {
@@ -202,11 +190,9 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
               const planEnd = getStartOfDayTime(s.entry?.plan_end_date);
               const actualStart = getStartOfDayTime(s.entry?.entered_at);
               
-              // Logika Actual End Date: Hanya diisi jika status Completed. Jika belum, gunakan hari ini (todayTime)
               const isCompleted = s.status === "Completed";
               const actualEnd = isCompleted ? getStartOfDayTime(s.entry?.completed_at) : (actualStart ? todayTime : null);
 
-              // Menentukan warna bar berdasarkan Stage Status
               let actualBarColor = 'bg-gradient-to-r from-slate-400 to-slate-500 border-slate-600';
               if (s.status === 'Completed') actualBarColor = 'bg-gradient-to-r from-emerald-400 to-emerald-500 border-emerald-600';
               else if (s.status === 'In Progress') actualBarColor = 'bg-gradient-to-r from-indigo-400 to-indigo-500 border-indigo-600';
@@ -214,12 +200,10 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
 
               return (
                 <div key={s.id} className="relative h-12 flex items-center group border-b border-slate-50 pb-2">
-                  {/* Sticky Label */}
                   <div className="sticky left-0 z-20 w-40 bg-white/95 backdrop-blur-md flex-shrink-0 text-xs font-bold text-slate-700 truncate pr-4 flex items-center gap-2 py-1.5 border-r border-slate-100 shadow-[4px_0_12px_rgba(0,0,0,0.02)]">
                     <s.icon size={14} className="text-indigo-500"/> {s.label}
                   </div>
                   
-                  {/* Plan Bar */}
                   {planStart && planEnd && (
                     <div 
                       onClick={() => onEditStage(s.id)}
@@ -232,7 +216,6 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
                     />
                   )}
 
-                  {/* Actual Bar */}
                   {actualStart && actualEnd && (
                     <div 
                       className={`absolute bottom-1.5 h-4 rounded-md shadow-md border z-10 ${actualBarColor}`}
@@ -250,7 +233,6 @@ const ProjectTimelineChart: React.FC<{ project: ProjectManagementRecord; onEditS
         </div>
       </div>
       
-      {/* Legend */}
       <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-bold text-slate-600 justify-center bg-slate-50 py-2.5 rounded-lg border border-slate-200 shadow-sm">
         <div className="flex items-center gap-2"><div className="w-4 h-3 bg-gradient-to-r from-amber-300 to-yellow-400 border border-amber-500 rounded-sm shadow-sm"></div> Plan Timeline</div>
         <div className="flex items-center gap-2"><div className="w-4 h-3 bg-gradient-to-r from-indigo-400 to-indigo-500 border border-indigo-600 rounded-sm shadow-sm"></div> Actual (In Progress)</div>
@@ -280,7 +262,6 @@ const StageDetailsCard: React.FC<{
           <stageInfo.icon size={18} className="text-indigo-600" />
           <p className="font-bold text-slate-900 text-sm">{stageInfo.label}</p>
         </div>
-        {/* Menggunakan StageStatusBadge di Header */}
         <StageStatusBadge status={stageData?.stage_status || "Pending"} />
       </div>
 
@@ -324,8 +305,7 @@ const StageUpdateModal: React.FC<{
     if (isOpen) {
       setFormData(currentData); 
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, currentData]);
 
   if (!isOpen || !stage) return null;
   const stageLabel = PROJECT_STAGES.find((s) => s.id === stage)?.label || stage;
@@ -505,6 +485,44 @@ export default function ProjectManagementPage() {
     };
   };
 
+  // Fitur Bypass Status Langsung
+  const handleUpdateProjectStatus = async (id: string, newStatus: ProjectStatus) => {
+    try {
+      const res = await fetch("/api/management/project", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (res.ok) {
+        setProjects(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  // Fitur Bypass Current Stage Langsung
+  const handleUpdateCurrentStage = async (id: string, newStage: ProjectStage) => {
+    try {
+      const project = projects.find(p => p.id === id);
+      if (!project) return;
+
+      const stageHistory = { ...project.stage_history };
+      if (!stageHistory[newStage]) stageHistory[newStage] = {};
+      if (!stageHistory[newStage].entered_at) {
+        stageHistory[newStage].entered_at = new Date().toISOString();
+      }
+
+      const res = await fetch("/api/management/project", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, current_stage: newStage, stage_history: stageHistory }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProjects(prev => prev.map(p => p.id === id ? updated : p));
+      }
+    } catch (err) { console.error(err); }
+  };
+
   const handleSaveStageUpdate = async (data: StageUpdateData) => {
     if (!selectedProjectId || !editingStage) return;
     setIsSaving(true);
@@ -521,6 +539,7 @@ export default function ProjectManagementPage() {
 
       const stageHistory = { ...project.stage_history };
       let newCurrentStage = project.current_stage;
+      let newProjectStatus = project.status;
 
       if (!stageHistory[editingStage]) stageHistory[editingStage] = {};
       if (data.plan_start_date) stageHistory[editingStage].plan_start_date = data.plan_start_date;
@@ -539,8 +558,12 @@ export default function ProjectManagementPage() {
             if (!stageHistory[newCurrentStage].entered_at) stageHistory[newCurrentStage].entered_at = new Date().toISOString();
           }
         }
+        
+        // Auto-update status ke Completed jika stage payment sudah completed
+        if (editingStage === "payment") {
+          newProjectStatus = "Completed";
+        }
       } else {
-        // Jika status diubah dari Completed ke status lain, hapus completed_at
         stageHistory[editingStage].completed_at = null;
         newCurrentStage = editingStage; 
         if (!stageHistory[editingStage].entered_at) {
@@ -554,7 +577,8 @@ export default function ProjectManagementPage() {
           id: selectedProjectId, 
           stage_notes: stageNotes, 
           stage_history: stageHistory,
-          current_stage: newCurrentStage 
+          current_stage: newCurrentStage,
+          status: newProjectStatus
         }),
       });
       
@@ -610,10 +634,18 @@ export default function ProjectManagementPage() {
     } catch (err) { console.error(err); }
   };
 
-  const filteredProjects = useMemo(() => projects.filter(p => 
-    (p.project_name.toLowerCase().includes(searchTerm.toLowerCase()) || p.client_company.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (statusFilter === "All" || p.status === statusFilter)
-  ), [projects, searchTerm, statusFilter]);
+  // Filter & Sorting (Urutkan berdasarkan stage paling lama/terakhir)
+  const filteredProjects = useMemo(() => {
+    let filtered = projects.filter(p => 
+      (p.project_name.toLowerCase().includes(searchTerm.toLowerCase()) || p.client_company.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (statusFilter === "All" || p.status === statusFilter)
+    );
+
+    // Sort descending berdasarkan index stage (stage terakhir di atas)
+    filtered.sort((a, b) => getStageIndex(b.current_stage) - getStageIndex(a.current_stage));
+
+    return filtered;
+  }, [projects, searchTerm, statusFilter]);
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
@@ -652,6 +684,7 @@ export default function ProjectManagementPage() {
                 <option value="Completed">Completed</option>
                 <option value="On Hold">On Hold</option>
                 <option value="Delayed">Delayed</option>
+                <option value="Drop">Drop</option>
               </select>
             </div>
           </div>
@@ -669,37 +702,111 @@ export default function ProjectManagementPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredProjects.length > 0 ? filteredProjects.map(p => {
-                  const stageInfo = PROJECT_STAGES.find(s => s.id === p.current_stage);
                   const isSelected = selectedProjectId === p.id;
+                  
+                  // Logika Warna Baris
+                  const isPaymentCompleted = p.current_stage === "payment" && p.stage_notes["payment"]?.stage_status === "Completed";
+                  const isDropped = p.status === "Drop";
+
+                  let rowClass = isSelected ? 'bg-indigo-50/50' : 'hover:bg-slate-50';
+                  let textMainClass = "text-slate-900";
+                  let textSubClass = "text-slate-600";
+
+                  if (isDropped) {
+                    rowClass = "bg-red-100 hover:bg-red-200 border-b border-red-200";
+                    textMainClass = "text-red-900";
+                    textSubClass = "text-red-700";
+                  } else if (isPaymentCompleted) {
+                    rowClass = "bg-emerald-100 hover:bg-emerald-200 border-b border-emerald-200";
+                    textMainClass = "text-emerald-900";
+                    textSubClass = "text-emerald-700";
+                  }
+
+                  // Logika Warna Stage
+                  const stageIndex = getStageIndex(p.current_stage);
+                  let stageColorClass = "";
+                  if (isDropped) stageColorClass = "bg-red-50 text-red-700 border-red-200";
+                  else if (stageIndex <= 1) stageColorClass = "bg-slate-100 text-slate-700 border-slate-200";
+                  else if (stageIndex <= 4) stageColorClass = "bg-amber-50 text-amber-700 border-amber-200";
+                  else if (stageIndex <= 7) stageColorClass = "bg-indigo-50 text-indigo-700 border-indigo-200";
+                  else stageColorClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+
+                  // Logika Warna Dropdown Status
+                  const statusConfig: Record<string, string> = {
+                    "In Progress": "bg-indigo-50 text-indigo-700 border-indigo-200",
+                    "Completed": "bg-emerald-50 text-emerald-700 border-emerald-200",
+                    "On Hold": "bg-amber-50 text-amber-700 border-amber-200",
+                    "Delayed": "bg-orange-50 text-orange-700 border-orange-200",
+                    "Drop": "bg-red-100 text-red-800 border-red-300",
+                  };
+                  const statusColor = statusConfig[p.status] || "bg-slate-50 text-slate-700 border-slate-200";
+
                   return (
                     <tr 
                       key={p.id} 
                       onClick={() => setSelectedProjectId(p.id)}
-                      className={`cursor-pointer transition-colors ${isSelected ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
+                      className={`cursor-pointer transition-colors ${rowClass}`}
                     >
                       <td className="px-6 py-4">
-                        <p className="font-bold text-slate-900">{p.project_name}</p>
+                        <p className={`font-bold ${textMainClass}`}>{p.project_name}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm text-slate-600 flex items-center gap-1.5 font-medium"><Building2 size={14} className="text-slate-400"/> {p.client_company}</p>
+                        <p className={`text-sm flex items-center gap-1.5 font-medium ${textSubClass}`}>
+                          <Building2 size={14} className={isDropped ? "text-red-500" : "text-slate-400"}/> {p.client_company}
+                        </p>
                       </td>
                       <td className="px-6 py-4">
-                        <StatusBadge status={p.status} />
+                        {/* Bypass Status Dropdown */}
+                        <select
+                          value={p.status}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleUpdateProjectStatus(p.id, e.target.value as ProjectStatus);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium outline-none cursor-pointer appearance-none ${statusColor}`}
+                        >
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                          <option value="On Hold">On Hold</option>
+                          <option value="Delayed">Delayed</option>
+                          <option value="Drop">Drop</option>
+                        </select>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {stageInfo && <stageInfo.icon size={14} className="text-indigo-500"/>}
-                          <span className="text-sm font-semibold text-slate-700">{stageInfo?.label || p.current_stage}</span>
-                        </div>
+                        {/* Bypass Current Stage Dropdown */}
+                        <select
+                          value={p.current_stage}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleUpdateCurrentStage(p.id, e.target.value as ProjectStage);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-semibold outline-none cursor-pointer appearance-none ${stageColorClass}`}
+                        >
+                          {PROJECT_STAGES.map(s => (
+                            <option key={s.id} value={s.id}>{s.label}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDeleteProject(p.id); }} 
-                          className="p-2 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all"
-                          title="Delete Project"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleUpdateProjectStatus(p.id, "Drop"); }} 
+                            className={`p-2 rounded-md transition-all ${isDropped ? 'text-red-600 cursor-not-allowed' : 'text-slate-400 hover:text-red-600 hover:bg-red-50'}`}
+                            title="Drop Project"
+                            disabled={isDropped}
+                          >
+                            <XCircle size={18} />
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteProject(p.id); }} 
+                            className={`p-2 rounded-md transition-all ${isDropped ? 'text-red-500 hover:text-red-700 hover:bg-red-200' : 'text-slate-400 hover:text-red-600 hover:bg-red-50'}`}
+                            title="Delete Project"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

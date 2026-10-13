@@ -96,7 +96,7 @@ const menuData: Record<string, MenuItem[]> = {
       subItems: [
         { label: "Master Material", href: "/demo/management/material/1_master_material" },
         { label: "Create BOM", href: "/demo/management/material/2_create_bom" },
-        { label: "Document PT. TERIOT", href: "/demo/management/material/3_create_qo" },
+        // { label: "Document PT. TERIOT", href: "/demo/management/material/3_create_qo" },
         { label: "Document PT. TMI", href: "/demo/management/material/3_create_qo_TMI" },
         { label: "Cost Analysis", href: "/demo/management/material/4_cost_analysis" },
       ]

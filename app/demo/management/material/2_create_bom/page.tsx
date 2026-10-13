@@ -15,6 +15,8 @@ import {
   Box,
   Edit,
   Printer,
+  CheckSquare,
+  ListPlus
 } from "lucide-react";
 
 // Interface Master Material (Untuk Dropdown Pilihan)
@@ -42,7 +44,7 @@ interface BomItem {
   mother_part: string;
   part_number: string;
   description?: string;
-  technical_specification?: string; // Ditambahkan
+  technical_specification?: string;
   qty: number;
   unit?: string;
   price: number;
@@ -58,7 +60,7 @@ interface FormChildPart {
   material_id?: number;
   part_number: string;
   description: string;
-  technical_specification: string; // Ditambahkan
+  technical_specification: string;
   qty: number | string;
   unit: string;
   price: number | string;
@@ -75,6 +77,7 @@ interface FormMotherPart {
 
 // Interface Data BOM yang tersimpan (Grouping)
 interface BomGroup {
+  groupKey: string; // Ditambahkan untuk membedakan BOM dengan customer yang sama
   customer: string;
   date_created: string;
   total_mother_parts: number;
@@ -83,7 +86,7 @@ interface BomGroup {
   items: BomItem[];
 }
 
-// --- KOMPONEN KUSTOM: SEARCHABLE DROPDOWN ---
+// --- KOMPONEN KUSTOM: SEARCHABLE DROPDOWN (SINGLE) ---
 const SearchableSelect = ({
   options,
   value,
@@ -179,26 +182,31 @@ export default function CreateBomPage() {
   const [bomGroups, setBomGroups] = useState<BomGroup[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [expandedCustomers, setExpandedCustomers] = useState<Record<string, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [masterMaterials, setMasterMaterials] = useState<MasterMaterial[]>([]);
+  const [existingProjects, setExistingProjects] = useState<any[]>([]); // State untuk Project Existing
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [customerName, setCustomerName] = useState<string>("");
-  // Project Name is intentionally blank for every new BOM.
-  // It is required because a BOM now creates its Project automatically.
   const [projectName, setProjectName] = useState<string>("");
   const [motherParts, setMotherParts] = useState<FormMotherPart[]>([]);
 
   // State untuk Edit & Print
-  const [editingCustomer, setEditingCustomer] = useState<string | null>(null);
+  const [editingGroupKey, setEditingGroupKey] = useState<string | null>(null);
   const [originalItemIds, setOriginalItemIds] = useState<number[]>([]);
   const [printGroup, setPrintGroup] = useState<BomGroup | null>(null);
+
+  // State untuk Bulk Select Modal
+  const [bulkModal, setBulkModal] = useState<{ isOpen: boolean; mpId: string }>({ isOpen: false, mpId: "" });
+  const [bulkSearch, setBulkSearch] = useState<string>("");
+  const [bulkSelectedIds, setBulkSelectedIds] = useState<number[]>([]);
 
   useEffect(() => {
     fetchBomList();
     fetchMasterMaterials();
+    fetchExistingProjects();
   }, []);
 
   const fetchBomList = async () => {
@@ -214,14 +222,20 @@ export default function CreateBomPage() {
 
       if (Array.isArray(result.data)) {
         const grouped: Record<string, BomItem[]> = {};
+        
         result.data.forEach((item: BomItem) => {
           const cust = item.customer || "Unassigned Customer";
-          if (!grouped[cust]) grouped[cust] = [];
-          grouped[cust].push(item);
+          // Grouping berdasarkan Customer + Waktu (sampai menit) agar BOM dengan customer sama tetap terpisah
+          const timeKey = item.created_at ? item.created_at.substring(0, 16) : "unknown_time";
+          const groupKey = `${cust}_${timeKey}`;
+
+          if (!grouped[groupKey]) grouped[groupKey] = [];
+          grouped[groupKey].push(item);
         });
 
-        const list: BomGroup[] = Object.keys(grouped).map((cust) => {
-          const items = grouped[cust];
+        const list: BomGroup[] = Object.keys(grouped).map((groupKey) => {
+          const items = grouped[groupKey];
+          const cust = items[0].customer || "Unassigned Customer";
           const motherPartSet = new Set(items.map((i) => i.mother_part).filter(Boolean));
           
           const totalCost = items.reduce((sum, item) => {
@@ -234,6 +248,7 @@ export default function CreateBomPage() {
           }, 0);
 
           return {
+            groupKey: groupKey,
             customer: cust,
             date_created: items[0]?.created_at || new Date().toISOString(),
             total_mother_parts: motherPartSet.size,
@@ -243,6 +258,8 @@ export default function CreateBomPage() {
           };
         });
 
+        // Sort by date descending
+        list.sort((a, b) => new Date(b.date_created).getTime() - new Date(a.date_created).getTime());
         setBomGroups(list);
       }
     } catch (err) {
@@ -264,8 +281,22 @@ export default function CreateBomPage() {
     }
   };
 
+  const fetchExistingProjects = async () => {
+    try {
+      const res = await fetch("/api/management/project");
+      const result = await res.json();
+      if (Array.isArray(result.data)) {
+        // Filter hanya project yang belum di-drop
+        const activeProjects = result.data.filter((p: any) => p.status !== "Drop");
+        setExistingProjects(activeProjects);
+      }
+    } catch (err) {
+      console.error("Gagal mengambil data Project:", err);
+    }
+  };
+
   const handleOpenModal = () => {
-    setEditingCustomer(null);
+    setEditingGroupKey(null);
     setOriginalItemIds([]);
     setCustomerName("");
     setProjectName("");
@@ -275,10 +306,10 @@ export default function CreateBomPage() {
 
   const handleEditBom = (group: BomGroup, e: React.MouseEvent) => {
     e.stopPropagation();
-    setEditingCustomer(group.customer);
+    setEditingGroupKey(group.groupKey);
     setOriginalItemIds(group.items.map((i) => i.id));
     setCustomerName(group.customer);
-    setProjectName("");
+    setProjectName(""); // Kosongkan karena edit tidak membuat project baru
 
     const mpMap: Record<string, FormChildPart[]> = {};
     group.items.forEach((item) => {
@@ -291,7 +322,7 @@ export default function CreateBomPage() {
         material_id: matchedMaterial?.id,
         part_number: item.part_number,
         description: item.description || "",
-        technical_specification: item.technical_specification || matchedMaterial?.technical_specification || "", // Ditambahkan
+        technical_specification: item.technical_specification || matchedMaterial?.technical_specification || "",
         qty: item.qty,
         unit: item.unit || "Pcs",
         price: item.price,
@@ -312,7 +343,8 @@ export default function CreateBomPage() {
 
   const handleDeleteBom = async (group: BomGroup, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Apakah Anda yakin ingin menghapus seluruh BOM untuk Customer: ${group.customer}?`)) {
+    const dateStr = new Date(group.date_created).toLocaleString("id-ID");
+    if (!confirm(`Apakah Anda yakin ingin menghapus BOM untuk Customer: ${group.customer} (Dibuat: ${dateStr})?`)) {
       return;
     }
 
@@ -365,7 +397,7 @@ export default function CreateBomPage() {
       id: `cp-${Date.now()}-${Math.random()}`,
       part_number: "",
       description: "",
-      technical_specification: "", // Ditambahkan
+      technical_specification: "",
       qty: "", 
       unit: "Pcs",
       price: 0,
@@ -383,6 +415,48 @@ export default function CreateBomPage() {
     );
   };
 
+  // --- FUNGSI BULK SELECT ---
+  const openBulkModal = (mpId: string) => {
+    setBulkModal({ isOpen: true, mpId });
+    setBulkSearch("");
+    setBulkSelectedIds([]);
+  };
+
+  const toggleBulkSelection = (materialId: number) => {
+    setBulkSelectedIds((prev) =>
+      prev.includes(materialId) ? prev.filter((id) => id !== materialId) : [...prev, materialId]
+    );
+  };
+
+  const applyBulkSelection = () => {
+    const selectedMaterials = masterMaterials.filter((m) => bulkSelectedIds.includes(m.id));
+    
+    const newChildren: FormChildPart[] = selectedMaterials.map((mat) => ({
+      id: `cp-${Date.now()}-${Math.random()}`,
+      material_id: mat.id,
+      part_number: mat.part_number,
+      description: mat.description || "",
+      technical_specification: mat.technical_specification || "",
+      qty: mat.qty > 0 ? mat.qty : 1, // Default qty 1 jika 0
+      unit: mat.unit || "Pcs",
+      price: Number(mat.price) || 0,
+      margin: mat.margin ? Number(mat.margin) : "",
+      markup: 0,
+    }));
+
+    setMotherParts(
+      motherParts.map((mp) => {
+        if (mp.id === bulkModal.mpId) {
+          return { ...mp, children: [...mp.children, ...newChildren] };
+        }
+        return mp;
+      })
+    );
+
+    setBulkModal({ isOpen: false, mpId: "" });
+  };
+  // --- END FUNGSI BULK SELECT ---
+
   const handleSelectMaterialForChild = (mpId: string, childId: string, materialIdVal: string) => {
     const mat = masterMaterials.find((m) => m.id === Number(materialIdVal));
 
@@ -399,7 +473,7 @@ export default function CreateBomPage() {
                     material_id: mat.id,
                     part_number: mat.part_number,
                     description: mat.description || "",
-                    technical_specification: mat.technical_specification || "", // Ditambahkan
+                    technical_specification: mat.technical_specification || "",
                     qty: mat.qty > 0 ? mat.qty : "",
                     unit: mat.unit || "Pcs",
                     price: Number(mat.price) || 0,
@@ -467,9 +541,7 @@ export default function CreateBomPage() {
       return;
     }
 
-    // A new BOM creates a Project at the BOM & Design stage.
-    // Existing BOM edits do not create a duplicate Project.
-    if (!editingCustomer && !projectName.trim()) {
+    if (!editingGroupKey && !projectName.trim()) {
       alert("Project Name tidak boleh kosong.");
       return;
     }
@@ -513,7 +585,7 @@ export default function CreateBomPage() {
           mother_part: mp.mother_part_name.trim(),
           part_number: ch.part_number.trim(),
           description: ch.description?.trim() || "",
-          technical_specification: ch.technical_specification?.trim() || "", // Ditambahkan ke Payload
+          technical_specification: ch.technical_specification?.trim() || "",
           qty: qty,
           unit: ch.unit?.trim() || "Pcs",
           price: basePrice,
@@ -525,7 +597,7 @@ export default function CreateBomPage() {
 
     setIsSubmitting(true);
     try {
-      if (editingCustomer && originalItemIds.length > 0) {
+      if (editingGroupKey && originalItemIds.length > 0) {
         const deleteRequests = originalItemIds.map((id) =>
           fetch(`/api/management/create_bom?id=${id}`, { method: "DELETE" })
         );
@@ -548,41 +620,46 @@ export default function CreateBomPage() {
 
       await Promise.all(requests);
 
-      // New BOM -> automatically create the matching Project through the
-      // existing Project Management API. The project enters at BOM & Design
-      // because this BOM is the triggering workflow stage.
-      if (!editingCustomer) {
-        const projectResponse = await fetch("/api/management/project", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            project_name: projectName.trim(),
-            client_company: customerName.trim(),
-            current_stage: "bom_design",
-            status: "In Progress",
-            stage_notes: {
-              bom_design: {
-                notes: "Project created automatically from BOM creation.",
-              },
-            },
-          }),
-        });
+      // Create Project if New BOM and Project Name doesn't exist yet
+      if (!editingGroupKey) {
+        const isProjectExist = existingProjects.some(
+          (p) => p.project_name.toLowerCase() === projectName.trim().toLowerCase()
+        );
 
-        if (!projectResponse.ok) {
-          const errorData = await projectResponse.json().catch(() => ({}));
-          throw new Error(
-            errorData.message || "BOM tersimpan, tetapi Project gagal dibuat."
-          );
+        if (!isProjectExist) {
+          const projectResponse = await fetch("/api/management/project", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              project_name: projectName.trim(),
+              client_company: customerName.trim(),
+              current_stage: "bom_design",
+              status: "In Progress",
+              stage_notes: {
+                bom_design: {
+                  notes: "Project created automatically from BOM creation.",
+                },
+              },
+            }),
+          });
+
+          if (!projectResponse.ok) {
+            const errorData = await projectResponse.json().catch(() => ({}));
+            throw new Error(
+              errorData.message || "BOM tersimpan, tetapi Project gagal dibuat."
+            );
+          }
         }
       }
 
       alert(
-        editingCustomer
+        editingGroupKey
           ? "BOM Berhasil Diperbarui!"
-          : "BOM Berhasil Dibuat dan Project berhasil dibuat."
+          : "BOM Berhasil Dibuat dan Project berhasil disinkronisasi."
       );
       setIsModalOpen(false);
       fetchBomList();
+      fetchExistingProjects(); // Refresh project list
     } catch (err: any) {
       console.error("Gagal menyimpan BOM / Project:", err);
       alert(`Terjadi kesalahan saat menyimpan data:\n${err.message}`);
@@ -591,10 +668,10 @@ export default function CreateBomPage() {
     }
   };
 
-  const toggleCustomerExpand = (customer: string) => {
-    setExpandedCustomers((prev) => ({
+  const toggleGroupExpand = (groupKey: string) => {
+    setExpandedGroups((prev) => ({
       ...prev,
-      [customer]: !prev[customer],
+      [groupKey]: !prev[groupKey],
     }));
   };
 
@@ -652,7 +729,7 @@ export default function CreateBomPage() {
           ) : (
             <div className="space-y-4">
               {filteredBomGroups.map((group) => {
-                const isExpanded = !!expandedCustomers[group.customer];
+                const isExpanded = !!expandedGroups[group.groupKey];
 
                 const motherPartMap: Record<string, BomItem[]> = {};
                 group.items.forEach((item) => {
@@ -663,11 +740,11 @@ export default function CreateBomPage() {
 
                 return (
                   <div
-                    key={group.customer}
+                    key={group.groupKey}
                     className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all duration-200"
                   >
                     <div
-                      onClick={() => toggleCustomerExpand(group.customer)}
+                      onClick={() => toggleGroupExpand(group.groupKey)}
                       className="p-5 flex flex-col md:flex-row md:items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors gap-4"
                     >
                       <div className="flex items-center gap-4">
@@ -679,7 +756,7 @@ export default function CreateBomPage() {
                             {group.customer}
                           </h3>
                           <p className="text-xs text-slate-500 mt-0.5">
-                            Total {group.total_mother_parts} Mother Parts • {group.total_items} Items
+                            Dibuat: {new Date(group.date_created).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })} • {group.total_mother_parts} Mother Parts
                           </p>
                         </div>
                       </div>
@@ -775,7 +852,6 @@ export default function CreateBomPage() {
                                       const markup = basePrice * (margin / 100) * qty;
                                       const totalPrice = (basePrice * qty) + markup;
 
-                                      // Ambil Technical Spec dari data BOM atau fallback ke masterMaterials
                                       const matchedMaterial = masterMaterials.find(m => m.part_number === child.part_number);
                                       const techSpec = child.technical_specification || matchedMaterial?.technical_specification || "-";
 
@@ -827,7 +903,7 @@ export default function CreateBomPage() {
                     <Layers className="w-5 h-5" />
                   </div>
                   <h2 className="text-xl font-bold text-slate-900">
-                    {editingCustomer ? "Edit Bill of Materials" : "Create Bill of Materials"}
+                    {editingGroupKey ? "Edit Bill of Materials" : "Create Bill of Materials"}
                   </h2>
                 </div>
                 <button
@@ -851,21 +927,33 @@ export default function CreateBomPage() {
                     className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
 
-                  {!editingCustomer && (
+                  {!editingGroupKey && (
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                           Project Name <span className="text-red-500">*</span>
                         </label>
+                        {/* Menggunakan Datalist untuk Dropdown Existing / Ketik Baru */}
                         <input
                           type="text"
-                          placeholder="Masukkan nama project"
+                          list="existing-projects"
+                          placeholder="Pilih project existing atau ketik baru..."
                           value={projectName}
-                          onChange={(e) => setProjectName(e.target.value)}
+                          onChange={(e) => {
+                            setProjectName(e.target.value);
+                            // Auto-fill customer name jika memilih project existing
+                            const selectedProj = existingProjects.find(p => p.project_name === e.target.value);
+                            if (selectedProj) setCustomerName(selectedProj.client_company);
+                          }}
                           className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                         />
+                        <datalist id="existing-projects">
+                          {existingProjects.map((proj, idx) => (
+                            <option key={idx} value={proj.project_name} />
+                          ))}
+                        </datalist>
                         <p className="text-[11px] text-slate-500 mt-1.5">
-                          Dikosongkan secara default. Project akan dibuat otomatis saat BOM disimpan.
+                          Pilih dari dropdown atau ketik nama baru. Project akan dibuat otomatis jika belum ada.
                         </p>
                       </div>
 
@@ -957,14 +1045,24 @@ export default function CreateBomPage() {
                               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                 Child Parts Selection
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => addChildPart(mp.id)}
-                                className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium"
-                              >
-                                <Plus className="w-3.5 h-3.5" />
-                                Tambah Child Part
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openBulkModal(mp.id)}
+                                  className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-xs text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100 font-medium transition-colors"
+                                >
+                                  <ListPlus className="w-3.5 h-3.5" />
+                                  Tambah Child Part (Bulk)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => addChildPart(mp.id)}
+                                  className="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-xs text-blue-700 border border-blue-200 rounded hover:bg-blue-100 font-medium transition-colors"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                  Tambah 1 Baris
+                                </button>
+                              </div>
                             </div>
 
                             {mp.children.length === 0 ? (
@@ -974,7 +1072,6 @@ export default function CreateBomPage() {
                             ) : (
                               <div className="space-y-3 pb-2">
                                 {mp.children.map((child, childIdx) => {
-                                  // Kalkulasi Otomatis
                                   const basePrice = Number(child.price) || 0;
                                   const margin = Number(child.margin) || 0;
                                   const qty = Number(child.qty) || 0;
@@ -988,7 +1085,7 @@ export default function CreateBomPage() {
                                       style={{ zIndex: mp.children.length - childIdx }}
                                       className="relative flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs min-w-max transition-all"
                                     >
-                                      {/* Material Select */}
+                                      {/* Material Select (Single) */}
                                       <div className="w-64 flex-shrink-0">
                                         <label className="block text-[10px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Master Material</label>
                                         <SearchableSelect
@@ -1011,7 +1108,7 @@ export default function CreateBomPage() {
                                         />
                                       </div>
 
-                                      {/* Technical Spec (Ditambahkan) */}
+                                      {/* Technical Spec */}
                                       <div className="w-40 flex-shrink-0">
                                         <label className="block text-[10px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Tech Spec</label>
                                         <input
@@ -1129,6 +1226,90 @@ export default function CreateBomPage() {
             </div>
           </div>
         )}
+
+        {/* POP-UP MODAL: BULK SELECT MATERIAL */}
+        {bulkModal.isOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div className="bg-white border border-slate-200 rounded-xl w-full max-w-2xl flex flex-col shadow-2xl overflow-hidden">
+              <div className="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <ListPlus className="w-5 h-5 text-emerald-600" />
+                  Pilih Material (Bulk)
+                </h3>
+                <button
+                  onClick={() => setBulkModal({ isOpen: false, mpId: "" })}
+                  className="text-slate-500 hover:text-slate-900 p-1 rounded-lg hover:bg-slate-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="p-4 border-b border-slate-200">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari Part Number atau Spesifikasi..."
+                    value={bulkSearch}
+                    onChange={(e) => setBulkSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="overflow-y-auto max-h-80 p-2">
+                {masterMaterials
+                  .filter((m) =>
+                    `${m.part_number} ${m.technical_specification || ""} ${m.description || ""}`
+                      .toLowerCase()
+                      .includes(bulkSearch.toLowerCase())
+                  )
+                  .map((mat) => {
+                    const isSelected = bulkSelectedIds.includes(mat.id);
+                    return (
+                      <div
+                        key={mat.id}
+                        onClick={() => toggleBulkSelection(mat.id)}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors mb-1 ${
+                          isSelected ? "bg-emerald-50 border border-emerald-200" : "hover:bg-slate-50 border border-transparent"
+                        }`}
+                      >
+                        <div className={`flex items-center justify-center w-5 h-5 rounded border ${isSelected ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-300 bg-white"}`}>
+                          {isSelected && <CheckSquare className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-slate-900">{mat.part_number}</p>
+                          <p className="text-xs text-slate-500 truncate">{mat.technical_specification || mat.description || "No Spec"}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              <div className="px-5 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                <span className="text-sm text-slate-600 font-medium">
+                  {bulkSelectedIds.length} Material Terpilih
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setBulkModal({ isOpen: false, mpId: "" })}
+                    className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg text-sm font-medium"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={applyBulkSelection}
+                    disabled={bulkSelectedIds.length === 0}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                  >
+                    Tambahkan ke Mother Part
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* --- TAMPILAN CETAK / EXPORT PDF --- */}
@@ -1148,7 +1329,7 @@ export default function CreateBomPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold underline uppercase">Bill of Materials (BOM)</h2>
             <p className="text-sm mt-2"><strong>Customer:</strong> {printGroup.customer}</p>
-            <p className="text-sm"><strong>Tanggal:</strong> {new Date().toLocaleDateString("id-ID")}</p>
+            <p className="text-sm"><strong>Tanggal:</strong> {new Date(printGroup.date_created).toLocaleDateString("id-ID")}</p>
           </div>
 
           <table className="w-full border-collapse border border-black text-sm mb-8">
@@ -1168,7 +1349,6 @@ export default function CreateBomPage() {
                 const unitPriceWithMargin = item.price + (item.price * (item.margin || 0) / 100);
                 const totalPrice = unitPriceWithMargin * item.qty;
                 
-                // Ambil Technical Spec dari data BOM atau fallback ke masterMaterials
                 const matchedMaterial = masterMaterials.find(m => m.part_number === item.part_number);
                 const techSpec = item.technical_specification || matchedMaterial?.technical_specification || "-";
 
