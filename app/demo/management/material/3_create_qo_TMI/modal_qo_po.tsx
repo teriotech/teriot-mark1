@@ -10,8 +10,17 @@ interface ModalQoPoProps {
   onClose: () => void;
 }
 
+// Tanggal hari ini (waktu lokal) dalam format YYYY-MM-DD untuk <input type="date">
+const getTodayLocal = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+};
+
 export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
   const [dbId, setDbId] = useState<number | null>(null);
+  const [printDate, setPrintDate] = useState(getTodayLocal());
   const [printAddress, setPrintAddress] = useState("");
   const [printSubject, setPrintSubject] = useState("");
   const [printContact, setPrintContact] = useState("");
@@ -26,6 +35,11 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
+  // Format tampilan di dokumen: YYYY/MM/DD
+  const displayDate = (printDate || getTodayLocal()).replace(/-/g, "/");
+  // Format untuk nama file: YYYYMMDD
+  const fileDateStr = (printDate || getTodayLocal()).replace(/-/g, "");
+
   useEffect(() => {
     if (config) {
       const date = new Date();
@@ -39,6 +53,7 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
       setReferenceQo(currentQoNumber);
 
       setPrintDocNumber(`${config.type}${month}${year}${randomNum}`);
+      setPrintDate(getTodayLocal());
       setPrintAddress("");
       setPrintSubject("");
       setPrintContact("");
@@ -82,8 +97,10 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
       if (!acc[motherPart]) {
         acc[motherPart] = { items: [], subTotal: 0 };
       }
-      
-      const unitPriceWithMargin = (Number(item.price) || 0) + ((Number(item.price) || 0) * (Number(item.margin) || 0)) / 100;
+
+      const unitPriceWithMargin =
+        (Number(item.price) || 0) +
+        ((Number(item.price) || 0) * (Number(item.margin) || 0)) / 100;
       const totalPrice = unitPriceWithMargin * (Number(item.qty) || 1);
 
       acc[motherPart].items.push({ ...item, unitPriceWithMargin, totalPrice });
@@ -93,11 +110,14 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
 
     let grandTotal = 0;
     let globalIdx = 1;
-    
+
     const groups = Object.entries(groupsMap).map(([motherPart, data]) => {
       grandTotal += data.subTotal;
       // Tambahkan index global agar nomor urut tetap berlanjut antar grup
-      const itemsWithIndex = data.items.map((item) => ({ ...item, printIndex: globalIdx++ }));
+      const itemsWithIndex = data.items.map((item) => ({
+        ...item,
+        printIndex: globalIdx++,
+      }));
       return { motherPart, items: itemsWithIndex, subTotal: data.subTotal };
     });
 
@@ -196,21 +216,24 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
     setIsSaving(true);
     const success = await saveToDatabase();
     setIsSaving(false);
-    
+
     if (success) {
       setTimeout(() => {
         // LOGIC 2: Ubah document.title sementara untuk nama file PDF
         const originalTitle = document.title;
-        
+
         // Ambil nama project (fallback ke subject atau customer)
-        const projectName = (config.group as any).project_name || printSubject || config.group.customer || "Project";
-        
-        // Format tanggal hari ini: YYYYMMDD
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
-        
-        // Set title baru: ProjectName_QOnumber_todaydate
-        const pdfFileName = `${projectName}_${printDocNumber}_${dateStr}`.replace(/\s+/g, '_');
+        const projectName =
+          (config.group as any).project_name ||
+          printSubject ||
+          config.group.customer ||
+          "Project";
+
+        // Set title baru: ProjectName_QOnumber_selecteddate
+        const pdfFileName = `${projectName}_${printDocNumber}_${fileDateStr}`.replace(
+          /\s+/g,
+          "_"
+        );
         document.title = pdfFileName;
 
         window.print();
@@ -243,11 +266,19 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
       }>((resolve) => {
         const img = new Image();
         img.onload = () =>
-          resolve({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight });
-        img.onerror = () => resolve({ naturalWidth: maxWidth, naturalHeight: maxHeight });
+          resolve({
+            naturalWidth: img.naturalWidth,
+            naturalHeight: img.naturalHeight,
+          });
+        img.onerror = () =>
+          resolve({ naturalWidth: maxWidth, naturalHeight: maxHeight });
         img.src = dataUrl;
       });
-      const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight, 1);
+      const scale = Math.min(
+        maxWidth / naturalWidth,
+        maxHeight / naturalHeight,
+        1
+      );
       return {
         src: dataUrl,
         width: Math.round(naturalWidth * scale),
@@ -265,7 +296,11 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
 
     if (success) {
       try {
-        const logo = await getBase64ImageWithSize("/image/transindo.png", 176, 56);
+        const logo = await getBase64ImageWithSize(
+          "/image/transindo.png",
+          176,
+          56
+        );
         const wordItemCount = config.group.items?.length || 0;
         const wordIsCompact = wordItemCount > 5;
         const cellPad = wordIsCompact ? "4px" : "6px";
@@ -277,7 +312,9 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
           // Header Mother Part
           itemsRows += `
             <tr>
-              <td colspan="${config.type === "QO" ? 6 : 4}" style="padding: ${cellPad}; border: 1px solid #000; background-color: #f3f4f6;">
+              <td colspan="${
+                config.type === "QO" ? 6 : 4
+              }" style="padding: ${cellPad}; border: 1px solid #000; background-color: #f3f4f6;">
                 <b>${group.motherPart}</b>
               </td>
             </tr>
@@ -287,14 +324,26 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
           group.items.forEach((item) => {
             itemsRows += `
               <tr>
-                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${item.printIndex}</td>
-                <td style="padding: ${cellPad}; border: 1px solid #000;">${item.description || "-"}</td>
-                <td style="padding: ${cellPad}; border: 1px solid #000;">${item.technical_specification || "-"}</td>
-                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${item.qty} ${item.unit || "EA"}</td>
+                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${
+              item.printIndex
+            }</td>
+                <td style="padding: ${cellPad}; border: 1px solid #000;">${
+              item.description || "-"
+            }</td>
+                <td style="padding: ${cellPad}; border: 1px solid #000;">${
+              item.technical_specification || "-"
+            }</td>
+                <td style="text-align:center; padding: ${cellPad}; border: 1px solid #000;">${
+              item.qty
+            } ${item.unit || "EA"}</td>
                 ${
                   config.type === "QO"
-                    ? `<td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;">Rp${item.unitPriceWithMargin.toLocaleString("id-ID")}</td>
-                       <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;"><b>Rp${item.totalPrice.toLocaleString("id-ID")}</b></td>`
+                    ? `<td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;">Rp${item.unitPriceWithMargin.toLocaleString(
+                        "id-ID"
+                      )}</td>
+                       <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000;"><b>Rp${item.totalPrice.toLocaleString(
+                        "id-ID"
+                      )}</b></td>`
                     : ""
                 }
               </tr>
@@ -305,8 +354,12 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
           if (config.type === "QO") {
             itemsRows += `
               <tr>
-                <td colspan="5" style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Total ${group.motherPart}</b></td>
-                <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Rp${group.subTotal.toLocaleString("id-ID")}</b></td>
+                <td colspan="5" style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Total ${
+              group.motherPart
+            }</b></td>
+                <td style="text-align:right; padding: ${cellPad}; border: 1px solid #000; background-color: #eff6ff;"><b>Rp${group.subTotal.toLocaleString(
+              "id-ID"
+            )}</b></td>
               </tr>
             `;
           }
@@ -379,10 +432,7 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                   <b>${
                     config.type === "QO" ? "QO Number" : "PO Number"
                   }:</b> ${printDocNumber}<br/>
-                  <b>Date:</b> ${new Date()
-                    .toISOString()
-                    .split("T")[0]
-                    .replace(/-/g, "/")}<br/>
+                  <b>Date:</b> ${displayDate}<br/>
                   <b>Page:</b> 1 of 1<br/>
                   <b>Shipment:</b> ${printShipment || "-"}
                 </td>
@@ -462,13 +512,18 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
         `;
 
         const blob = await asBlob(html);
-        
+
         // Format nama file Word sama dengan PDF
-        const projectName = (config.group as any).project_name || printSubject || config.group.customer || "Project";
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
-        const wordFileName = `${projectName}_${printDocNumber}_${dateStr}`.replace(/\s+/g, '_');
-        
+        const projectName =
+          (config.group as any).project_name ||
+          printSubject ||
+          config.group.customer ||
+          "Project";
+        const wordFileName = `${projectName}_${printDocNumber}_${fileDateStr}`.replace(
+          /\s+/g,
+          "_"
+        );
+
         saveAs(blob as Blob, `${wordFileName}.docx`);
       } catch (error) {
         console.error("Error generating Word document:", error);
@@ -524,6 +579,18 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={printDate}
+                  onChange={(e) => setPrintDate(e.target.value)}
+                  style={{ colorScheme: "dark" }}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-300 mb-2">
                   Address
@@ -735,13 +802,7 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
               </div>
               <div className="flex">
                 <span className="w-24 font-semibold">Date</span>
-                <span>
-                  :{" "}
-                  {new Date()
-                    .toISOString()
-                    .split("T")[0]
-                    .replace(/-/g, "/")}
-                </span>
+                <span>: {displayDate}</span>
               </div>
               <div className="flex">
                 <span className="w-24 font-semibold">Page</span>
@@ -823,10 +884,13 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                         {group.motherPart}
                       </td>
                     </tr>
-                    
+
                     {/* Items (Sub Part) */}
                     {group.items.map((item) => (
-                      <tr key={item.id || item.printIndex} className="align-top">
+                      <tr
+                        key={item.id || item.printIndex}
+                        className="align-top"
+                      >
                         <td
                           className={`border-x border-black text-center ${
                             isCompact ? "py-1 px-1" : "py-1.5 px-1.5"
@@ -866,7 +930,8 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                                 isCompact ? "py-1 px-1.5" : "py-1.5 px-2"
                               }`}
                             >
-                              Rp{item.unitPriceWithMargin.toLocaleString("id-ID")}
+                              Rp
+                              {item.unitPriceWithMargin.toLocaleString("id-ID")}
                             </td>
                             <td
                               className={`border-x border-black text-right font-semibold whitespace-nowrap ${
@@ -904,7 +969,7 @@ export default function ModalQoPo({ config, onClose }: ModalQoPoProps) {
                 ))}
               </tbody>
             </table>
-            
+
             {/* GRAND TOTAL */}
             {config.type === "QO" && (
               <div className="border border-t-0 border-black mb-3">
