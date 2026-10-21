@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/app/lib/supabase";
+import { NextResponse } from "next/server";
 
 // Hindari cache GET di production
 export const dynamic = "force-dynamic";
 
 const TABLE = "cost_analysis";
+const PROJECT_TABLE = "project_management";
 const VIEW = "v_cost_analysis_summary";
 const PAGE_SIZE = 1000; // batas default Supabase per request
 
@@ -57,6 +58,17 @@ const errorResponse = (msg: string, error: any, status = 500) => {
   if (code === "23505") {
     return NextResponse.json(
       { message: "Nama kategori alokasi sudah ada di project ini. Gunakan nama lain.", error: detail, code },
+      { status: 409 }
+    );
+  }
+  if (code === "23503") {
+    return NextResponse.json(
+      {
+        message:
+          "Project masih dipakai data lain (foreign key), sehingga tidak bisa dihapus. Hapus data terkait terlebih dahulu atau aktifkan ON DELETE CASCADE.",
+        error: detail,
+        code,
+      },
       { status: 409 }
     );
   }
@@ -186,7 +198,7 @@ export async function GET(request: Request) {
     // ---------- LIST PROJECT ----------
     const [projRes, sumRes] = await Promise.all([
       supabase
-        .from("project_management")
+        .from(PROJECT_TABLE)
         .select("id, project_name, client_company, status, current_stage")
         .order("created_at", { ascending: false }),
       supabase.from(VIEW).select("*"),
@@ -292,7 +304,11 @@ export async function PUT(request: Request) {
 
 // ================= DELETE =================
 /**
- * DELETE ?id=1  |  ?ids=1,2,3
+ * DELETE ?id=1                                   -> hapus 1 entri
+ * DELETE ?ids=1,2,3                              -> hapus beberapa entri
+ * DELETE ?project_name=XXX[&project_id=UUID]     -> hapus SELURUH project:
+ *        semua entri cost_analysis + baris project_management
+ *        (otomatis hilang juga di halaman Project Management)
  */
 export async function DELETE(request: Request) {
   try {
@@ -300,9 +316,69 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const idsParam = searchParams.get("ids");
+    const projectName = str(searchParams.get("project_name"));
+    const projectId = str(searchParams.get("project_id"));
 
+    // ---------- HAPUS PROJECT ----------
+    if (projectName) {
+      // 1) Hapus semua entri cost analysis (dulu, agar tidak terhalang foreign key)
+      const { data: entryRows, error: entryErr } = await supabase
+        .from(TABLE)
+        .delete()
+        .eq("project_name", projectName)
+        .select("id");
+      if (entryErr) throw entryErr;
+
+      let extraEntries = 0;
+      if (projectId) {
+        const { data: byId, error: byIdErr } = await supabase
+          .from(TABLE)
+          .delete()
+          .eq("project_id", projectId)
+          .select("id");
+        if (byIdErr) throw byIdErr;
+        extraEntries = byId?.length ?? 0;
+      }
+
+      // 2) Hapus project di project_management
+      let pq: any = supabase.from(PROJECT_TABLE).delete();
+      pq = projectId ? pq.eq("id", projectId) : pq.eq("project_name", projectName);
+      const { data: projRows, error: projErr } = await pq.select("id");
+      if (projErr) throw projErr;
+
+      const deletedEntries = (entryRows?.length ?? 0) + extraEntries;
+      const deletedProjects = projRows?.length ?? 0;
+
+      if (deletedProjects === 0 && deletedEntries === 0) {
+        return NextResponse.json(
+          { message: "Project tidak ditemukan atau diblokir RLS, tidak ada data yang terhapus." },
+          { status: 404 }
+        );
+      }
+      if (deletedProjects === 0) {
+        return NextResponse.json(
+          {
+            message: `${deletedEntries} entri cost analysis terhapus, tetapi project di Project Management tidak ditemukan / diblokir RLS.`,
+            deleted_entries: deletedEntries,
+            deleted_projects: 0,
+          },
+          { status: 200 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          message: `Project "${projectName}" dan ${deletedEntries} entri cost analysis berhasil dihapus.`,
+          deleted_entries: deletedEntries,
+          deleted_projects: deletedProjects,
+        },
+        { status: 200 }
+      );
+    }
+
+    // ---------- HAPUS ENTRI ----------
     if (!id && !idsParam) {
-      return NextResponse.json({ message: "Sertakan id atau ids untuk penghapusan." }, { status: 400 });
+      return NextResponse.json({ message: "Sertakan id, ids, atau project_name untuk penghapusan." }, { status: 400 });
     }
 
     let q: any = supabase.from(TABLE).delete();

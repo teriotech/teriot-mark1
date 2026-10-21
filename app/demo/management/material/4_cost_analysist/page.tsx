@@ -47,6 +47,8 @@ type Project = {
   current_stage: string | null;
   source: "project" | "bom";
   summary: Summary;
+  deleted_at?: string | null;
+  is_deleted?: boolean | null;
 };
 
 type FormState = {
@@ -80,9 +82,14 @@ type Budget = {
   remaining: number;
 };
 
+type HiddenProject = { id: string | null; name: string };
+
 // ================= CONST =================
 const API = "/api/management/cost_analysist";
+const BOM_API = "/api/management/create_bom";
 const UNALLOCATED = "UNALLOCATED";
+const HIDDEN_KEY = "cost_analysis_deleted_projects";
+const DELETED_STATUSES = ["deleted", "dihapus", "removed"];
 
 const INCOME_OPTIONS = [
   { value: "DOWN_PAYMENT", label: "Down Payment (DP)" },
@@ -121,6 +128,35 @@ const newKey = () => `row_${Date.now()}_${keySeq++}`;
 const rowAmount = (r: PlanRow, q: number) => (r.auto ? Math.round((q * num(r.percent)) / 100) : Math.round(num(r.amount)));
 const incomeLabel = (c: string) => INCOME_OPTIONS.find((o) => o.value === c)?.label ?? c;
 const expenseLabel = (c: string) => (c === UNALLOCATED ? "Di luar alokasi" : c);
+
+// ---- daftar project yang sudah dihapus (disimpan lokal supaya tidak muncul lagi di sidebar) ----
+const readHidden = (): HiddenProject[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(HIDDEN_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+};
+
+const addHidden = (p: { id: string | null; project_name: string }) => {
+  if (typeof window === "undefined") return;
+  try {
+    const list = readHidden();
+    list.push({ id: p.id ?? null, name: p.project_name });
+    window.localStorage.setItem(HIDDEN_KEY, JSON.stringify(list.slice(-300)));
+  } catch {
+    /* abaikan jika storage tidak tersedia */
+  }
+};
+
+const isDeletedProject = (p: Project, hidden: HiddenProject[]) => {
+  if (p.deleted_at || p.is_deleted) return true;
+  if (DELETED_STATUSES.includes(norm(p.status))) return true;
+  return hidden.some((h) => (h.id && p.id === h.id) || (!p.id && !h.id && norm(h.name) === norm(p.project_name)) || (!p.id && h.id && norm(h.name) === norm(p.project_name)));
+};
 
 const emptyForm = (type: TxType = "expense", category = UNALLOCATED): FormState => ({
   entry_type: type,
@@ -180,9 +216,14 @@ export default function CostAnalysisPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
 
+  // hapus project
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
   const notify = useCallback((type: "ok" | "err", msg: string) => {
     setToast({ type, msg });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 4500);
   }, []);
 
   // ---------- LOAD ----------
@@ -190,7 +231,9 @@ export default function CostAnalysisPage() {
     setLoadingProjects(true);
     try {
       const json = await api(API);
-      setProjects(json.projects ?? []);
+      const hidden = readHidden();
+      const list: Project[] = (json.projects ?? []).filter((p: Project) => !isDeletedProject(p, hidden));
+      setProjects(list);
     } catch (e: any) {
       notify("err", e.message);
     } finally {
@@ -221,9 +264,21 @@ export default function CostAnalysisPage() {
     loadProjects();
   }, [loadProjects]);
 
+  // Pastikan project terpilih selalu ada di daftar (tidak menunjuk project yang sudah dihapus)
   useEffect(() => {
-    if (!selected && projects.length) setSelected(projects[0].project_name);
-  }, [projects, selected]);
+    if (loadingProjects) return;
+    if (!projects.length) {
+      if (selected) {
+        setSelected("");
+        setEntries([]);
+        setSummary(null);
+      }
+      return;
+    }
+    if (!selected || !projects.some((p) => p.project_name === selected)) {
+      setSelected(projects[0].project_name);
+    }
+  }, [projects, selected, loadingProjects]);
 
   useEffect(() => {
     if (selected) loadDetail(selected);
@@ -591,6 +646,74 @@ export default function CostAnalysisPage() {
     }
   };
 
+  // ---------- HAPUS PROJECT ----------
+  const openDeleteProject = () => {
+    if (!selectedProject) return;
+    setDeleteConfirm("");
+    setDeleteTarget(selectedProject);
+  };
+
+  const closeDeleteProject = () => {
+    if (deleting) return;
+    setDeleteTarget(null);
+    setDeleteConfirm("");
+  };
+
+  const handleDeleteProject = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!deleteTarget) return;
+    if (deleteConfirm.trim() !== deleteTarget.project_name.trim()) {
+      return notify("err", "Nama project yang diketik tidak sama.");
+    }
+
+    const name = deleteTarget.project_name;
+    setDeleting(true);
+    try {
+      // 1) Hapus project + data cost analysis
+      const qs = new URLSearchParams({ project_name: name });
+      if (deleteTarget.id) qs.set("project_id", deleteTarget.id);
+      const json = await api(`${API}?${qs.toString()}`, "DELETE");
+
+      // 2) Hapus seluruh BOM milik project ini
+      let bomDeleted = 0;
+      let bomError: string | null = null;
+      try {
+        const bomRes = await api(`${BOM_API}?${new URLSearchParams({ project_name: name }).toString()}`, "DELETE");
+        bomDeleted = num(bomRes?.deleted);
+      } catch (bomErr: any) {
+        bomError = bomErr?.message || "Gagal menghapus BOM";
+      }
+
+      // Catat project yang sudah dihapus agar tidak muncul lagi di sidebar
+      addHidden({ id: deleteTarget.id, project_name: name });
+
+      // Update list lokal dulu supaya auto-select tidak memilih project yang baru dihapus
+      const remaining = projects.filter((p) => p.project_name !== name);
+      setProjects(remaining);
+      setEntries([]);
+      setSummary(null);
+      setTab("all");
+      setSelected(remaining[0]?.project_name ?? "");
+
+      setDeleteTarget(null);
+      setDeleteConfirm("");
+
+      if (bomError) {
+        notify("err", `Project terhapus, tetapi BOM gagal dihapus: ${bomError}`);
+      } else {
+        const base = json.message || "Project berhasil dihapus";
+        notify("ok", bomDeleted > 0 ? `${base} · ${bomDeleted} item BOM ikut terhapus` : base);
+      }
+
+      // Sinkronkan dengan server (project yang dihapus tetap disaring)
+      await loadProjects();
+    } catch (err: any) {
+      notify("err", err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   // ================= RENDER =================
   return (
     <div className="min-h-screen bg-slate-50 p-4 text-slate-800 md:p-6">
@@ -627,7 +750,7 @@ export default function CostAnalysisPage() {
               const hasAlloc = num(p.summary?.allocation_total) > 0;
               return (
                 <button
-                  key={p.project_name}
+                  key={p.id ?? p.project_name}
                   onClick={() => {
                     setSelected(p.project_name);
                     setTab("all");
@@ -673,7 +796,16 @@ export default function CostAnalysisPage() {
                       {selectedProject?.current_stage ? ` · ${selectedProject.current_stage.replace(/_/g, " ")}` : ""}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProject?.source === "project" && (
+                      <button
+                        onClick={openDeleteProject}
+                        className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                        title="Hapus project beserta seluruh data cost analysis dan BOM (juga terhapus di Project Management)"
+                      >
+                        🗑 Hapus Project
+                      </button>
+                    )}
                     <button
                       onClick={() => openModal("allocation")}
                       className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100"
@@ -1260,6 +1392,65 @@ export default function CostAnalysisPage() {
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
               >
                 {saving ? "Menyimpan..." : mode === "allocation" ? "🔒 Simpan & Kunci" : editingId ? "Update" : "Simpan"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* MODAL HAPUS PROJECT */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[55] flex items-center justify-center bg-slate-900/50 p-4" onClick={closeDeleteProject}>
+          <form
+            onSubmit={handleDeleteProject}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-xl bg-white shadow-xl"
+          >
+            <div className="border-b border-slate-200 px-5 py-4">
+              <h3 className="font-bold text-rose-700">Hapus Project</h3>
+              <p className="mt-0.5 text-xs text-slate-500">Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+
+            <div className="space-y-3 px-5 py-4 text-sm text-slate-700">
+              <p>
+                Project <b className="text-slate-900">{deleteTarget.project_name}</b> akan dihapus permanen dari{" "}
+                <b>Cost Analysis</b>, <b>BOM</b>, dan <b>Project Management</b>.
+              </p>
+              <ul className="list-disc space-y-1 pl-5 text-xs text-slate-600">
+                <li>
+                  Seluruh data cost analysis ({num(deleteTarget.summary?.entry_count)} entri: alokasi, pemasukan, pengeluaran) ikut terhapus.
+                </li>
+                <li>
+                  Seluruh data BOM project ini ({num(deleteTarget.summary?.bom_count)} item) ikut terhapus.
+                </li>
+                <li>Project hilang dari halaman Project Management beserta stage, catatan, dan riwayatnya.</li>
+              </ul>
+              <Field label={`Ketik "${deleteTarget.project_name}" untuk konfirmasi`}>
+                <input
+                  autoFocus
+                  value={deleteConfirm}
+                  onChange={(e) => setDeleteConfirm(e.target.value)}
+                  placeholder={deleteTarget.project_name}
+                  className={inputCls}
+                />
+              </Field>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">
+              <button
+                type="button"
+                onClick={closeDeleteProject}
+                disabled={deleting}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={deleting || deleteConfirm.trim() !== deleteTarget.project_name.trim()}
+                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {deleting ? "Menghapus..." : "Hapus Permanen"}
               </button>
             </div>
           </form>

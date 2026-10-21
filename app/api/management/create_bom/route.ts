@@ -42,6 +42,9 @@ const num = (v: unknown, fallback = 0): number => {
 // Bersihkan karakter yang merusak filter .or() / ilike PostgREST
 const sanitizeLike = (v: string) => v.replace(/[,()*%\\]/g, " ").trim();
 
+// Escape wildcard LIKE supaya ilike berperilaku sebagai "sama persis" (case-insensitive)
+const escapeLike = (v: string) => v.replace(/[\\%_]/g, "\\$&");
+
 const errorResponse = (msg: string, error: any, status = 500) => {
   const detail = error?.message || String(error);
   console.error(`[create_bom] ${msg}:`, error);
@@ -268,7 +271,8 @@ export async function PUT(request: Request) {
 /**
  * DELETE /api/management/create_bom?id=123
  * DELETE /api/management/create_bom?ids=1,2,3
- * DELETE /api/management/create_bom?bom_code=BOM-xxxx   (hapus 1 BOM penuh)
+ * DELETE /api/management/create_bom?bom_code=BOM-xxxx        (hapus 1 BOM penuh)
+ * DELETE /api/management/create_bom?project_name=Nama%20Project  (hapus SEMUA BOM milik project)
  */
 export async function DELETE(request: Request) {
   try {
@@ -278,15 +282,17 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
     const idsParam = searchParams.get("ids");
     const bom_code = searchParams.get("bom_code");
+    const project_name = searchParams.get("project_name");
 
-    if (!id && !idsParam && !bom_code) {
+    if (!id && !idsParam && !bom_code && !project_name) {
       return NextResponse.json(
-        { message: "Sertakan id, ids, atau bom_code untuk penghapusan." },
+        { message: "Sertakan id, ids, bom_code, atau project_name untuk penghapusan." },
         { status: 400 }
       );
     }
 
     let q: any = supabase.from(TABLE).delete();
+    let byProject = false;
 
     if (bom_code) {
       q = q.eq("bom_code", bom_code.trim());
@@ -299,6 +305,14 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ message: "Parameter ids tidak valid." }, { status: 400 });
       }
       q = q.in("id", ids);
+    } else if (project_name) {
+      const name = project_name.trim();
+      if (!name) {
+        return NextResponse.json({ message: "Parameter project_name tidak valid." }, { status: 400 });
+      }
+      byProject = true;
+      // ilike tanpa wildcard = cocok persis, tidak peka huruf besar/kecil
+      q = q.ilike("project_name", escapeLike(name));
     } else {
       q = q.eq("id", id);
     }
@@ -307,6 +321,15 @@ export async function DELETE(request: Request) {
     if (error) throw error;
 
     const deleted = data?.length ?? 0;
+
+    // Hapus per project: tidak ada BOM bukan error (project mungkin memang belum punya BOM)
+    if (deleted === 0 && byProject) {
+      return NextResponse.json(
+        { message: "Project ini tidak memiliki data BOM.", deleted: 0, ids: [] },
+        { status: 200 }
+      );
+    }
+
     if (deleted === 0) {
       return NextResponse.json(
         { message: "Tidak ada data yang terhapus (data tidak ditemukan atau diblokir RLS)." },
