@@ -160,7 +160,7 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Cost Analysis", href: "/demo/management/material/4_cost_analysist" },
       ],
     },
-    { label: "Project Management", href: "/demo/management/project" },
+    { label: "Project Management", href: "/demo/management/new_project" },
     {
       label: "User",
       subItems: [
