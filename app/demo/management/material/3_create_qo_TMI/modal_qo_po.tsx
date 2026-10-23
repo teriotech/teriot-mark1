@@ -16,7 +16,7 @@ const COMPANY_LINES = [
   "www.transindomu.com",
   "Jl. Rawa Bengkok Kp. Koong Parigi, Perum Aryatama Regency 1 Blok E, No 14",
   "Kelurahan Bedahan, Sawangan, Depok, Jawa Barat 16514",
-  "Phone : (+62) 8516 3657 641 email : sales@transindomu.com",
+  "Phone : (+62)813 2907 2842 email : sales@transindomu.com",
 ];
 const DEFAULT_TERMS =
   "due to plan & Project activity, it might be change depends on device & condition\nThe listed prices are subject to change at any time without prior notice. \nThe estimated costs above do not include tax (11% VAT)\nThis document is valid and recognized as an official quotation\nestimate from the company. Payment shall be made in accordance with the mutually agreed terms";
