@@ -359,7 +359,7 @@ export default function ModalBast({ config, onClose }: ModalBastProps) {
             </div>
           </div>
           <div className="space-y-3 text-xs text-justify leading-relaxed">
-            <p>First Participant and Second Participant area already doing the assessment for <span className="font-semibold">{bastProject || "Project"}</span> refer from quotation number <span className="font-semibold">{bastQoNumber}</span>.</p>
+            <p>First Participant and Second Participant area already doing the assessment for <span className="font-semibold">{bastProject || "Project"}</span> refer from  <span className="font-semibold">{bastQoNumber}</span>.</p>
             <p>As the assessment, both participants agree that the work is 100% ( One Hundred Percent ) finished and works properly.</p>
             <p>In witness whereof, the participants here caused this agreement to be made and signed so that it shall be used as it must.</p>
           </div>

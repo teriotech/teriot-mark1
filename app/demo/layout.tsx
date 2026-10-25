@@ -116,7 +116,9 @@ const menuData: Record<string, MenuItem[]> = {
         { label: "Lifetime Monitoring", href: "/demo/iot_upin/lifetime_monitoring" },
       ],
     },
-    { label: "HMI", href: "/demo/iot/hmi" },
+    { label: "HMI Production", href: "/demo/iot/hmi_barcode" },
+    { label: "HMI Vessel", href: "/demo/iot/hmi_vessel" },
+    { label: "HMI Boiler", href: "/demo/iot/hmi_boiler" },
     { label: "Power Monitoring", href: "/demo/iot/power_monitoring" },
   ],
   OQC: [
