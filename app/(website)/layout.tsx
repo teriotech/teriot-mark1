@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "TERIOT TECHNOLOGY - Your Best Valuable Partner",
+  title: "TRANSINDO MULTI INDUSTRI - Your Best Valuable Partner",
   description: "ERP Software Management Terbaik di Indonesia",
   icons: {
     icon: "/favicon.ico",
@@ -44,7 +44,7 @@ export default function RootLayout({
         <header id="header" className="fixed-top">
           <div className="container d-flex align-items-center">
             <Link href="/" className="logo me-auto">
-              <img src="/assets/img/teriot_logo2.png" alt="Teriot" />
+              <img src="/assets/img/transindo_logo2.png" alt="TRANSINDO" />
             </Link>
 
             <nav id="navbar" className="navbar">
@@ -89,7 +89,7 @@ export default function RootLayout({
                 </li>
 
                 <li>
-                  <Link href="https://transindomu.com/production/contact" className="nav-link">
+                  <Link href="/contact" className="nav-link">
                     Contact
                   </Link>
                 </li>
@@ -128,7 +128,7 @@ export default function RootLayout({
                   <form action="" method="post">
                     <input type="email" name="email" />
                     <Link 
-                      href="https://api.whatsapp.com/send?phone=6285163657641&text=Halo%20Admin%2C%20saya%20ingin%20subscribe%20layanan%20Teriot."
+                      href="https://transindomu.com/demo"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/30"
@@ -147,18 +147,23 @@ export default function RootLayout({
               <div className="row">
 
                 {/* Contact */}
-                <div className="col-lg-3 col-md-6 footer-contact">
-                  <h3>TERIOT</h3>
-                  <p>
-                    Jl. Grand Wisata Bekasi, No 590 <br />
-                    Jakarta, Jawa Barat <br />
-                    Indonesia <br /><br />
+                <div className="footer-contact">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-wide">PT. TRANSINDO MULTI INDUSTRI</h3>
+                  <p className="text-slate-600 leading-relaxed text-sm">
+                    Jl. Rawa Bengkok <br />
+                    Depok, Jawa Barat <br />
+                    Indonesia <br />
+                    <br />
                     <strong>Phone:</strong>{" "}
-                    <Link href="https://api.whatsapp.com/send?phone=6285163657641">
-                      +62 85 163 657 641
+                    <Link
+                      href="https://api.whatsapp.com/send?phone=6281329072842"
+                      className="text-blue-600 hover:underline"
+                    >
+                      +62 132 9072 842
                     </Link>
                     <br />
-                    <strong>Email:</strong> damita@teriot.id
+                    <strong>Email:</strong> sales@transindomu.com
+                    <br />
                   </p>
                 </div>
 
@@ -198,7 +203,7 @@ export default function RootLayout({
                       <i className="bx bxl-instagram"></i>
                     </Link>
                     <Link
-                      href="https://www.linkedin.com/in/damita-adhi-pratama-978a2a139/"
+                      href="https://www.linkedin.com/company/133427442/admin/dashboard/"
                       className="linkedin"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -215,7 +220,7 @@ export default function RootLayout({
           {/* Footer Bottom */}
           <div className="container footer-bottom clearfix">
             <div className="copyright">
-              © 2026 <strong><span>Teriot Technology</span></strong>. All Rights Reserved
+              © 2026 <strong><span>Transindo Multi Industri</span></strong>. All Rights Reserved
             </div>
           </div>
         </footer>

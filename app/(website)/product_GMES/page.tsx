@@ -162,6 +162,54 @@ export default function HomePage() {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full blur-sm animate-pulse"></div>
       </div>
 
+
+      {/* ======= INDUSTRIAL IOT CATALOG ======= */}
+      <section
+        id="iiot-catalog"
+        className="py-16 md:py-24 bg-white overflow-hidden"
+      >
+        <div className="container mx-auto px-5 md:px-6">
+          {/* Header */}
+          <div className="max-w-4xl mx-auto text-center mb-12 md:mb-16">
+            <span className="inline-flex items-center px-5 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs md:text-sm font-bold tracking-widest uppercase mb-6">
+              Industrial IoT Solution
+            </span>
+
+            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+              Jelajahi Solusi{" "}
+              <span className="text-blue-600">
+                Industrial IoT TERIOT
+              </span>
+            </h2>
+
+            <p className="text-slate-600 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto">
+              Pelajari berbagai solusi Industrial IoT mulai dari monitoring energi,
+              OEE Dashboard, machine connectivity, predictive maintenance,
+              hingga analitik berbasis AI untuk meningkatkan efisiensi operasional.
+            </p>
+          </div>
+
+          {/* Viewer Card */}
+          <div className="relative">
+            {/* Blue Glow */}
+            <div className="absolute -inset-4 bg-blue-500/5 blur-3xl rounded-[3rem]"></div>
+
+            <div className="relative bg-white border border-slate-100 rounded-[2rem] shadow-xl overflow-hidden">
+              {/* Iframe */}
+              <div className="relative bg-slate-50">
+                <iframe
+  src="https://online.pubhtml5.com/huvqf/tzez/"
+  className="w-full h-[600px] md:h-[750px]"
+  allowFullScreen
+  loading="lazy"
+  title="TERIOT Industrial IoT Catalog"
+/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ================= PRODUCT SECTION 1 ================= */}
       <section className="py-20 bg-slate-50">
         <div className="container mx-auto px-6">
@@ -538,7 +586,7 @@ export default function HomePage() {
 
             <div className="col-lg-3 text-center mt-4 mt-lg-0">
               <Link
-                href="https://transindomu.com/production/contact"
+                href="https://transindomu.com/demo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-light btn-lg px-4"

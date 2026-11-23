@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
+import { FileText, Handshake, UserCheck, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -81,14 +82,26 @@ export default function HomePage() {
               {/* Tech Highlights: Horizontal scrollable di HP jika terlalu panjang */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-2 md:gap-3 mb-8">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600/15 text-blue-100 text-[11px] md:text-sm font-medium border border-blue-500/20">
-                  ☁️ Cloud ERP
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-600/15 text-purple-100 text-[11px] md:text-sm font-medium border border-purple-500/20">
-                  📡 IoT Connected
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-600/15 text-green-100 text-[11px] md:text-sm font-medium border border-green-500/20">
-                  🤖 AI Chatbot
-                </div>
+            ☁️ Cloud ERP
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-600/15 text-purple-100 text-[11px] md:text-sm font-medium border border-purple-500/20">
+            📡 IoT Connected
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-600/15 text-green-100 text-[11px] md:text-sm font-medium border border-green-500/20">
+            🤖 AI Chatbot
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-600/15 text-amber-100 text-[11px] md:text-sm font-medium border border-amber-500/20">
+            🖥️ IT Infrastructure
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-600/15 text-cyan-100 text-[11px] md:text-sm font-medium border border-cyan-500/20">
+            🔧 Calibration Tools
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600/15 text-emerald-100 text-[11px] md:text-sm font-medium border border-emerald-500/20">
+            ⚙️ Instrumentation Automation
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600/15 text-rose-100 text-[11px] md:text-sm font-medium border border-rose-500/20">
+          ⛑️ Safety Equipment
+          </div>
               </div>
 
               {/* Buttons: Lebih besar di Mobile agar mudah ditekan jari (Touch-friendly) */}
@@ -413,7 +426,7 @@ export default function HomePage() {
             <p className="text-slate-600 text-sm md:text-lg max-w-3xl mx-auto leading-relaxed">
               Tidak perlu membuka dashboard yang kompleks.
               Cukup tanyakan kondisi produksi, performa mesin,
-              atau anomali operasional dan AI Assistant TERIOT
+              atau anomali operasional dan AI Assistant
               akan memberikan ringkasan dalam bahasa yang mudah dipahami.
             </p>
           </div>
@@ -528,7 +541,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ======= INDUSTRIAL IOT CATALOG ======= */}
+
+        {/* ======= INDUSTRIAL IOT CATALOG ======= */}
       <section
         id="iiot-catalog"
         className="py-16 md:py-24 bg-white overflow-hidden"
@@ -537,20 +551,16 @@ export default function HomePage() {
           {/* Header */}
           <div className="max-w-4xl mx-auto text-center mb-12 md:mb-16">
             <span className="inline-flex items-center px-5 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs md:text-sm font-bold tracking-widest uppercase mb-6">
-              Industrial IoT Solution
+              Tentang kami
             </span>
 
             <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
-              Jelajahi Solusi{" "}
-              <span className="text-blue-600">
-                Industrial IoT TERIOT
-              </span>
+              Kenali lebih dalam tentang{" "}
+              <span className="text-blue-600">Transindo</span>
             </h2>
 
             <p className="text-slate-600 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto">
-              Pelajari berbagai solusi Industrial IoT mulai dari monitoring energi,
-              OEE Dashboard, machine connectivity, predictive maintenance,
-              hingga analitik berbasis AI untuk meningkatkan efisiensi operasional.
+              PT Transindo Multi Industri adalah perusahaan yang bergerak di bidang Engineering, Procurement, dan Construction (EPC) untuk sektor industri. Kami menyediakan solusi digital berbasis Industrial IoT, ERP, Maintenance Management, dan Automation Platform untuk meningkatkan efisiensi operasional perusahaan. Berdiri sejak tahun 2010, Transindo telah melayani berbagai perusahaan nasional dan multinasional di Indonesia, membantu mereka dalam transformasi digital dan optimalisasi proses bisnis.
             </p>
           </div>
 
@@ -564,7 +574,7 @@ export default function HomePage() {
               <div className="relative bg-slate-50">
                 <iframe
                   ref={iframeRef}
-                  src="https://online.pubhtml5.com/huvqf/tzez/"
+                  src="https://online.fliphtml5.com/transindo_compro/Compro-PT-Transindo/"
                   className="w-full h-[600px] md:h-[750px]"
                   allowFullScreen
                   loading="lazy"
@@ -596,7 +606,7 @@ export default function HomePage() {
             </h2>
 
             <p className="text-slate-600 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto">
-              TERIOT ERP membantu perusahaan mengintegrasikan proses bisnis,
+              TRANSINDO ERP membantu perusahaan mengintegrasikan proses bisnis,
               operasional, sumber daya manusia, aset, dan rantai pasok dalam
               satu sistem yang terhubung secara real-time untuk meningkatkan
               efisiensi, transparansi, dan pengambilan keputusan.
@@ -743,7 +753,7 @@ export default function HomePage() {
                 Semua Departemen Terhubung dalam Satu Sistem
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Dengan TERIOT ERP, data tidak lagi tersebar di berbagai file,
+                Dengan TRANSINDO ERP, data tidak lagi tersebar di berbagai file,
                 spreadsheet, atau aplikasi terpisah. Seluruh aktivitas bisnis
                 tersinkronisasi secara real-time sehingga manajemen dapat
                 memperoleh visibilitas penuh terhadap performa perusahaan.
@@ -774,7 +784,7 @@ export default function HomePage() {
             </h2>
 
             <p className="text-slate-600 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto">
-              TERIOT Maintenance Management System memanfaatkan data real-time
+              TRANSINDO Maintenance Management System memanfaatkan data real-time
               dari sensor Industrial IoT untuk menghasilkan jadwal perawatan,
               prediksi kerusakan, pengendalian sparepart, serta monitoring biaya
               maintenance secara otomatis dan terintegrasi.
@@ -1241,7 +1251,7 @@ export default function HomePage() {
             {/* Sisi Kiri: Narasi Utama */}
             <div className="w-full lg:w-1/2">
               <p className="text-slate-600 text-base md:text-lg leading-relaxed mb-6">
-                <span className="font-bold text-slate-900">PT. Teriot Digital Technology</span> didirikan pada tahun 2022, merupakan 
+                <span className="font-bold text-slate-900">PT. Transindo Multi Industri</span> didirikan pada tahun 2015, merupakan 
                 perusahaan yang berfokus pada inovasi teknologi dan aplikasi digital. 
               </p>
               <p className="text-slate-600 text-base md:text-lg leading-relaxed mb-8">
@@ -1466,6 +1476,161 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+            {/* ======= CONTACT US SECTION ======= */}
+
+       <section className="bg-[#051937] text-white py-20 px-6 md:px-12 lg:px-24 flex flex-col items-center justify-center min-h-screen">
+      {/* Header Section */}
+      <div className="text-center max-w-3xl mb-16">
+        <div className="flex items-center justify-center gap-2 mb-4 text-[#00a8ff] tracking-widest text-xs font-bold uppercase">
+          <span className="w-6 h-[2px] bg-[#00a8ff]"></span>
+          Hubungi Kami
+        </div>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+          3-way Collaboration: Procurement, Partnership, & Skill Talent
+        </h2>
+        <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+          Apakah Anda sedang melakukan pengadaan project otomasi dan kebutuhan material, kolaborasi kemitraan, 
+          atau mempertimbangkan karir di ketiga core bisnis kami — mulailah di sini.
+        </p>
+      </div>
+
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
+        
+        {/* Card 1: Procurement */}
+        <div className="bg-[#0a2540]/60 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col justify-between transition-all duration-300 hover:border-[#00a8ff]/50 hover:shadow-lg hover:shadow-[#00a8ff]/5">
+          <div>
+            <div className="w-12 h-12 bg-[#0c2e56] rounded-xl flex items-center justify-center mb-6 border border-[#1a3d6c]">
+              <FileText className="w-6 h-6 text-[#00a8ff]" />
+            </div>
+            <span className="text-[#00cc66] font-bold text-xs uppercase tracking-wider block mb-2">
+              B2B & B2C PROCUREMENT
+            </span>
+            <h3 className="text-2xl font-bold mb-4">Diskusikan Proyek Anda</h3>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">
+              Pengadaan industri, Sensor, PLC, tender, atau prakualifikasi vendor — terhubung dengan tim pengembangan bisnis Transindo Group.
+            </p>
+          </div>
+          <a 
+            href="/production/contact" 
+            className="text-[#00a8ff] font-medium text-sm flex items-center gap-2 hover:underline group w-fit"
+          >
+            Hubungi Pengembangan Bisnis 
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </a>
+        </div>
+
+        {/* Card 2: Partners */}
+        <div className="bg-[#0a2540]/60 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col justify-between transition-all duration-300 hover:border-[#00a8ff]/50 hover:shadow-lg hover:shadow-[#00a8ff]/5">
+          <div>
+            <div className="w-12 h-12 bg-[#0c2e56] rounded-xl flex items-center justify-center mb-6 border border-[#1a3d6c]">
+              <Handshake className="w-6 h-6 text-[#00a8ff]" />
+            </div>
+            <span className="text-[#00cc66] font-bold text-xs uppercase tracking-wider block mb-2">
+              Collaboration & Strategic Mitra
+            </span>
+            <h3 className="text-2xl font-bold mb-4">Bangun Bersama Kami</h3>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">
+              Mari tumbuh dengan collaborasi menjadi lebih kuat dengan integrasi teknologi, dan aliansi strategis di seluruh ekosistem Transindo Group.
+            </p>
+          </div>
+          <a 
+            href="/production/contact" 
+            className="text-[#00a8ff] font-medium text-sm flex items-center gap-2 hover:underline group w-fit"
+          >
+            Hubungi Kemitraan 
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </a>
+        </div>
+
+        {/* Card 3: Talent */}
+        <div className="bg-[#0a2540]/60 border border-[#1e3a5f] rounded-2xl p-8 flex flex-col justify-between transition-all duration-300 hover:border-[#00a8ff]/50 hover:shadow-lg hover:shadow-[#00a8ff]/5">
+          <div>
+            <div className="w-12 h-12 bg-[#0c2e56] rounded-xl flex items-center justify-center mb-6 border border-[#1a3d6c]">
+              <UserCheck className="w-6 h-6 text-[#00a8ff]" />
+            </div>
+            <span className="text-[#00cc66] font-bold text-xs uppercase tracking-wider block mb-2">
+              Talent & Karir Profesional
+            </span>
+            <h3 className="text-2xl font-bold mb-4">Gabung dalam Grup</h3>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">
+              Mencari talenta terbaik untuk bergabung dengan tim kami? Temukan peluang karir di Transindo Group dan kembangkan potensi Anda bersama kami.
+            </p>
+          </div>
+          <a 
+            href="/production/contact" 
+            className="text-[#00a8ff] font-medium text-sm flex items-center gap-2 hover:underline group w-fit"
+          >
+            Lihat Karir 
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+{/* ======= BRAND DISTRIBUTOR SECTION ======= */}
+<section id="brands" className="py-16 md:py-24 bg-slate-50 overflow-hidden">
+  <div className="container mx-auto px-5 md:px-6">
+
+    {/* Header */}
+    <div className="max-w-4xl mx-auto text-center mb-12 md:mb-16">
+      <span className="inline-flex items-center px-5 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs md:text-sm font-bold tracking-widest uppercase mb-6">
+        Brand Partner
+      </span>
+
+      <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+        Distributor Resmi{" "}
+        <span className="text-blue-600">
+          Brand Industri Terpercaya
+        </span>
+      </h2>
+
+      <p className="text-slate-600 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto">
+        Kami bekerja sama dengan brand otomasi dan kelistrikan industri
+        terkemuka untuk memastikan kualitas, keandalan, dan kompatibilitas
+        di setiap solusi yang kami hadirkan.
+      </p>
+    </div>
+
+    {/* Logo Grid */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
+      {[
+  { name: "Beckhoff", src: "/assets/img/brand/beckoff.png" },
+  { name: "CODESYS", src: "/assets/img/brand/codesysimage.png" },
+  { name: "GitLab", src: "/assets/img/brand/gitlab.png" },
+  { name: "Haiwell", src: "/assets/img/brand/haiwell.png" },
+  { name: "MinIO", src: "/assets/img/brand/minio.png" },
+  { name: "Next.js", src: "/assets/img/brand/nextjs.png" },
+  { name: "Node-RED", src: "/assets/img/brand/nodered.png" },
+  { name: "Siemens", src: "/assets/img/brand/siemens.png" },
+  { name: "Weintek", src: "/assets/img/brand/weintek.png" },
+  { name: "Omron", src: "/assets/img/brand/omron.png" },
+  { name: "Schneider", src: "/assets/img/brand/schneider.png" },
+  { name: "Antropic", src: "/assets/img/brand/antropic.png" },
+].map((brand) => (
+        <div
+          key={brand.name}
+          className="group relative bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 flex items-center justify-center h-28 md:h-36"
+        >
+          <img
+            src={brand.src}
+            alt={`Logo ${brand.name}`}
+            loading="lazy"
+            className="max-h-12 md:max-h-16 w-auto max-w-full object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+          />
+        </div>
+      ))}
+    </div>
+
+    {/* Footer note */}
+    <p className="text-center text-slate-500 text-xs md:text-sm mt-10 md:mt-12">
+      Dan masih banyak brand lainnya. Hubungi kami untuk informasi produk dan ketersediaan.
+    </p>
+  </div>
+</section>
+      
     </>
   );
 }

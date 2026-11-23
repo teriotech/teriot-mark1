@@ -7,7 +7,7 @@ type Status = "idle" | "loading" | "success" | "error";
 
 // ─── Hardcoded credentials (for testing only — move to env in production) ─────
 const FONNTE_TOKEN = "s6HB3J5nr5CTRbviq7gU";
-const WA_TARGET    = "6285163657641";
+const WA_TARGET    = "6281329072842";
 
 // ─── Contact Info Items ───────────────────────────────────────────────────────
 const contactItems = [
@@ -16,7 +16,7 @@ const contactItems = [
     bg: "bg-blue-50",
     color: "text-blue-600",
     label: "Lokasi",
-    content: "Grand Wisata Bekasi, Jawa Barat, Indonesia",
+    content: "Jl. Rawa Bengkok, Depok,Jawa Barat, Indonesia",
     href: null,
   },
   {
@@ -24,15 +24,15 @@ const contactItems = [
     bg: "bg-blue-50",
     color: "text-blue-600",
     label: "Email",
-    content: "damita@teriot.id",
-    href: "mailto:damita@teriot.id",
+    content: "sales@transindomu.com",
+    href: "mailto:sales@transindomu.com",
   },
   {
     icon: "ri-whatsapp-line",
     bg: "bg-green-50",
     color: "text-green-600",
     label: "WhatsApp",
-    content: "+62 851 6365 7641",
+    content: "+62 813 2907 2842",
     href: "https://api.whatsapp.com/send?phone=6285163657641",
   },
 ];
@@ -127,7 +127,7 @@ ${data.message}
     <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-slate-100">
 
       {/* ── Glow decoration ── */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-blue-400/8 blur-3xl rounded-full pointer-events-none" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-red-400/8 blur-3xl rounded-full pointer-events-none" />
 
       <section id="contact" className="relative max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-28">
 
@@ -135,7 +135,7 @@ ${data.message}
         <div className="text-center mb-16 md:mb-20">
           <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-widest mb-6">
             <i className="ri-customer-service-2-line" />
-            Contact TERIOT
+            Contact
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight tracking-tight mb-5">
             Mari Diskusikan
@@ -201,14 +201,14 @@ ${data.message}
               </a>
 
               <p className="text-center text-xs text-slate-400 mt-3">
-                Biasanya merespons dalam &lt; 1 jam pada hari kerja
+                Usually responds dalam &lt; 1 jam pada hari kerja
               </p>
             </div>
           </div>
 
           {/* ───── RIGHT: Form Card ───── */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-100/80 p-7 md:p-10 hover:shadow-blue-100/60 hover:shadow-2xl transition-shadow duration-500">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-100/80 p-7 md:p-10 hover:shadow-red-100/60 hover:shadow-2xl transition-shadow duration-500">
 
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider mb-5">
                 <i className="ri-flashlight-line" />
@@ -216,12 +216,12 @@ ${data.message}
               </div>
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-1.5">Kirim Pesan</h2>
               <p className="text-slate-500 text-sm mb-7">
-                Isi formulir berikut — pesan akan dikirim ke email <span className="font-semibold text-slate-700">damita@teriot.id</span> dan WhatsApp tim kami.
+                Isi formulir berikut — pesan akan dikirim ke email <span className="font-semibold text-slate-700">sales@transindomu.com</span> dan WhatsApp tim kami.
               </p>
 
               {/* ── Success state ── */}
               {status === "success" ? (
-                <div className="flex flex-col items-center justify-center py-14 gap-4 text-center">
+                <div className="flex flex-col items-center justify-center py-10 gap-4 text-center">
                   <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center">
                     <i className="ri-checkbox-circle-fill text-4xl text-green-500" />
                   </div>
@@ -231,10 +231,40 @@ ${data.message}
                   </p>
                   <button
                     onClick={() => setStatus("idle")}
-                    className="mt-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
+                    className="mt-2 px-6 py-2.5 rounded-xl bg-slate-600 hover:bg-slate-700 text-white text-sm font-semibold transition"
                   >
                     Kirim Pesan Lain
                   </button>
+
+                  {/* ── Secret Access Card Jackpot ── */}
+                  <hr className="w-full max-w-xs border-slate-100 mt-4" />
+                  
+                  <div className="w-full max-w-xs p-5 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 text-white text-left shadow-xl shadow-purple-200/50 relative overflow-hidden transition-all duration-300 hover:scale-[1.02]">
+                    <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
+                    <div className="absolute top-3 right-3 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-300" />
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                        <i className="ri-key-2-line text-purple-200 text-lg animate-pulse" />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-purple-200">
+                        Secret System Unlocked
+                      </span>
+                    </div>
+
+                    <a
+                      href="/production/project"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-2 rounded-xl bg-white text-purple-700 hover:bg-purple-50 font-bold text-xs transition duration-200 shadow-sm"
+                    >
+                      Kunjungi Platform TERIOT DEMO
+                      <i className="ri-arrow-right-line" />
+                    </a>
+                  </div>
                 </div>
               ) : (
 
@@ -244,26 +274,26 @@ ${data.message}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                      Nama <span className="text-red-400">*</span>
+                      Nama <span className="text-blue-400">*</span>
                     </label>
                     <input
                       type="text"
                       name="name"
                       required
                       placeholder="Nama lengkap Anda"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-red-100 outline-none transition-all"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                      Email <span className="text-red-400">*</span>
+                      Email <span className="text-blue-400">*</span>
                     </label>
                     <input
                       type="email"
                       name="email"
                       required
                       placeholder="email@company.com"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-red-100 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -272,7 +302,7 @@ ${data.message}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                      WhatsApp <span className="text-red-400">*</span>
+                      WhatsApp <span className="text-blue-400">*</span>
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium select-none">
@@ -283,7 +313,7 @@ ${data.message}
                         name="phone"
                         required
                         placeholder="8xx xxxx xxxx"
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-12 pr-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-12 pr-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-red-100 outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -295,7 +325,7 @@ ${data.message}
                       type="text"
                       name="company"
                       placeholder="Nama perusahaan / instansi"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-red-100 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -309,13 +339,17 @@ ${data.message}
                     <select
                       name="service"
                       defaultValue=""
-                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all cursor-pointer"
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-red-100 outline-none transition-all cursor-pointer"
                     >
                       <option value="" disabled>Pilih solusi yang dibutuhkan</option>
-                      <option value="Industrial IoT">Industrial IoT</option>
-                      <option value="ERP Digital">ERP Digital</option>
-                      <option value="Maintenance Management System">Maintenance Management System</option>
-                      <option value="Robotic Process Automation">Robotic Process Automation</option>
+                      <option value="Industrial IoT">[IoT] Industrial IoT</option>
+                      <option value="Industrial IoT">[IoT] Petrochemicals & Refining IoT</option>
+                      <option value="Industrial IoT">[IoT] Power Plant IoT</option>
+                      <option value="ERP Digital">[ERP] GESIT One Single Platform</option>
+                      <option value="Maintenance Management System">[ERP]Maintenance Management System</option>
+                      <option value="Robotic Process Automation">[RPA]Workflow Automation</option>
+                      <option value="Robotic Process Automation">[IT & Infrastructure] Cybersecurity Solutions</option>
+                      <option value="Robotic Process Automation">[IT & Infrastructure] Cloud Computing</option>
                     </select>
                     <i className="ri-arrow-down-s-line absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   </div>
@@ -324,24 +358,24 @@ ${data.message}
                 {/* Row 4: Pesan */}
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-                    Kebutuhan Anda <span className="text-red-400">*</span>
+                    Kebutuhan Anda <span className="text-blue-400">*</span>
                   </label>
                   <textarea
                     name="message"
                     rows={5}
                     required
                     placeholder="Jelaskan kebutuhan, target project, atau kendala yang sedang dihadapi..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 resize-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all leading-relaxed"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 resize-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-red-100 outline-none transition-all leading-relaxed"
                   />
                 </div>
 
                 {/* Error banner */}
                 {status === "error" && (
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-100">
-                    <i className="ri-error-warning-line text-red-500 text-lg shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                    <i className="ri-error-warning-line text-blue-500 text-lg shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-red-700">Gagal mengirim pesan</p>
-                      <p className="text-xs text-red-600 mt-0.5">{errorMsg || "Silakan coba lagi atau hubungi via WhatsApp."}</p>
+                      <p className="text-xs text-blue-600 mt-0.5">{errorMsg || "Silakan coba lagi atau hubungi via WhatsApp."}</p>
                     </div>
                   </div>
                 )}
@@ -350,7 +384,7 @@ ${data.message}
                 <button
                   type="submit"
                   disabled={status === "loading"}
-                  className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 active:scale-[.99] text-white font-bold text-base shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:bg-red-400 active:scale-[.99] text-white font-bold text-base shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all duration-200"
                 >
                   {status === "loading" ? (
                     <>
