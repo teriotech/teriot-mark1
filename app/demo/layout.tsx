@@ -157,12 +157,16 @@ const menuData: Record<string, MenuItem[]> = {
       subItems: [
         { label: "Master Material", href: "/demo/management/material/1_master_material" },
         { label: "Create BOM", href: "/demo/management/material/2_create_bom" },
-        // { label: "Document PT. TERIOT", href: "/demo/management/material/3_create_qo" },
-        { label: "Document PT. TMI", href: "/demo/management/material/3_create_qo_TMI" },
-        { label: "Cost Analysis", href: "/demo/management/material/4_cost_analysist" },
+        { label: "Document", href: "/demo/management/material/3_create_qo_TMI" },
       ],
     },
-    { label: "Project Management", href: "/demo/management/new_project" },
+    {
+      label: "Project",
+      subItems: [
+        { label: "Project Management", href: "/demo/management/new_project" },
+        { label: "Cost Analysis", href: "/demo/management/new_cost" },
+      ],
+    },
     {
       label: "User",
       subItems: [
