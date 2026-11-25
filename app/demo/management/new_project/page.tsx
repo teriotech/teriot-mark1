@@ -42,6 +42,7 @@ import {
   RefreshCw,
   Search,
   ShoppingCart,
+  Truck,
   Target,
   Trash2,
   TrendingDown,
@@ -52,16 +53,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-// Reuse generator/modal yang sudah ada pada page:
-// /demo/management/material/3_create_qo_TMI
-import ModalQoPo from "@/app/demo/management/material/3_create_qo_TMI/modal_qo_po";
-import ModalBast from "@/app/demo/management/material/3_create_qo_TMI/modal_bast";
-import ModalInvoice from "@/app/demo/management/material/3_create_qo_TMI/modal_invoice";
+// Document generator pada folder /management/new_project.
+import ModalQoPo from "./qo_po";
+import ModalBast from "./bast";
+import ModalInvoice from "./invoice";
+import ModalDeliveryOrder from "./do";
 import type {
   BomGroup,
   BomItem,
   PrintType,
-} from "@/app/demo/management/material/3_create_qo_TMI/types";
+} from "./types";
 
 /* ========================================================================== */
 /* API                                                                        */
@@ -174,106 +175,16 @@ type StageMeta = {
 };
 
 const PROJECT_STAGES: StageMeta[] = [
-  {
-    id: "opportunity_crm",
-    label: "Opportunity / CRM",
-    shortLabel: "CRM",
-    description: "Initial opportunity identified in CRM",
-    icon: AlertCircle,
-    color: "bg-sky-500",
-    soft: "bg-sky-50 text-sky-700",
-    border: "border-sky-300",
-  },
-  {
-    id: "presales",
-    label: "Pre-Sales",
-    shortLabel: "PRE",
-    description: "Pre-sales activities and presentations",
-    icon: Target,
-    color: "bg-blue-500",
-    soft: "bg-blue-50 text-blue-700",
-    border: "border-blue-300",
-  },
-  {
-    id: "inspection",
-    label: "Inspection",
-    shortLabel: "INS",
-    description: "Company visit and site assessment",
-    icon: Search,
-    color: "bg-cyan-500",
-    soft: "bg-cyan-50 text-cyan-700",
-    border: "border-cyan-300",
-  },
-  {
-    id: "bom_design",
-    label: "BOM & Design",
-    shortLabel: "BOM",
-    description: "Bill of Materials and design phase",
-    icon: Package,
-    color: "bg-indigo-500",
-    soft: "bg-indigo-50 text-indigo-700",
-    border: "border-indigo-300",
-  },
-  {
-    id: "quotation_po",
-    label: "Quotation & PO",
-    shortLabel: "QO/PO",
-    description: "Quotation and Purchase Order phase",
-    icon: FileText,
-    color: "bg-violet-500",
-    soft: "bg-violet-50 text-violet-700",
-    border: "border-violet-300",
-  },
-  {
-    id: "project_planning",
-    label: "Project Planning",
-    shortLabel: "PLAN",
-    description: "Timeline, materials, and manpower planning",
-    icon: CalendarDays,
-    color: "bg-fuchsia-500",
-    soft: "bg-fuchsia-50 text-fuchsia-700",
-    border: "border-fuchsia-300",
-  },
-  {
-    id: "project_running",
-    label: "Project Running",
-    shortLabel: "RUN",
-    description: "Hardware and software installation",
-    icon: ArrowRight,
-    color: "bg-amber-500",
-    soft: "bg-amber-50 text-amber-700",
-    border: "border-amber-300",
-  },
-  {
-    id: "commissioning",
-    label: "Commissioning",
-    shortLabel: "COMM",
-    description: "FAT and SAT testing",
-    icon: ClipboardCheck,
-    color: "bg-orange-500",
-    soft: "bg-orange-50 text-orange-700",
-    border: "border-orange-300",
-  },
-  {
-    id: "invoicing",
-    label: "Invoicing",
-    shortLabel: "INV",
-    description: "Invoice, BAST, and tax invoice",
-    icon: Receipt,
-    color: "bg-rose-500",
-    soft: "bg-rose-50 text-rose-700",
-    border: "border-rose-300",
-  },
-  {
-    id: "payment",
-    label: "Payment",
-    shortLabel: "PAY",
-    description: "Payment processing and project completion",
-    icon: CheckCircle2,
-    color: "bg-emerald-500",
-    soft: "bg-emerald-50 text-emerald-700",
-    border: "border-emerald-300",
-  },
+  { id: "opportunity_crm", label: "Opportunity / CRM", shortLabel: "CRM", description: "Initial opportunity identified in CRM", icon: AlertCircle, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "presales", label: "Pre-Sales", shortLabel: "PRE-SALES", description: "Pre-sales activities and presentations", icon: Target, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "inspection", label: "Inspection", shortLabel: "INSPECTION", description: "Company visit and site assessment", icon: Search, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "bom_design", label: "BOM & Design", shortLabel: "BOM", description: "Bill of Materials and design phase", icon: Package, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "quotation_po", label: "Quotation & PO", shortLabel: "QO / PO", description: "Quotation and Purchase Order phase", icon: FileText, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "project_planning", label: "Project Planning", shortLabel: "PLANNING", description: "Timeline, materials, and manpower planning", icon: CalendarDays, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "project_running", label: "Project Running", shortLabel: "RUNNING", description: "Hardware and software installation", icon: ArrowRight, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "commissioning", label: "Commissioning", shortLabel: "COMMISSIONING", description: "FAT and SAT testing", icon: ClipboardCheck, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "invoicing", label: "Invoicing", shortLabel: "INVOICE", description: "Invoice, BAST, and tax invoice", icon: Receipt, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
+  { id: "payment", label: "Payment", shortLabel: "PAYMENT", description: "Payment processing and project completion", icon: CheckCircle2, color: "bg-blue-600", soft: "bg-blue-50 text-blue-700", border: "border-blue-200" },
 ];
 
 /* ========================================================================== */
@@ -302,7 +213,7 @@ type DocumentGroup = BomGroup & {
 
 type EntryType = "income" | "expense" | "allocation";
 type TransactionType = Exclude<EntryType, "allocation">;
-type AllocationGroup = "RAW_MATERIAL" | "TRANSPORT" | "DIVIDEN" | "OTHER";
+type AllocationGroup = string;
 
 type CostEntry = {
   id: number;
@@ -341,7 +252,6 @@ type TransactionForm = {
   category: string;
   amount: string;
   entry_date: string;
-  reference_no: string;
   description: string;
 };
 
@@ -552,7 +462,14 @@ const inputClass =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100";
 
 const buttonClass =
-  "inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50";
+
+const primaryCardClass =
+  "overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm";
+const primaryCardHeaderClass =
+  "flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-5 py-4";
+const primaryCardIconClass =
+  "rounded-xl border border-blue-100 bg-blue-50 p-2.5 text-blue-600";
 
 /* ========================================================================== */
 /* Small UI components                                                        */
@@ -807,11 +724,19 @@ function ProjectSidebar({
               <p className={`mt-1 line-clamp-1 text-xs ${dropped ? "text-slate-400" : "text-slate-500"}`}>
                 {project.client_company}
               </p>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${dropped ? "bg-slate-200 text-slate-500" : meta.soft}`}>
-                  {meta.shortLabel}
-                </span>
-                <StatusBadge status={status} />
+              <div className={`mt-3 rounded-lg border px-2.5 py-2 ${
+                dropped ? "border-slate-200 bg-slate-100" : "border-blue-200 bg-blue-50/80"
+              }`}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-[9px] font-black uppercase tracking-[0.16em] ${dropped ? "text-slate-400" : "text-blue-500"}`}>
+                    Stage
+                  </span>
+                  <StatusBadge status={status} />
+                </div>
+                <div className={`mt-1 flex items-center gap-2 ${dropped ? "text-slate-500" : "text-blue-800"}`}>
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${dropped ? "bg-slate-400" : "bg-blue-600"}`} />
+                  <span className="truncate text-[11px] font-black">{meta.shortLabel}</span>
+                </div>
               </div>
             </button>
           );
@@ -830,6 +755,7 @@ function DocumentWorkspace({ groups, projectName }: { groups: DocumentGroup[]; p
   const [printConfig, setPrintConfig] = useState<{ group: BomGroup; type: PrintType } | null>(null);
   const [bastConfig, setBastConfig] = useState<{ group: BomGroup } | null>(null);
   const [invoiceConfig, setInvoiceConfig] = useState<{ group: BomGroup } | null>(null);
+  const [deliveryOrderConfig, setDeliveryOrderConfig] = useState<{ group: BomGroup } | null>(null);
 
   useEffect(() => {
     setExpanded({});
@@ -838,10 +764,10 @@ function DocumentWorkspace({ groups, projectName }: { groups: DocumentGroup[]; p
   const total = groups.reduce((sum, group) => sum + numberOf(group.total_cost), 0);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+    <section className={primaryCardClass}>
+      <div className={primaryCardHeaderClass}>
         <div className="flex items-center gap-3">
-          <span className="rounded-xl bg-blue-50 p-2.5 text-blue-600 ring-1 ring-blue-100">
+          <span className={primaryCardIconClass}>
             <FileText className="h-5 w-5" />
           </span>
           <div>
@@ -867,7 +793,7 @@ function DocumentWorkspace({ groups, projectName }: { groups: DocumentGroup[]; p
           <EmptyState
             icon={FileText}
             title="Dokumen BOM belum ditemukan"
-            text={`Belum ada BOM yang terhubung ke project “${projectName}”. Buat BOM terlebih dahulu agar QO, PO, BAST, dan Invoice muncul otomatis.`}
+            text={`Belum ada BOM yang terhubung ke project “${projectName}”. Buat BOM terlebih dahulu agar QO, PO, BAST, Invoice, dan Delivery Order muncul otomatis.`}
           />
         ) : (
           <div className="space-y-3">
@@ -930,21 +856,28 @@ function DocumentWorkspace({ groups, projectName }: { groups: DocumentGroup[]; p
                         className={buttonClass}
                         title="Generate Purchase Order"
                       >
-                        <ShoppingCart className="h-4 w-4 text-emerald-600" /> PO
+                        <ShoppingCart className="h-4 w-4 text-blue-600" /> PO
                       </button>
                       <button
                         onClick={() => setBastConfig({ group })}
                         className={buttonClass}
                         title="Generate BAST"
                       >
-                        <ClipboardCheck className="h-4 w-4 text-violet-600" /> BAST
+                        <ClipboardCheck className="h-4 w-4 text-blue-600" /> BAST
                       </button>
                       <button
                         onClick={() => setInvoiceConfig({ group })}
                         className={buttonClass}
                         title="Generate Invoice"
                       >
-                        <Receipt className="h-4 w-4 text-amber-600" /> Invoice
+                        <Receipt className="h-4 w-4 text-blue-600" /> Invoice
+                      </button>
+                      <button
+                        onClick={() => setDeliveryOrderConfig({ group })}
+                        className={buttonClass}
+                        title="Generate Delivery Order"
+                      >
+                        <Truck className="h-4 w-4 text-blue-600" /> Delivery Order
                       </button>
                       <button
                         onClick={() =>
@@ -1024,6 +957,7 @@ function DocumentWorkspace({ groups, projectName }: { groups: DocumentGroup[]; p
       <ModalQoPo config={printConfig} onClose={() => setPrintConfig(null)} />
       <ModalBast config={bastConfig} onClose={() => setBastConfig(null)} />
       <ModalInvoice config={invoiceConfig} onClose={() => setInvoiceConfig(null)} />
+      <ModalDeliveryOrder config={deliveryOrderConfig} onClose={() => setDeliveryOrderConfig(null)} />
     </section>
   );
 }
@@ -1042,6 +976,10 @@ const allocationMeta: Record<
   OTHER: { label: "Lainnya", color: "bg-slate-500", soft: "bg-slate-100 text-slate-700" },
 };
 
+const groupMeta = (group: AllocationGroup) =>
+  Object.prototype.hasOwnProperty.call(allocationMeta, group)
+    ? allocationMeta[group]
+    : { label: group, color: "bg-blue-500", soft: "bg-blue-50 text-blue-700" };
 const incomeOptions = [
   { value: "DOWN_PAYMENT", label: "Down Payment (DP)" },
   { value: "TERMIN_PAYMENT", label: "Pembayaran Termin" },
@@ -1066,11 +1004,13 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
     category: "UNALLOCATED",
     amount: "",
     entry_date: todayInput(),
-    reference_no: "",
     description: "",
   });
   const [allocationRows, setAllocationRows] = useState<AllocationRow[]>([]);
 
+  const [draftGroups, setDraftGroups] = useState<string[]>([]);
+  const [newGroup, setNewGroup] = useState("");
+  const [modalError, setModalError] = useState("");
   const notify = useCallback((type: "ok" | "error", text: string) => {
     setMessage({ type, text });
     window.setTimeout(() => setMessage(null), 4000);
@@ -1119,6 +1059,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
   const allocationTotal = allocations.reduce((sum, entry) => sum + numberOf(entry.amount), 0);
   const totalIncome = incomes.reduce((sum, entry) => sum + numberOf(entry.amount), 0);
   const totalExpense = expenses.reduce((sum, entry) => sum + numberOf(entry.amount), 0);
+  const remainingAllocation = allocationTotal - totalExpense;
   const incomeRemaining = quotation - totalIncome;
   const cashBalance = totalIncome - totalExpense;
 
@@ -1145,12 +1086,33 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
     )
     .reduce((sum, expense) => sum + numberOf(expense.amount), 0);
 
+  const groups = Array.from(new Set([
+    ...Object.keys(allocationMeta),
+    ...allocations.map((entry) => entry.alloc_group || "OTHER"),
+    ...draftGroups,
+  ]));
+  const editedEntry = entries.find((entry) => entry.id === editingId);
+  const isIncome = form.entry_type === "income";
+  const activeBudget = isIncome || form.category === "UNALLOCATED" ? undefined : budgets.find((budget) =>
+    normalize(budget.category) === normalize(form.category));
+  const previousAmount = numberOf(editedEntry?.amount);
+  const availableBefore = isIncome
+    ? incomeRemaining + (editedEntry?.entry_type === "income" ? previousAmount : 0)
+    : activeBudget ? activeBudget.remaining + (editedEntry?.entry_type === "expense" && normalize(editedEntry.category) === normalize(activeBudget.category) ? previousAmount : 0) : null;
+  const availableAfter = availableBefore === null ? null : availableBefore - Math.max(0, numberOf(form.amount));
+  const previewTone = availableAfter === null
+    ? "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-400 focus-within:ring-slate-200"
+    : availableAfter < 0
+      ? "border-yellow-300 bg-yellow-50 text-yellow-900 hover:border-yellow-500 focus-within:ring-yellow-200"
+      : isIncome
+        ? "border-blue-200 bg-blue-50 text-blue-900 hover:border-blue-400 focus-within:ring-blue-200"
+        : "border-emerald-200 bg-emerald-50 text-emerald-900 hover:border-emerald-400 focus-within:ring-emerald-200";
   const overrun =
     budgets.reduce((sum, budget) => sum + Math.max(0, -budget.remaining), 0) +
     unallocatedExpense;
   const lockedProfit = quotation - allocationTotal;
   const projectedProfit = lockedProfit - overrun;
-  const lockedProfitPercent = quotation > 0 ? (lockedProfit / quotation) * 100 : 0;
+  const projectedMargin = quotation > 0 ? (projectedProfit / quotation) * 100 : null;
   const billingPercent = quotation > 0 ? Math.min((totalIncome / quotation) * 100, 100) : 0;
 
   const filteredEntries = useMemo(
@@ -1162,6 +1124,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
     type === "all" ? entries.length : entries.filter((entry) => entry.entry_type === type).length;
 
   const openTransaction = (entry?: CostEntry) => {
+    setModalError("");
     if (entry?.entry_type === "allocation") {
       openAllocation();
       return;
@@ -1175,7 +1138,6 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
         (type === "income" ? "DOWN_PAYMENT" : budgets[0]?.category || "UNALLOCATED"),
       amount: entry ? String(numberOf(entry.amount)) : "",
       entry_date: entry?.entry_date?.slice(0, 10) || todayInput(),
-      reference_no: entry?.reference_no || "",
       description: entry?.description || "",
     });
     setModal("transaction");
@@ -1187,6 +1149,9 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
       : Math.round(numberOf(row.amount));
 
   const openAllocation = () => {
+    setModalError("");
+    setDraftGroups([]);
+    setNewGroup("");
     setEditingId(null);
     setAllocationRows(
       allocations.length
@@ -1231,11 +1196,30 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
     setModal("allocation");
   };
 
+  const addAllocation = (group: AllocationGroup = "OTHER") =>
+    setAllocationRows((rows) => [...rows, {
+      key: allocationKey(), id: null, originalName: null, group, name: "", auto: false, percent: "", amount: "",
+    }]);
+  const addGroup = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (saving) return;
+    const name = newGroup.trim().replace(/\s+/g, " ");
+    if (!name) return setModalError("Isi nama group terlebih dahulu.");
+    if (groups.some((group) => normalize(group) === normalize(name) || normalize(groupMeta(group).label) === normalize(name))) {
+      return setModalError("Group sudah ada. Pilih dari daftar Group.");
+    }
+    setDraftGroups((current) => [...current, name]);
+    addAllocation(name);
+    setNewGroup("");
+    setModalError("");
+  };
   const saveTransaction = async (event: FormEvent) => {
     event.preventDefault();
+    if (saving) return;
+    setModalError("");
     const amount = numberOf(form.amount);
     if (amount <= 0) {
-      notify("error", "Amount harus lebih dari 0.");
+      setModalError("Nominal harus lebih dari Rp0.");
       return;
     }
 
@@ -1246,6 +1230,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
         project_name: project.project_name,
         ...form,
         amount,
+        reference_no: editedEntry?.reference_no ?? null,
         alloc_group: null,
         percent: null,
         is_auto: false,
@@ -1259,7 +1244,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
       setModal(null);
       await load();
     } catch (error) {
-      notify("error", error instanceof Error ? error.message : "Gagal menyimpan transaksi");
+      setModalError(error instanceof Error ? error.message : "Gagal menyimpan transaksi.");
     } finally {
       setSaving(false);
     }
@@ -1277,31 +1262,35 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
   };
 
   const saveAllocations = async () => {
+    if (saving) return;
+    setModalError("");
+    if (allocationRows.some((row) => (row.id !== null || draftGroups.includes(row.group)) && allocationAmount(row) <= 0)) {
+      return setModalError("Isi nominal positif untuk alokasi lama dan group baru, atau hapus baris yang tidak dipakai.");
+    }
     const active = allocationRows
       .map((row) => ({ ...row, name: row.name.trim(), calculated: allocationAmount(row) }))
       .filter((row) => row.calculated > 0);
 
     if (!active.length) {
-      notify("error", "Minimal satu alokasi harus memiliki nilai.");
+      setModalError("Minimal satu alokasi harus memiliki nilai.");
       return;
     }
     if (active.some((row) => !row.name)) {
-      notify("error", "Nama kategori alokasi wajib diisi.");
+      setModalError("Nama kategori alokasi wajib diisi.");
       return;
     }
     const names = active.map((row) => normalize(row.name));
+    if (names.includes("unallocated")) return setModalError("UNALLOCATED digunakan untuk transaksi di luar alokasi. Pilih nama lain.");
     if (new Set(names).size !== names.length) {
-      notify("error", "Nama kategori alokasi tidak boleh duplikat.");
+      setModalError("Nama kategori alokasi tidak boleh duplikat.");
       return;
     }
 
     const keepIds = new Set(active.filter((row) => row.id).map((row) => row.id as number));
     const removed = allocations.filter((entry) => !keepIds.has(entry.id));
+    if (removed.length && !window.confirm(`Hapus ${removed.length} alokasi? Transaksi lama tidak ikut dihapus.`)) return;
     setSaving(true);
     try {
-      for (const entry of removed) {
-        await requestJson(`${COST_API}?id=${entry.id}`, "DELETE");
-      }
       for (const row of active) {
         const existing = row.id ? allocations.find((entry) => entry.id === row.id) : null;
         const payload = {
@@ -1349,11 +1338,14 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
           }
         }
       }
+      for (const entry of removed) {
+        await requestJson(`${COST_API}?id=${entry.id}`, "DELETE");
+      }
       notify("ok", "Alokasi dan net profit berhasil diperbarui.");
       setModal(null);
       await load();
     } catch (error) {
-      notify("error", error instanceof Error ? error.message : "Gagal menyimpan alokasi");
+      setModalError(`${error instanceof Error ? error.message : "Gagal menyimpan alokasi"}. Sebagian perubahan mungkin telah tersimpan. Tutup modal dan klik Refresh sebelum mencoba lagi.`);
     } finally {
       setSaving(false);
     }
@@ -1365,16 +1357,16 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
     );
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+    <section className={primaryCardClass}>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-blue-100 bg-blue-50/60 px-4 py-4 sm:px-5">
         <div className="flex items-center gap-3">
-          <span className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 ring-1 ring-emerald-100">
+          <span className={primaryCardIconClass}>
             <BarChart3 className="h-5 w-5" />
           </span>
           <div>
             <h2 className="font-extrabold text-slate-900">Cost Analysis</h2>
             <p className="text-xs text-slate-500">
-              Alokasi budget, pengeluaran, penagihan, dan net profit tanpa sidebar ganda.
+              Pantau alokasi budget, pengeluaran aktual, penagihan, dan proyeksi profit.
             </p>
           </div>
         </div>
@@ -1382,11 +1374,11 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
           <button onClick={load} className={buttonClass} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button onClick={openAllocation} className={buttonClass}>
-            <WalletCards className="h-4 w-4 text-indigo-600" /> Atur Alokasi
+          <button onClick={openAllocation} className={buttonClass} disabled={loading || saving}>
+            <WalletCards className="h-4 w-4 text-blue-600" /> Atur Alokasi
           </button>
           <button
-            onClick={() => openTransaction()}
+            onClick={() => openTransaction()} disabled={loading || saving}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" /> Input Transaksi
@@ -1406,8 +1398,8 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
         </div>
       )}
 
-      <div className="space-y-5 p-5">
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="space-y-5 bg-slate-50/60 p-4 sm:p-5">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MoneyStat
             label="Total quotation"
             value={idr(quotation)}
@@ -1432,19 +1424,18 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
             label="Pengeluaran aktual"
             value={idr(totalExpense)}
             hint={`Cash balance ${idr(cashBalance)}`}
-            tone="red"
             icon={TrendingDown}
           />
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-slate-200">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
             <h3 className="text-sm font-extrabold text-slate-800">Riwayat Input</h3>
             <div className="flex flex-wrap gap-1 rounded-lg bg-slate-200/60 p-1">
               {(["all", "income", "expense", "allocation"] as const).map((item) => (
                 <button
                   key={item}
-                  onClick={() => setTab(item)}
+                  onClick={() => setTab(item)} aria-pressed={tab === item}
                   className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
                     tab === item ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
                   }`}
@@ -1495,7 +1486,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                           <span className="text-sm font-bold text-slate-800">{entry.category}</span>
                           {allocation && entry.alloc_group && (
                             <span className="text-[10px] text-slate-400">
-                              {allocationMeta[entry.alloc_group].label}
+                              {groupMeta(entry.alloc_group).label}
                               {entry.is_auto && entry.percent != null
                                 ? ` · ${numberOf(entry.percent).toFixed(1)}% AUTO`
                                 : ""}
@@ -1504,7 +1495,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                         </div>
                         <p className="mt-0.5 text-xs text-slate-400">
                           {formatDate(entry.entry_date)}
-                          {entry.reference_no ? ` · Ref: ${entry.reference_no}` : ""}
+
                           {entry.description ? ` · ${entry.description}` : ""}
                         </p>
                       </div>
@@ -1540,17 +1531,17 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
         </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
               <h3 className="text-sm font-extrabold text-slate-800">Profit Waterfall</h3>
               <span
                 className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
                   projectedProfit >= 0
                     ? "bg-emerald-50 text-emerald-700"
-                    : "bg-rose-50 text-rose-700"
+                    : "bg-yellow-50 text-yellow-900"
                 }`}
               >
-                {projectedProfit >= 0 ? "PROFIT" : "LOSS"} · {percentText(lockedProfitPercent)}
+                {projectedProfit >= 0 ? "PROFIT" : "LOSS"}{projectedMargin === null ? "" : ` · ${percentText(projectedMargin)}`}
               </span>
             </div>
             <div className="divide-y divide-slate-100 text-sm">
@@ -1561,15 +1552,15 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
               {budgets.map((budget) => (
                 <div key={budget.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
                   <span className="flex min-w-0 items-center gap-2 text-slate-600">
-                    <span className={`h-2 w-2 shrink-0 rounded-full ${allocationMeta[budget.group].color}`} />
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${groupMeta(budget.group).color}`} />
                     <span className="truncate">{budget.category}</span>
                   </span>
-                  <span className="font-semibold text-rose-600">− {idr(numberOf(budget.amount))}</span>
+                  <span className="font-semibold text-yellow-800">− {idr(numberOf(budget.amount))}</span>
                 </div>
               ))}
               <div
                 className={`flex justify-between px-4 py-3 font-extrabold ${
-                  lockedProfit >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+                  lockedProfit >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-yellow-50 text-yellow-900"
                 }`}
               >
                 <span>Net Profit Terkunci</span>
@@ -1577,11 +1568,11 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
               </div>
               <div className="flex justify-between px-4 py-2.5 text-slate-600">
                 <span>Overrun & di luar alokasi</span>
-                <span className="font-semibold text-rose-600">− {idr(overrun)}</span>
+                <span className="font-semibold text-yellow-800">− {idr(overrun)}</span>
               </div>
               <div className="flex justify-between bg-slate-50 px-4 py-3 font-extrabold text-slate-900">
                 <span>Proyeksi Net Profit</span>
-                <span className={projectedProfit >= 0 ? "text-emerald-600" : "text-rose-600"}>
+                <span className={projectedProfit >= 0 ? "text-emerald-600" : "text-yellow-800"}>
                   {idr(projectedProfit)}
                 </span>
               </div>
@@ -1589,8 +1580,21 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 p-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="mb-3 text-sm font-extrabold text-slate-800">Sisa Alokasi per Kategori</h3>
+              <div className="mb-3 grid gap-2 sm:grid-cols-2">
+                <div className={`rounded-lg border p-3 ${remainingAllocation < 0 ? "border-yellow-200 bg-yellow-50 text-yellow-900" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>
+                  <p className="text-xs font-semibold">Sisa Total Alokasi</p>
+                  <p className="mt-1 break-words text-base font-extrabold tabular-nums">{idr(remainingAllocation)}</p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-slate-800">
+                  <p className="text-xs font-semibold">Total Pengeluaran</p>
+                  <p className="mt-1 break-words text-base font-extrabold tabular-nums">{idr(totalExpense)}</p>
+                </div>
+              </div>
+              <p className="mb-4 text-xs text-slate-600">Total alokasi dikurangi seluruh pengeluaran.
+                {unallocatedExpense > 0 && ` Di luar alokasi: ${idr(unallocatedExpense)}.`}
+              </p>
               {budgets.length === 0 ? (
                 <p className="text-xs text-slate-400">Belum ada alokasi.</p>
               ) : (
@@ -1598,19 +1602,19 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                   {budgets.map((budget) => {
                     const used = numberOf(budget.amount) > 0 ? (budget.actual / numberOf(budget.amount)) * 100 : 0;
                     return (
-                      <div key={budget.id}>
+                      <div key={budget.id} className={`rounded-lg border p-3 transition ${budget.remaining < 0 ? "border-yellow-200 hover:border-yellow-400" : "border-slate-200 hover:border-blue-300"}`}>
                         <div className="flex justify-between gap-3 text-xs">
-                          <span className="font-bold text-slate-700">{budget.category}</span>
-                          <span className={budget.remaining >= 0 ? "font-bold text-emerald-600" : "font-bold text-rose-600"}>
+                          <span className="min-w-0 break-words font-bold text-slate-700">{budget.category}<span className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[10px] ${groupMeta(budget.group).soft}`}>{groupMeta(budget.group).label}</span></span>
+                          <span className={budget.remaining >= 0 ? "font-bold text-emerald-600" : "font-bold text-yellow-800"}>
                             {budget.remaining >= 0 ? "Sisa" : "Over"} {idr(Math.abs(budget.remaining))}
                           </span>
                         </div>
                         <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
                           <div
                             className={`h-full rounded-full ${
-                              budget.remaining < 0 ? "bg-rose-500" : used > 85 ? "bg-amber-500" : "bg-emerald-500"
+                              budget.remaining < 0 ? "bg-yellow-500" : used > 85 ? "bg-amber-500" : "bg-emerald-500"
                             }`}
-                            style={{ width: `${Math.min(used, 100)}%` }}
+                            style={{ width: `${Math.max(0, Math.min(used, 100))}%` }}
                           />
                         </div>
                         <div className="mt-1 flex justify-between text-[10px] text-slate-400">
@@ -1624,7 +1628,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
               )}
             </div>
 
-            <div className="rounded-xl border border-slate-200 p-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-extrabold text-slate-800">Penagihan</span>
                 <span className={incomeRemaining > 0 ? "text-xs font-bold text-amber-600" : "text-xs font-bold text-emerald-600"}>
@@ -1655,17 +1659,17 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
 
       {modal === "transaction" && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
-          <form onSubmit={saveTransaction} className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <form onSubmit={saveTransaction} role="dialog" aria-modal="true" aria-label="Transaksi Cost Analysis" className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div>
                 <h3 className="font-extrabold text-slate-900">{editingId ? "Edit Transaksi" : "Input Transaksi"}</h3>
                 <p className="text-xs text-slate-500">{project.project_name}</p>
               </div>
-              <button type="button" onClick={() => setModal(null)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100">
+              <button type="button" onClick={() => setModal(null)} disabled={saving} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100">
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="grid gap-4 p-5 sm:grid-cols-2">
+            <div className="grid min-h-0 gap-4 overflow-y-auto p-5 sm:grid-cols-2">
               <label className="text-xs font-bold text-slate-600">
                 Tipe
                 <select
@@ -1685,31 +1689,35 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                   <option value="expense">Pengeluaran</option>
                 </select>
               </label>
-              <label className="text-xs font-bold text-slate-600">
-                Kategori
-                <select
-                  value={form.category}
-                  onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
-                  className={`${inputClass} mt-1`}
-                >
-                  {form.entry_type === "income" ? (
-                    incomeOptions.map((item) => (
-                      <option key={item.value} value={item.value}>{item.label}</option>
-                    ))
-                  ) : (
-                    <>
-                      {budgets.map((budget) => (
-                        <option key={budget.id} value={budget.category}>
-                          {budget.category} — sisa {idr(budget.remaining)}
-                        </option>
-                      ))}
-                      <option value="UNALLOCATED">Di luar alokasi</option>
-                    </>
+              <div className={`rounded-xl border p-3 transition focus-within:ring-2 sm:col-span-2 ${previewTone}`}>
+                <label htmlFor="cost-category" className="block text-xs font-bold">Kategori</label>
+                <select id="cost-category" value={form.category} disabled={saving} className={`${inputClass} mt-1.5`}
+                  onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}>
+                  {isIncome ? incomeOptions.map((item) => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
+                  )) : <>
+                    {budgets.map((budget) => <option key={budget.id} value={budget.category}>{budget.category}</option>)}
+                    <option value="UNALLOCATED">Di luar alokasi</option>
+                  </>}
+                  {(isIncome ? !incomeOptions.some((item) => item.value === form.category)
+                    : form.category !== "UNALLOCATED" && !budgets.some((budget) => budget.category === form.category)) && (
+                    <option value={form.category}>{form.category} (kategori lama)</option>
                   )}
                 </select>
-              </label>
+                <div className="mt-3 rounded-lg bg-white/80 p-3" aria-live="polite">
+                  {availableAfter === null ? (
+                    <p className="text-xs">Kategori ini tidak memiliki budget. Nominal masuk ke pengeluaran di luar alokasi.</p>
+                  ) : <>
+                    <p className="text-xs font-semibold">{isIncome
+                      ? availableAfter < 0 ? "Lebih bayar setelah transaksi" : "Sisa tagihan setelah transaksi"
+                      : availableAfter < 0 ? "Melebihi alokasi setelah transaksi" : "Sisa alokasi setelah transaksi"}</p>
+                    <p className="mt-0.5 text-lg font-extrabold tabular-nums">{idr(Math.abs(availableAfter))}</p>
+                    <p className="mt-1 text-xs">{editingId ? "Sisa tanpa transaksi ini" : "Sisa sebelum transaksi"}: {idr(availableBefore ?? 0)}</p>
+                  </>}
+                </div>
+              </div>
               <label className="text-xs font-bold text-slate-600">
-                Amount
+                Nominal (Rp)
                 <input
                   type="number"
                   min="1"
@@ -1730,16 +1738,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                 />
               </label>
               <label className="text-xs font-bold text-slate-600 sm:col-span-2">
-                Reference No.
-                <input
-                  value={form.reference_no}
-                  onChange={(event) => setForm((current) => ({ ...current, reference_no: event.target.value }))}
-                  className={`${inputClass} mt-1`}
-                  placeholder="PO / Invoice / Receipt number"
-                />
-              </label>
-              <label className="text-xs font-bold text-slate-600 sm:col-span-2">
-                Description
+                Catatan
                 <textarea
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
@@ -1748,8 +1747,9 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                 />
               </label>
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
-              <button type="button" onClick={() => setModal(null)} className={buttonClass}>Batal</button>
+            {modalError && <p role="alert" className="border-t border-yellow-200 bg-yellow-50 px-5 py-2 text-sm text-yellow-900">{modalError}</p>}
+            <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
+              <button type="button" onClick={() => setModal(null)} disabled={saving} className={buttonClass}>Batal</button>
               <button
                 type="submit"
                 disabled={saving}
@@ -1765,34 +1765,43 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
 
       {modal === "allocation" && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div role="dialog" aria-modal="true" aria-label="Atur alokasi" className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
               <div>
                 <h3 className="font-extrabold text-slate-900">Atur Alokasi & Kunci Net Profit</h3>
                 <p className="text-xs text-slate-500">Quotation {idr(quotation)}</p>
               </div>
-              <button onClick={() => setModal(null)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100">
+              <button onClick={() => setModal(null)} disabled={saving} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100">
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+              <form onSubmit={addGroup} className="mb-4 rounded-xl border border-blue-200 bg-blue-50/60 p-3">
+                <label htmlFor="cost-group-name" className="text-xs font-bold text-slate-800">Nama group baru</label>
+                <div className="mt-1.5 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                  <input id="cost-group-name" value={newGroup} maxLength={40} disabled={saving}
+                    onChange={(event) => setNewGroup(event.target.value)} className={inputClass} placeholder="Contoh: Instalasi" />
+                  <button type="submit" disabled={saving} className={buttonClass}><Plus className="h-4 w-4" /> Tambah Group</button>
+                </div>
+                <p className="mt-2 text-xs text-slate-600">Isi kategori dan nominal pada baris baru, lalu klik Simpan Alokasi.</p>
+              </form>
               <div className="mb-3 hidden grid-cols-[150px_1fr_90px_130px_48px] gap-2 px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 md:grid">
                 <span>Group</span><span>Category</span><span>Mode</span><span>Value</span><span />
               </div>
               <div className="space-y-2">
                 {allocationRows.map((row) => (
-                  <div key={row.key} className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 md:grid-cols-[150px_1fr_90px_130px_48px]">
+                  <div key={row.key} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-3 transition hover:border-blue-200 focus-within:border-blue-400 md:grid-cols-[150px_1fr_90px_130px_48px]">
                     <select
-                      value={row.group}
+                      value={row.group} aria-label="Group alokasi" disabled={saving}
                       onChange={(event) => updateAllocation(row.key, { group: event.target.value as AllocationGroup })}
                       className={inputClass}
                     >
-                      {(Object.keys(allocationMeta) as AllocationGroup[]).map((group) => (
-                        <option key={group} value={group}>{allocationMeta[group].label}</option>
+                      {groups.map((group) => (
+                        <option key={group} value={group}>{groupMeta(group).label}</option>
                       ))}
                     </select>
                     <input
-                      value={row.name}
+                      value={row.name} aria-label="Kategori alokasi" disabled={saving}
                       onChange={(event) => updateAllocation(row.key, { name: event.target.value })}
                       className={inputClass}
                       placeholder="Nama alokasi"
@@ -1814,7 +1823,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                         type="number"
                         min="0"
                         step={row.auto ? "0.01" : "1"}
-                        value={row.auto ? row.percent : row.amount}
+                        value={row.auto ? row.percent : row.amount} aria-label={row.auto ? "Persentase alokasi" : "Nominal alokasi"} disabled={saving}
                         onChange={(event) => updateAllocation(row.key, row.auto ? { percent: event.target.value } : { amount: event.target.value })}
                         className={`${inputClass} pr-8`}
                       />
@@ -1824,6 +1833,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                     </div>
                     <button
                       type="button"
+                      aria-label="Hapus baris alokasi" disabled={saving}
                       onClick={() => setAllocationRows((rows) => rows.filter((item) => item.key !== row.key))}
                       className="flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-rose-50 hover:text-rose-600"
                     >
@@ -1836,9 +1846,7 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                 ))}
               </div>
               <button
-                onClick={() => setAllocationRows((rows) => [...rows, {
-                  key: allocationKey(), id: null, originalName: null, group: "OTHER", name: "Lainnya", auto: false, percent: "", amount: "",
-                }])}
+                type="button" onClick={() => addAllocation()} disabled={saving}
                 className="mt-3 inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
               >
                 <Plus className="h-4 w-4" /> Tambah alokasi
@@ -1850,8 +1858,9 @@ function CostAnalysisWorkspace({ project }: { project: ProjectRecord }) {
                 <MoneyStat label="Quotation" value={idr(quotation)} tone="blue" icon={FileText} />
               </div>
             </div>
-            <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
-              <button onClick={() => setModal(null)} className={buttonClass}>Batal</button>
+            {modalError && <p role="alert" className="border-t border-yellow-200 bg-yellow-50 px-5 py-2 text-sm text-yellow-900">{modalError}</p>}
+            <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
+              <button onClick={() => setModal(null)} disabled={saving} className={buttonClass}>Batal</button>
               <button
                 onClick={saveAllocations}
                 disabled={saving}
@@ -1967,7 +1976,7 @@ function ProjectTimeline({ project, onEdit }: { project: ProjectRecord; onEdit: 
           <button
             key={stage.id}
             onClick={() => onEdit(stage.id)}
-            className={`rounded-xl border bg-white p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${stage.border}`}
+            className="rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
           >
             <div className="flex items-center gap-2">
               <span className={`h-2.5 w-2.5 rounded-full ${stage.color}`} />
@@ -2348,10 +2357,10 @@ function ProjectManagementWorkspace({
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-5 py-4">
+    <section className={primaryCardClass}>
+      <div className={primaryCardHeaderClass}>
         <div className="flex items-center gap-3">
-          <span className="rounded-xl bg-violet-50 p-2.5 text-violet-600 ring-1 ring-violet-100">
+          <span className={primaryCardIconClass}>
             <CalendarDays className="h-5 w-5" />
           </span>
           <div>
@@ -2887,9 +2896,9 @@ export default function IntegratedProjectWorkspacePage() {
 
             {selectedProject && (
               <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 sm:grid-cols-4">
-                <div className="min-w-0 rounded-lg bg-slate-50 px-3 py-2 ring-1 ring-slate-200">
-                  <p className="text-[9px] font-bold uppercase text-slate-400">Current stage</p>
-                  <p className="mt-0.5 truncate text-xs font-extrabold text-blue-700">
+                <div className="min-w-0 rounded-lg bg-blue-50 px-3 py-2 ring-1 ring-blue-200">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-blue-500">Current stage</p>
+                  <p className="mt-0.5 truncate text-xs font-black text-blue-800">
                     {stageMeta(selectedProject.current_stage).label}
                   </p>
                 </div>
@@ -3005,6 +3014,10 @@ export default function IntegratedProjectWorkspacePage() {
                       {dropped && <span className="rounded bg-slate-600 px-1.5 py-0.5 text-[9px] font-bold text-white">DROP</span>}
                     </div>
                     <p className="mt-1 text-xs text-slate-500">{project.client_company}</p>
+                    <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-blue-100 bg-blue-50 px-2.5 py-1.5">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-blue-500">Stage</span>
+                      <span className="truncate text-[10px] font-black text-blue-800">{stageMeta(project.current_stage).shortLabel}</span>
+                    </div>
                   </button>
                 );
               })}
@@ -3046,7 +3059,7 @@ export default function IntegratedProjectWorkspacePage() {
                   <li>Project Management, stage, notes, dan timeline history</li>
                   <li>Seluruh entry Cost Analysis: allocation, income, dan expense</li>
                   <li>Seluruh row BOM untuk project ini</li>
-                  <li>Data QO/PO, BAST, Invoice, dan metadata dokumen yang tersimpan pada BOM</li>
+                  <li>Data QO/PO, BAST, Invoice, Delivery Order, dan metadata dokumen yang tersimpan pada BOM</li>
                 </ul>
               </div>
               <label className="block text-xs font-bold text-slate-600">
